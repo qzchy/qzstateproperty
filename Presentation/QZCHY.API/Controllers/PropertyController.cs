@@ -1095,10 +1095,16 @@ namespace QZCHY.API.Controllers
             //advance.Price = PrepareRanges(priceRange);
             //advance.GetedDate = PrepareRange(getDateRange);
 
-
-
             //高级搜索参数设置
             PropertyAdvanceConditionRequest request = PrepareAdvanceCondition(advance);
+
+            //根据不同的角色，设置相应的数据权限
+
+            if(currentUser.IsAdmin()||currentUser.IsDataReviewer())
+            {
+
+            }
+
 
             var properties = _propertyService.GetAllProperties(query, currentUser.IsAdmin() ? 0 : currentUser.Government.Id, true, pageIndex, pageSize,
                 !currentUser.IsAdmin(), request, sortConditions);

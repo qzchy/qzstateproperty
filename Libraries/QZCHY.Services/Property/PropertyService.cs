@@ -69,12 +69,12 @@ namespace QZCHY.Services.Properties
             return query.ToList();
         }
 
-        public IQueryable<QZCHY.Core.Domain.Properties.Property> GetAllProperties(int governmentId = 0, bool includeChildren = true, bool showHidden = true)
+        public IQueryable<QZCHY.Core.Domain.Properties.Property> GetAllProperties(int governmentId = 0, bool includeChildren = true, bool showHidden = false)
         {
             var query = from p in _propertyRepository.Table.AsNoTracking()
                         select p;
 
-            Expression<Func<QZCHY.Core.Domain.Properties.Property, bool>> expression = p => !p.Deleted && !p.Off;
+            Expression<Func<QZCHY.Core.Domain.Properties.Property, bool>> expression = p => !p.Deleted  && !p.Off;
 
             if (!showHidden) expression = expression.And(p => p.Published);
 
@@ -97,8 +97,6 @@ namespace QZCHY.Services.Properties
             query = GetAllProperties(governmentId, includeChildren,showHidden);
 
             Expression<Func<QZCHY.Core.Domain.Properties.Property, bool>> expression = p => !p.Deleted;
-
-
 
             //字符串查询
             if (!string.IsNullOrEmpty(search))
@@ -348,7 +346,7 @@ namespace QZCHY.Services.Properties
             return properties;
         }
 
-        public IList<QZCHY.Core.Domain.Properties.Property> GetPropertiesByGovernmentId(IList<int> idList, bool loadChildren = false, bool showHidden = true)
+        public IList<QZCHY.Core.Domain.Properties.Property> GetPropertiesByGovernmentId(IList<int> governmentIds, bool showHidden = false)
         {
             var query = _propertyRepository.Table;
 
@@ -356,7 +354,7 @@ namespace QZCHY.Services.Properties
 
             if (!showHidden) query = query.Where(s => s.Published);
 
-            query = query.Where(p => idList.Contains(p.Government.Id));
+            query = query.Where(p => governmentIds.Contains(p.Government.Id));
 
             return query.ToList();
         }

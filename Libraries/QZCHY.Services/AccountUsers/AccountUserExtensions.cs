@@ -107,5 +107,27 @@ namespace QZCHY.Services.AccountUsers
         {
             return IsInAccountUserRole(property, SystemAccountUserRoleNames.StateOwnerAuditor, onlyActiveAccountUserRoles);
         }
+
+        /// <summary>
+        /// 是否为数据查看员
+        /// </summary>
+        /// <param name="property"></param>
+        /// <param name="onlyActiveAccountUserRoles"></param>
+        /// <returns></returns>
+        public static bool IsDataReviewer(this AccountUser property, bool onlyActiveAccountUserRoles = true)
+        {
+            return IsInAccountUserRole(property, SystemAccountUserRoleNames.DataReviewer, onlyActiveAccountUserRoles);
+        }
+
+        /// <summary>
+        /// 是否为主管部门审批员
+        /// </summary>
+        /// <param name="property"></param>
+        /// <param name="onlyActiveAccountUserRoles"></param>
+        /// <returns></returns>
+        public static bool IsParentGovernmentorAuditor(this AccountUser property, bool onlyActiveAccountUserRoles = true)
+        {
+            return IsInAccountUserRole(property, SystemAccountUserRoleNames.ParentGovernmentorAuditor, onlyActiveAccountUserRoles);
+        }
     }
 }
