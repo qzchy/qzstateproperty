@@ -1,0 +1,392 @@
+﻿<div ng-controller="PropertyCtrl" id="propertyDetialContainer">
+    <div class="bg-light lter b-b wrapper-md">
+        <h1 class="m-n font-thin h3">资产信息--{{property.name}}</h1>
+    </div>
+    <div class="wrapper-md">
+
+        <!-- toaster directive -->
+        <toaster-container toaster-options="{'position-class': 'toast-bottom-right', 'close-button':true,'time-out': 1000}"></toaster-container>
+        <!-- / toaster directive -->
+
+        <div class="row">
+
+            <div class="col-lg-12 col-md-12">
+                <div class="m-b-md">
+                    <a ui-sref="app.property.list" class="btn btn-default"> <i class="fa fa-arrow-circle-o-left"></i> 资产列表  </a>
+
+                    <div class="pull-right m-t-n-xs">
+                        <a class="btn btn-rounded btn-icon btn-default" ui-sref="app.property.edit({id:propertyId})" title="编辑" ng-if="property.canEditDelete||property.canChange"><i class="fa fa-pencil"></i></a>
+                        <button class="btn btn-rounded btn-icon btn-danger" title="删除资产" ng-click="deleteAccount()"ng-if="property.canEditDelete"><i class="fa fa-times"></i></button>
+                    </div>
+                </div>
+
+                <!--后台错误-->
+                <div class="form-group" ng-if="errorMsg">
+                    <div class="col-lg-12 col-md-12">
+                        <div class="alert alert-danger" ng-bind-html="errorMsg">
+                        </div>
+                    </div>
+                </div>
+
+          
+                    <uib-tabset active="activeJustified" justified="true">
+               
+                      <uib-tab index="0" heading="基本信息">
+                          <div class="panel panel-default">
+
+                              <div class="panel-body">
+                                  <div class="row">
+                                      <div class="col-lg-6 col-md-12">
+                                          <div class="panel panel-default">
+                                              <div class="panel-heading">
+                                                  基本信息
+                                              </div>
+                                              <table class="table table-striped table-hover table-border m-b-none">
+                                                  <tbody>
+                                                      <tr>
+                                                          <td class="font-bold">资产名称</td>
+                                                          <td>
+                                                              {{property.name}}
+                                                              <span class="badge">{{property.published?'':' 未发布 '}}</span>
+                                                              <span class="badge">{{property.off?' 核销 ':''}}</span>
+                                                           </td>
+                                                      </tr>
+                                                      <tr>
+                                                          <td class="font-bold">资产类型</td>
+                                                          <td>{{property.propertyType}}</td>
+                                                      </tr>
+                                                      <tr>
+                                                          <td class="font-bold">区域</td>
+                                                          <td>{{property.region}}</td>
+                                                      </tr>
+                                                      <tr>
+                                                          <td class="font-bold">产权单位</td>
+                                                          <td><a ui-sref="app.property.government({id:property.governmentId})" class="text-info font-bold" title="点击查看产权单位全部资产">{{property.governmentName}}</a></td>
+                                                      </tr>
+                                                      <tr>
+                                                          <td class="font-bold">位置坐落</td>
+                                                          <td>{{property.address}}</td>
+                                                      </tr>
+                                                      <tr>
+                                                          <td class="font-bold">建筑面积</td>
+                                                          <td>{{property.constructArea | unit:'carea'}}</td>
+                                                      </tr>
+                                                      <tr>
+                                                          <td class="font-bold">土地面积</td>
+                                                          <td>{{property.landArea | unit:'larea'}}</td>
+                                                      </tr>
+                                                      <tr>
+                                                          <td class="font-bold">产权情况</td>
+                                                          <td>{{property.propertyID}}</td>
+                                                      </tr>
+                                                      <tr>
+                                                          <td class="font-bold">不动产证</td>
+                                                          <td>{{property.estateId}}</td>
+                                                      </tr>
+                                                      <tr>
+                                                          <td class="font-bold">房产证</td>
+                                                          <td>{{property.constructId}}</td>
+                                                      </tr>
+                                                      <tr>
+                                                          <td class="font-bold">土地证</td>
+                                                          <td>{{property.landId}}</td>
+                                                      </tr>
+                                                      <tr>
+                                                          <td class="font-bold">房产性质</td>
+                                                          <td>{{property.propertyNature}}</td>
+                                                      </tr>
+                                                      <tr>
+                                                          <td class="font-bold">土地性质</td>
+                                                          <td>{{property.landNature}}</td>
+                                                      </tr>
+                                                      <tr>
+                                                          <td class="font-bold">账面价格</td>
+                                                          <td>{{property.price | unit:'price'}}</td>
+                                                      </tr>
+                                                      <tr>
+                                                          <td class="font-bold">取得时间</td>
+                                                          <td>{{property.getedDate}}</td>
+                                                      </tr>
+                                                      <tr>
+                                                          <td class="font-bold">使用年限</td>
+                                                          <td>{{property.lifeTime}} 年</td>
+                                                      </tr>
+                                                      <tr>
+                                                          <td class="font-bold">使用方</td>
+                                                          <td>{{property.usedPeople}}</td>
+                                                      </tr>
+                                                      <tr>
+                                                          <td class="font-bold">封面</td>
+                                                          <td><img ng-src="{{property.logoUrl}}" class="img"></td>
+                                                      </tr>
+                                                      <tr>
+                                                          <td class="font-bold">图片附件</td>
+                                                          <td>
+
+                                                              <a rel="example_group" title="{{img.title}}" ng-href="{{img.href}}" fancyboxable ng-repeat="img in property.pictures track by $index">
+                                                                  <img alt="" ng-src="{{img.href}}" style="height:150px;width:150px;" />
+                                                              </a>
+
+                                                          </td>
+                                                      </tr>
+                                                      <tr>
+                                                          <td class="font-bold">文件附件</td>
+                                                          <td>
+                                                              <ul class="list-group">
+                                                                  <li  ng-repeat="file in property.files track by $index">{{$index+1}} . <a class="text-info" ng-href="{{file.src}}" target="_blank">{{file.title}}</a></li>
+                                                              </ul>
+                                                          </td>
+                                                      </tr>
+                                                      <!--<tr>
+                                                          <td class="font-bold">下一步使用打算</td>
+                                                          <td>{{property.nextStepUsage}}</td>
+                                                      </tr>-->
+                                                      <tr>
+                                                          <td class="font-bold">备注</td>
+                                                          <td>{{property.description}}</td>
+                                                      </tr>
+                                                  </tbody>
+                                              </table>
+                                          </div>
+
+                                      </div>
+
+
+                                      <div class="col-lg-6 col-md-12">
+                                          <div class="panel panel-default">
+                                              <div class="panel-heading">
+                                                  使用现状
+                                              </div>
+                                              <div class="panel-body" id="chart" style="height:400px;">
+
+                                              </div>
+                                          </div>
+
+                                          <div class="panel panel-default">
+                                              <div class="panel-heading">
+                                                  位置信息
+                                              </div>
+                                              <div class="panel-body">
+                                                  <div id="map" style="height:400px;"></div>
+                                              </div>
+                                          </div>
+
+                                      </div>
+                                  </div>
+                              </div>
+
+                          </div>                          
+                            
+                       
+                        </uib-tab>
+
+                      <uib-tab index="1" heading="新增审批信息">
+                          <div class="panel panel-default">
+                              <div class="panel-body">
+                                  <table class="table table-striped table-hover table-border m-b-none">
+                                      <tbody>
+                                          <tr>
+                                              <td class="font-bold">申请时间</td>
+                                              <td class="font-bold">审批状态</td>
+                                              <td class="font-bold">主管部门意见</td>
+                                              <td class="font-bold">主管部门审批时间</td>
+                                              <td class="font-bold">管理员意见</td>
+                                              <td class="font-bold">管理员审批时间</td>
+                                          </tr>
+                                          <tr>
+                                              <td>{{property.newCreate.processDate}}</td>
+                                              <td>{{property.newCreate.state}}</td>
+                                              <td>{{property.newCreate.dSuggestion}}</td>
+                                              <td>{{property.newCreate.dApproveDate}}</td>
+                                              <td>{{property.newCreate.aSuggestion}}</td>
+                                              <td>{{property.newCreate.aApproveDate}}</td>
+                                          </tr>
+                                      </tbody>
+                                  </table>
+                              </div>
+                          </div>
+                        </uib-tab>
+
+                        <uib-tab index="2" heading="变更审批信息">
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                    <table class="table table-striped table-hover table-border m-b-none">
+                                        <tbody>
+                                            <tr>
+                                                <td class="font-bold">申请时间</td>
+                                                <td class="font-bold">审批状态</td>
+                                                <td class="font-bold">变更对比</td>
+                                                <td class="font-bold">主管部门意见</td>
+                                                <td class="font-bold">主管部门审批时间</td>
+                                                <td class="font-bold">管理员意见</td>
+                                                <td class="font-bold">管理员审批时间</td>
+                                            </tr>
+                                            <tr ng-repeat="edit in property.edits">
+                                                <td>{{edit.processDate}}</td>
+                                                <td>{{edit.state}}</td>
+                                                <td><a ui-sref="app.property.process_editdetail({id:edit.id})" target="_blank">点击查看</a></td>
+                                                <td>{{edit.dSuggestion}}</td>
+                                                <td>{{edit.dApproveDate}}</td>
+                                                <td>{{edit.aSuggestion}}</td>
+                                                <td>{{edit.aApproveDate}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </uib-tab>
+
+                      <uib-tab index="3" heading="出借记录" >
+                          <div class="panel panel-default">
+                              <div class="panel-body">
+                                  <table class="table table-striped table-hover table-border m-b-none">
+                                      <tbody>
+                                          <tr>
+                                              <td class="font-bold">申请时间</td>
+                                              <td class="font-bold">审批状态</td>
+                                              <td class="font-bold">出借单位</td>
+                                              <td class="font-bold">出借时间</td>
+                                              <td class="font-bold">出借面积</td>
+                                              <td class="font-bold">主管部门意见</td>
+                                              <td class="font-bold">主管部门审批时间</td>
+                                              <td class="font-bold">管理员意见</td>
+                                              <td class="font-bold">管理员审批时间</td>
+                                          </tr>
+                                          <tr ng-repeat="lend in property.lends">
+                                              <td>{{lend.processDate}}</td>
+                                              <td>{{lend.state}}</td>
+                                              <td>{{lend.name}}</td>
+                                              <td>{{lend.lendTime}}</td>
+                                              <td>{{lend.lendArea}} 平方米</td>
+                                              <td>{{lend.dSuggestion}}</td>
+                                              <td>{{lend.dApproveDate}}</td>
+                                              <td>{{lend.aSuggestion}}</td>
+                                              <td>{{lend.aApproveDate}}</td>
+                                          </tr>
+                                      </tbody>
+                                  </table>
+                              </div>
+                          </div>                                    
+                        </uib-tab>
+
+                      <uib-tab index="4" heading="出租记录">
+                          <div class="panel panel-default">
+                              <div class="panel-body">
+                                  <table class="table table-striped table-hover table-border m-b-none">
+                                      <tbody>
+                                          <tr>
+                                              <td class="font-bold">申请时间</td>
+                                              <td class="font-bold">审批状态</td>
+                                              <td class="font-bold">租用人</td>
+                                              <td class="font-bold">租用时间</td>
+                                              <td class="font-bold">租用面积</td>
+                                              <td class="font-bold">租用期限</td>
+                                              <td class="font-bold">总租金</td>
+                                              <td class="font-bold">主管部门意见</td>
+                                              <td class="font-bold">主管部门审批时间</td>
+                                              <td class="font-bold">管理员意见</td>
+                                              <td class="font-bold">管理员审批时间</td>
+                                          </tr>
+                                          <tr ng-repeat="rent in property.rents">
+                                              <td>{{rent.processDate}}</td>
+                                              <td>{{rent.state}}</td>
+                                              <td>{{rent.name}}</td>
+                                              <td>{{rent.rentTime}}</td>
+                                              <td>{{rent.rentArea}} 平方米</td>
+                                              <td>{{rent.rentMonth}} 月</td>
+                                              <td>{{rent.rentPrice}} 元</td>
+                                              <td>{{lend.dSuggestion}}</td>
+                                              <td>{{lend.dApproveDate}}</td>
+                                              <td>{{lend.aSuggestion}}</td>
+                                              <td>{{lend.aApproveDate}}</td>
+                                          </tr>
+                                      </tbody>
+                                  </table>
+                              </div>
+                          </div>
+
+                        </uib-tab>
+
+                      <uib-tab index="5" heading="转移记录">
+                          <div class="panel panel-default">
+                              <div class="panel-body">
+                                  <table class="table table-striped table-hover table-border m-b-none">
+                                      <tbody>
+                                          <tr>
+                                              <td class="font-bold">申请时间</td>
+                                              <td class="font-bold">原产权方</td>
+                                              <td class="font-bold">现产权方</td>
+                                              <td class="font-bold">划拨时间</td>
+                                              <td class="font-bold">审批状态</td>
+                                              <td class="font-bold">主管部门意见</td>
+                                              <td class="font-bold">主管部门审批时间</td>
+                                              <td class="font-bold">管理员意见</td>
+                                              <td class="font-bold">管理员审批时间</td>
+                                          </tr>
+                                          <tr ng-repeat="allot in property.allots">
+                                              <td>{{allot.processDate}}</td>
+                                              <td>{{allot.prePropertyOwner}}</td>
+                                              <td>{{allot.nowPropertyOwner}}</td>
+                                              <td>{{allot.allotTime}}</td>
+                                              <td>{{allot.state}}</td>
+                                              <td>{{allot.dSuggestion}}</td>
+                                              <td>{{allot.dApproveDate}}</td>
+                                              <td>{{allot.aSuggestion}}</td>
+                                              <td>{{allot.aApproveDate}}</td>
+                                          </tr>
+                                      </tbody>
+                                  </table>
+                              </div>
+                          </div>
+
+                        </uib-tab>
+
+                      <uib-tab index="6" heading="核销信息" ng-if ="property.off !=null">
+
+                          <div class="panel panel-default">
+                              <div class="panel-body">
+                                  <table class="table table-striped table-hover table-border m-b-none">
+                                      <tbody>
+                                          <tr>
+                                              <td class="font-bold">申请时间</td>
+                                              <td class="font-bold">审批状态</td>
+                                              <td class="font-bold">核销时间</td>
+                                              <td class="font-bold">核销原因</td>
+                                              <td class="font-bold">核销类型</td>
+                                              <td class="font-bold">价格</td>
+                                              <td class="font-bold">主管部门意见</td>
+                                              <td class="font-bold">主管部门审批时间</td>
+                                              <td class="font-bold">管理员意见</td>
+                                              <td class="font-bold">管理员审批时间</td>
+                                          </tr>
+                                          <tr>
+                                              <td>{{off.processDate}}</td>
+                                              <td>{{off.state}}</td>
+                                              <td>{{off.offTime}}</td>
+                                              <td>{{off.resaon}}</td>
+                                              <td>{{off.offType}}</td>
+                                              <td>{{off.price}} 元</td>
+                                              <td>{{off.dSuggestion}}</td>
+                                              <td>{{off.dApproveDate}}</td>
+                                              <td>{{off.aSuggestion}}</td>
+                                              <td>{{off.aApproveDate}}</td>
+                                          </tr>
+                                      </tbody>
+                                  </table>
+                              </div>
+                          </div>
+                        </uib-tab>
+
+                    </uib-tabset>
+                                       
+                
+            </div>
+        </div>
+    </div>
+
+
+    <!--对话框-->
+    <script type="text/ng-template" id="dialog.html">
+        <div ng-include="'app/views/blocks/dialog.html'"></div>
+    </script>
+</div>

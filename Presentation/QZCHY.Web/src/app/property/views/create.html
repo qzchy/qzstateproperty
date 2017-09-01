@@ -1,0 +1,372 @@
+﻿<div ng-controller="PropertyCreateOrEditCtrl" id="PropertyCreateContainer">
+    <div class="bg-light lter b-b wrapper-md">
+        <h1 class="m-n font-thin h3">{{propertyId==undefined?"新增":"编辑"}}资产</h1>
+    </div>
+
+    <div class="wrapper-md">
+        <!-- toaster directive -->
+        <toaster-container toaster-options="{'position-class': 'toast-bottom-right', 'close-button':true,'time-out': 1000}"></toaster-container>
+        <!-- / toaster directive -->
+        <div class="row">
+            <div class="col-lg-12 col-md-12">
+                <form name="PropertyForm" class="form-horizontal form-validation w5c-form" role="form" w5c-form-validate="validation.options" novalidate>
+
+                    <div class="m-b-md">
+                        <a ui-sref="app.property.list" class="btn btn-default"> <i class="fa fa-arrow-circle-o-left"></i> 资产列表  </a>
+
+                        <div class="pull-right m-t-n-xs">
+                            <a ui-sref="app.property.detail({id:{{propertyId}}})" class="btn btn-default" ng-if="propertyId!=undefined">
+                                <i class="fa fa-bookmark"></i> 详细信息
+                            </a>
+                            <button type="submit" class="btn  btn-info" w5c-form-submit="validation.saveEntity($event)" ng-disabled="processingStatus">保存</button>
+                            <button type="submit" class="btn  btn-success" w5c-form-submit="validation.saveEntity($event,true)" ng-disabled="processingStatus">保存，并提交</button>
+                        </div>
+                    </div>
+
+                    <!--后台错误-->
+                    <div class="form-group" ng-if="errorMsg">
+                        <div class="col-lg-12 col-md-12">
+                            <div class="alert alert-danger" ng-bind-html="errorMsg">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!--<div class="col-md-12">
+                            <p> {{property}} </p>
+                        </div>-->
+                        <div class="col-lg-6 col-md-12">
+
+                            <!--基本信息-->
+                            <div class="panel panel-default">
+                                <div class="panel-heading font-bold">基本信息</div>
+                                <div class="panel-body">
+
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">名称</label>
+                                        <div class="col-lg-10">
+                                            <input type="text" name="propertyname" class="form-control" placeholder="输入资产名称，长度1-20个汉字" ng-model="property.name" ng-minlength="1" ng-maxlength="20" ng-required="true">
+                                        </div>
+                                    </div>                                  
+
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">资产类别</label>
+                                        <div class="col-lg-10">
+                                            <select class="form-control" ng-model="property.propertyTypeId" ng-required="true" name="propertyTypeId">
+                                                <option value="">---请选择---</option>
+                                                <option value="0">房产</option>
+                                                <option value="1">土地</option>
+                                                <option value="2">房屋对应土地</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">坐落地址</label>
+                                        <div class="col-lg-10">
+                                            <input type="text" name="propertyaddress" class="form-control" placeholder="输入房产土地地址，详细到门牌号" ng-model="property.address" ng-required="true">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">产权单位</label>
+                                        <div class="col-lg-10">
+                                            <div class="radio radio-inline p-l-n">
+                                                <label class="i-checks">
+                                                    <input type="radio" ng-model="property.owner_self" ng-checked="true" value="true" name="propertyOwner"><i></i> 本单位
+                                                </label>
+                                            </div>
+                                            <div class="radio radio-inline" ng-if="governments.length>0">
+                                                <label class="i-checks">
+                                                    <input type="radio" ng-model="property.owner_self" value="false" name="propertyOwner"><i></i> 下级单位
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-10 col-lg-offset-2 m-t-md" ng-show="property.owner_self=='false'">
+                                            <select class="form-control" ng-model="selectedGovernment" ng-change="governmentSelected()" ng-required="true" name="pgovernment"
+                                                    ng-options="item as item.label for item in governments track by item.value">
+                                                <option value="">---请选择---</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">资产封面</label>
+                                        <div class="col-sm-10" ng-show="property.logoUrl==null">                                           
+                                            <input ui-jq="filestyle" id="fileInput" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s">
+                                            <input type="hidden" ng-model="tempLogo" name="pLogo" ng-required="property.logoUrl==null" />
+                                            <div class="m-t-md hbox hbox-auto-xs" ng-show="sourceImg!=null">
+                                                <div class="wrapper-sm b-a bg-white m-r-xs m-b-xs">
+                                                    <div class="bg-light" style="height:400px">
+                                                        <img-crop image="sourceImg" result-image="tempLogo" result-image-size="320" area-type="square" area-min-size="320"></img-crop>
+                                                    </div>
+                                                </div>
+                                                <div class="inline bg-white wrapper-sm b-a">
+                                                    <div class="bg-light">
+                                                        <img ng-src="{{tempLogo}}" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-10" ng-if="property.logoUrl!=null">
+                                            <img ng-src="{{property.logoUrl}}" class="img">
+                                            <div class="m-t-sm">
+                                                <button class="btn btn-danger" ng-click="property.logoUrl=null">删除</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">取得时间</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" ui-jq="daterangepicker" class="form-control" name="daterange" ng-model="property.getedDate" ui-options="dateOption" />
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">使用年限</label>
+                                        <div class="col-lg-10">
+                                            <input name="usingyear" ui-jq="TouchSpin" type="text" ng-model="property.lifeTime" class="form-control" data-min='0' data-step="1" data-max="100" data-decimals="0" data-postfix="年">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">账面价值</label>
+                                        <div class="col-lg-10">
+                                            <input name="price" ui-jq="TouchSpin" type="text" ng-model="property.price" class="form-control" data-min='0' data-step="0.01" data-max="1000000000" data-decimals="2" data-postfix="元">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">备注</label>
+                                        <div class="col-lg-10">
+                                            <textarea ng-model="property.description" class="form-control" name="premark"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--基本信息 结束-->
+                            <!--使用情况-->
+                            <div class="panel panel-default">
+                                <div class="panel-heading font-bold">使用情况</div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">使用方</label>
+                                        <div class="col-lg-10">
+                                            <input type="text" name="username" class="form-control" placeholder="输入资产使用方..." ng-model="property.usedPeople" ng-required="true">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">自用面积</label>
+                                        <div class="col-lg-10">
+                                            <input name="selfarea" ui-jq="TouchSpin" type="text" ng-model="property.currentUse_Self" class="form-control"  data-min='0' data-step="0.0001" data-max="1000000000" data-decimals="4" data-postfix="平方米">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">出借面积</label>
+                                        <div class="col-lg-10">
+                                            <input name="cjarea" ui-jq="TouchSpin" type="text" ng-model="property.currentUse_Lend" class="form-control"  data-min='0' data-step="0.0001" data-max="1000000000" data-decimals="4" data-postfix="平方米">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">出租面积</label>
+                                        <div class="col-lg-10">
+                                            <input ui-jq="TouchSpin" type="text" ng-model="property.currentUse_Rent" class="form-control"  data-min='0' data-step="0.0001" data-max="1000000000" data-decimals="4"  data-postfix="平方米">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">闲置面积</label>
+                                        <div class="col-lg-10">
+                                            <input ui-jq="TouchSpin" type="text" ng-model="property.currentUse_Idle" class="form-control"  data-min='0' data-step="0.0001" data-max="1000000000" data-decimals="4" data-postfix="平方米">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--使用情况 结束-->
+
+                        </div>
+
+                        <div class="col-lg-6 col-md-12">
+                            <!--房产土地信息-->
+                            <div class="panel panel-default">
+                                <div class="panel-heading font-bold">房产土地信息</div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">证件类型</label>
+                                        <div class="col-lg-10">
+                                            <div class="radio radio-inline p-l-n">
+                                                <label class="i-checks">
+                                                    <input type="radio" ng-model="property.estate" ng-checked="true" value="true" name="pEsate"><i></i> 不动产登记证
+                                                </label>
+                                            </div>
+                                            <div class="radio radio-inline">
+                                                <label class="i-checks">
+                                                    <input type="radio" ng-model="property.estate" value="false" name="pEsate"><i></i> 房产土地证
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group" ng-if="property.estate=='true'">
+                                        <label class="col-lg-2 control-label">不动产证编号</label>
+                                        <div class="col-lg-10">
+                                            <input type="text" name="pestateId" class="form-control" placeholder="输入不动产证编号" ng-model="property.estateId" w5c-dynamic-element ng-minlength="1">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group" ng-if="property.estate=='false' && property.propertyTypeId=='0'">
+                                        <label class="col-lg-2 control-label">房产证编号</label>
+                                        <div class="col-lg-10">
+                                            <input type="text" name="pconstructId" class="form-control" placeholder="输入房产证编号" ng-model="property.constructId" w5c-dynamic-element ng-minlength="1">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group" ng-if="property.estate=='false'">
+                                        <label class="col-lg-2 control-label">土地证编号</label>
+                                        <div class="col-lg-10">
+                                            <input type="text" name="plandId" class="form-control" placeholder="输入土地证编号" ng-model="property.landId" w5c-dynamic-element ng-minlength="1">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group" ng-if="property.propertyTypeId=='0'">
+                                        <label class="col-lg-2 control-label">房产性质</label>
+                                        <div class="col-lg-10">
+                                            <select class="form-control" ng-model="property.propertyNature" w5c-dynamic-element ng-required="property.propertyTypeId=='0'" name="ppropertyNature">
+                                                <option value="">---请选择---</option>
+                                                <option value="商住">商住</option>
+                                                <option value="国有">国有</option>
+                                                <option value="集体">集体</option>
+                                                <option value="住宅">住宅</option>
+                                                <option value="无">无</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group" ng-if="property.propertyTypeId=='0'">
+                                        <label class="col-lg-2 control-label">建筑面积</label>
+                                        <div class="col-lg-10">
+                                            <input ui-jq="TouchSpin" type="text" ng-model="property.constructArea" class="form-control"  data-min='0' data-step="0.0001" data-max="1000000000" data-decimals="4" data-postfix="平方米">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">土地性质</label>
+                                        <div class="col-lg-10">
+                                            <select class="form-control" ng-model="property.landNature" name="plandNature" ng-required="true">
+                                                <option value="">---请选择---</option>
+                                                <option value="租赁">租赁</option>
+                                                <option value="划拨">划拨</option>
+                                                <option value="划拨出让">划拨出让</option>
+                                                <option value="军事用地">军事用地</option>
+                                                <option value="国有">国有</option>
+                                                <option value="出让">出让</option>
+                                                <option value="商服用地">商服用地</option>
+                                                <option value="政府储备">政府储备</option>
+                                                <option value="公用设施用地（划拨）">公用设施用地（划拨）</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">土地面积</label>
+                                        <div class="col-lg-10">
+                                            <input ui-jq="TouchSpin" type="text" ng-model="property.landArea" class="form-control"  data-min='0' data-step="0.0001" data-max="1000000000" data-decimals="4" data-postfix="平方米">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--房产土地信息 结束-->
+                            <!--空间信息-->
+                            <div class="panel panel-default">
+                                <div class="panel-heading font-bold">空间信息</div>
+                                <div class="panel-body">
+                                    <input type="hidden" ng-model="property.location" ng-required="true" name="propertyLocation" />
+                                    <div id="map" style="height:400px;"></div>
+                                </div>
+                            </div>
+                            <!--空间信息 结束-->
+                            <!--附件-->
+                            <div class="panel panel-default">
+                                <div class="panel-heading font-bold">附件</div>
+                                <div class="panel-body">
+
+                                    <div id="fileUploadContainer">
+
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">图片附件<br />（已上传{{property.pictures.length}}个）</label>
+                                            <div class="col-sm-10">
+                                                <div id="filePicker0">选择图片</div>
+                                            </div>
+
+                                            <div class="uploader-list form-group" id="fileList">
+                                                <div class="col-lg-12 col-lg-offset-2">
+                                              
+                                                    <div id="{{img.fileId}}" class="file-item thumbnail m-r-md" ng-class="{'selected':img.selected}" ng-repeat="img in property.pictures track by $index"
+                                                         ng-mouseenter="img.hovered=true" ng-mouseleave="img.hovered=false" ng-click="selectPicutre(img);">
+                                                        <div class="file-panel" ng-if="img.hovered">
+                                                            <span title="删除" ng-click="removeImg(img,$index)"><i class="fa fa-trash"></i></span>
+                                                        </div>
+
+                                                        <a  title="{{img.title}}" ng-href="{{img.href}}" fancyboxable>
+                                                            <img alt="" ng-src="{{img.href}}" />
+                                                        </a>
+
+                                                        <div ng-if="img.id==undefined">
+                                                            <div class="status" ng-class="{'error':img.error,'success':!img.error}" ng-if="img.uploaded">{{img.status}}</div>
+                                                            <div class="status processing" ng-if="!img.uploaded">上传中... {{img.percentage}}%</div>
+                                                        </div>
+
+                                                        <div>
+                                                            <div class="status success">{{img.title}}</div>
+                                                        </div>
+
+                                                    </div>
+
+                                                </div>
+                                                <div class="col-lg-12 col-lg-offset-2">
+                                                    <button class="btn btn-danger btn-sm" ng-if="property.pictures.length>0" ng-click="removeAll('img')"><i class="fa fa-trash"></i> 移除所有</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">其他附件<br />（已上传{{property.files.length}}个）</label>
+                                            <div class="col-sm-10">
+                                                <div id="filePicker1">选择文件</div>
+                                                <table class="table table-bordered table-hover">
+                                                    <tr ng-repeat="file in property.files track by $index">
+                                                        <td style="width:30px;">{{$index+1}}</td>
+                                                        <td>
+                                                            <a class="text-info" ng-href="{{file.src}}" target="_blank">{{file.title}}</a>
+                                                            <uib-progressbar class="progress-striped active" value="file.percentage" type="info" ng-if="file.percentage!=100"><b>{{file.percentage}}%</b></uib-progressbar>
+                                                        </td>
+                                                        <td style="width:50px;"><a ng-click="removeFile(file,$index)" ng-if="file.uploaded"><i class="fa fa-times"></i></a></td>
+                                                    </tr>
+                                                </table>
+                                                <button class="btn btn-danger btn-sm" ng-if="property.files.length>0" ng-click="removeAll('file')"><i class="fa fa-trash"></i> 移除所有</button>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <!--附件 结束-->
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!--对话框-->
+    <script type="text/ng-template" id="dialog.html">
+        <div ng-include="'app/views/blocks/dialog.html'"></div>
+    </script>
+
+     
+</div>

@@ -1,0 +1,652 @@
+﻿<div ng-controller="MapCtrl" id="mapContainer">
+    <div id="map" ng-style="mapHeight"></div>
+
+    <!--搜索框-->
+    <section id="search" class="search">
+        <header class="searchbox">
+            <div class="iptbox">
+                <input type="text" ng-model="search.params.query" id="searchipt" placeholder="输入名称、资产地址..." maxlength="256" autocomplete="off" ng-change="propertiesSuggest()">
+                <div class="iptAddOn" ng-if="search.config.searching">
+                    <span id="loading" class="ring"></span>
+                </div>
+            </div>
+            <div class="advanceSearch" ng-click="searchProperties()">
+                <i class="iconfont icon-search searchBtn" title="搜索"></i>
+            </div>
+
+            <div ng-if="suggestedProperties.length>0" class="autocomplete-suggestions fade-in-left">
+
+                <div class="poi autocomplete-suggestion" data-index="{{$index}}" ng-repeat="suggestProperty in suggestedProperties" ng-click="searchPropertyBySuggestion(suggestProperty)">
+                    <p>
+                        <i class="iconfont icon-location"></i>
+                        <span class="sug_val" ng-bind-html="suggestProperty.name | highlight:search.params.query"></span>
+                        <span class="district" poiid="{{suggestProperty.id}}" ng-bind-html="suggestProperty.governmentName | highlight:search.params.query"></span>
+                    </p>
+                </div>
+            </div>
+        </header>
+    </section>
+    <!--搜索框 结束-->
+    <!--搜索结果   -->
+    <div ng-if="search.config.filterModel && selectedProperty==null" id="searchResultBox">
+        <section class="searchContainer  wrapper-xs">
+            <section id="serp">
+                <header class="serp-head">
+                    <h5 class="serp-title text-center">共有<span class="text-danger-dker font-bold">{{properties.length}}</span>个结果</h5>
+                    <a href="javascript:void(0)" class="upButton text-info" ng-click="search.config.searchResultBoxFolder=!search.config.searchResultBoxFolder">
+                        <i ng-if="!search.config.searchResultBoxFolder">下拉</i>
+                        <i ng-if="search.config.searchResultBoxFolder">收起</i>                        
+                    </a>
+                    <div class="serp-filter"></div>
+                </header>
+                <div class="serp-body" ng-style="mapSearchResultHeight" ng-if="search.config.searchResultBoxFolder">
+                    <div class="scrollContainer" ng-nicescroll nice-option="{cursorcolor: '#e2edff'}" ng-if="properties.length>0">
+                        <ul class="serp-list no-padder" infinite-scroll='loadMore()' infinite-scroll-distance='2' infinite-scroll-container='".scrollContainer"' >
+                            <li class="poibox poibox-normal amap-marker" id="{{property.id}}" ng-repeat="property in showProperties" ng-click="selectProperty(property.id,true)">
+                                <div class="poi-imgbox">
+                                    <span class="poi-img" style="background-image:url(../../../img/timg.jpg)"></span>
+                                </div>
+                                <div class="poi-info-left">
+                                    <div class="poi-title">
+                                        <span class="poi-name" title="{{property.name}}">{{$index+1}}.&nbsp;{{property.name}}</span>
+                                    </div>
+                                    <div class="poi-info">
+                                        <p class="poi-propertyType">{{property.propertyType}}</p>
+                                        <p class="poi-region">{{property.region}}</p>
+                                        <p class="poi-address">{{property.address}}</p>
+                                        <p class="poi-governmentName">{{property.governmentName}}</p>
+                                    </div>
+                                </div>
+                                <div class="clear"></div>
+                            </li>
+                        </ul>
+
+                    </div>
+
+                </div>
+                <div class="serp-paging" ng-if="false">
+                    <b class="paging-current">1/44页</b>
+                    <span class="paging-next" pageno="2"><i class="iconfont icon-chevronright"></i></span>
+                    <span class="paging-index" pageno="1">首页</span>
+                </div>
+            </section>
+        </section>
+    </div>
+    <!--搜索结果 结束-->
+    <!--详细信息-->
+    <div ng-if="selectedProperty!=null" id="propertyDetailBox" class="panel-list fade-in-up">
+        <header class="placeimg">
+            <div class="imgfeedlist" style="display: block;">
+                <a href="/detail/B023B1CBOT?citycode=330100" target="_blank">
+                    <div class="imgfeed" style="background-image: url(../../../img/timg.jpg)"></div>
+                </a>
+            </div>
+            <a ng-click="clearSelcted()" style="position:absolute;top:0px;right:10px;">返回</a>
+        </header>
+        <h4 class="text-primary font-bold padder">
+            <a ui-sref="app.property.detail({id:selectedProperty.id})">{{selectedProperty.name}}</a>
+        </h4>
+        <div ng-style="mapDetailHeight">
+            <div class="panel-default" style="height:100%" ng-nicescroll nice-option="{cursorcolor: '#e2edff'}">
+                <!--<div class="panel-heading">基本信息</div>-->
+                {{property}}
+                <table class="table table-striped table-hover table-border m-b-none">
+                    <tbody>
+                        <tr>
+                            <td class="font-bold">资产类型</td>
+                            <td>{{selectedProperty.propertyType}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">区域</td>
+                            <td>{{selectedProperty.region}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">产权单位</td>
+                            <td><a ui-sref="app.property.government({id:selectedProperty.governmentId})" class="text-info font-bold" title="点击查看产权单位全部资产">{{selectedProperty.governmentName}}</a></td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">位置坐落</td>
+                            <td>{{selectedProperty.address}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">建筑面积</td>
+                            <td>{{selectedProperty.constructArea | unit:'carea'}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">土地面积</td>
+                            <td>{{selectedProperty.landArea | unit:'larea'}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">产权情况</td>
+                            <td>{{selectedProperty.propertyID}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">房产性质</td>
+                            <td>{{selectedProperty.propertyNature}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">土地性质</td>
+                            <td>{{selectedProperty.landNature}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">账面价格</td>
+                            <td>{{selectedProperty.price | unit:'price'}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">取得时间</td>
+                            <td>{{selectedProperty.getedDate}} </td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">使用年限</td>
+                            <td>{{selectedProperty.lifeTime}} 年</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">使用方</td>
+                            <td>{{selectedProperty.usedPeople}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">自用面积：</td>
+                            <td>{{selectedProperty.currentUse_Self | unit:'carea'}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">出租面积：</td>
+                            <td>{{selectedProperty.currentUse_Lend | unit:'carea'}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">出借面积：</td>
+                            <td>{{selectedProperty.currentUse_Rent | unit:'carea'}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">闲置面积：</td>
+                            <td>{{selectedProperty.currentUse_Idle | unit:'carea'}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">下一步使用打算</td>
+                            <td>{{selectedProperty.nextStepUsage}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">备注</td>
+                            <td>{{selectedProperty.description}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!--详细信息 结束-->
+    <!--工具条-->
+    <div id="mapTools" class="layerbox usel">
+        <div id="layerbox_item">
+            <!-- 工具组 -->
+            <div class="show-list">
+                <a class="layer_item cluster item" ng-class="{'active':cluseter.active}" href="javascript:void(0)" ng-click="showCluster()">
+                    <span class="icon"> <i class="iconfont icon-C-Cluster"></i> </span>
+                    <span class="name">聚合图</span>
+                </a>
+                <a class="layer_item heatmap item" ng-class="{'active':heatmap.active}" data-type="traffic" href="javascript:void(0)" ng-click="showHeatmap()">
+                    <span class="icon"> <i class="iconfont icon-relitu"></i> </span>
+                    <span class="name">热力图</span>
+                </a>
+                <a class="layer_item advance item " href="javascript:void(0)" ng-class="{'active':search.config.showAdvance}" ng-click="search.config.showAdvance=!search.config.showAdvance">
+                    <span class="icon"> <i class="iconfont icon-fenlei"></i> </span>
+                    <span class="name">筛选</span>
+                </a>
+                <a class="layer_item chart item " href="javascript:void(0)" ng-class="{'active':search.config.showChart}" ng-click="showCharts()">
+                    <span class="icon"> <i class="iconfont icon-pie"></i> </span>
+                    <span class="name">统计</span>
+                </a>
+            </div>
+
+            <!-- 聚合图名称标注 -->
+            <div ng-if="cluseter.active" class="nameLabel fade-in-right" ng-click="labelName()">
+                <a class="layer_item item" href="javascript:void(0)" ng-class="{'active':cluseter.labelName}">
+                    <span class="icon"> <i class="iconfont " ng-class="{'icon-xuanzhong':!cluseter.labelName,'icon-xuanzhong1':cluseter.labelName}"></i> </span>
+                    <span class="name">显示名称</span>
+                </a>
+            </div>
+            <!-- 聚合图名称标注 end -->
+            <!--热力图设置-->
+            <div ng-if="heatmap.active" class="panel-default fade-in-right-big" id="heatmapSettings">
+                <div class="panel-body bg-white">
+                    <div class="row">
+                        <label class="col-sm-12 control-label">热力渲染模式</label>
+                        <div class="col-sm-6">
+                            <label class="checkbox i-checks">
+                                <input type="radio" value="normal" name="heatFields" ng-model="heatmap.field" ng-change="refreshHeatmap(true)"><i></i> 一般模式
+                            </label>
+                            <label class="checkbox i-checks">
+                                <input type="radio" value="constructArea" name="heatFields" ng-model="heatmap.field" ng-change="refreshHeatmap(true)"><i></i> 房产面积
+                            </label>
+                            <label class="checkbox i-checks">
+                                <input type="radio" value="landArea" name="heatFields" ng-model="heatmap.field" ng-change="refreshHeatmap(true)"><i></i> 土地面积
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="checkbox i-checks">
+                                <input type="radio" value="price" name="heatFields" ng-model="heatmap.field" ng-change="refreshHeatmap(true)"><i></i> 账面价值
+                            </label>
+                            <label class="checkbox i-checks">
+                                <input type="radio" value="lifeTime" name="heatFields" ng-model="heatmap.field" ng-change="refreshHeatmap(true)"><i></i> 使用年限
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-sm-6 control-label">半径</label>
+                        <label class="col-sm-6 control-label">透明率</label>
+                        <div class="col-sm-6"><slider ng-model="heatmap.config.radius" floor="5" ceiling="20" ng-change="refreshHeatmap()"></slider></div>
+                        <div class="col-sm-6"><slider ng-model="heatmap.config.minOpacity" floor="0" ceiling="1" step="0.1" precision="1" ng-change="refreshHeatmap()"></slider></div>
+                    </div>
+                </div>
+            </div>
+            <!--热力图设置 end-->
+            <!--筛选面板-->
+            <div ng-if="search.config.showAdvance" class="panel-default fade-in-right-big" id="advanceSettings">
+                <div class="panel-body bg-white" ng-nicescroll nice-option="{cursorcolor: '#e2edff'}">
+                    <div class="row">
+                        <label class="col-sm-12 control-label m-t-xs">单位</label>
+                        <div class="col-sm-6">
+                            <label class="radio i-checks">
+                                <input type="radio" ng-model="search.params.government.manage" value="true" name="search.params.government" ng-checked="true"><i></i> 主管单位
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="radio i-checks">
+                                <input type="radio" ng-model="search.params.government.manage" value="false"  name="search.params.government"><i></i> 产权单位
+                            </label>
+                        </div>
+
+                        <div class="col-sm-12">
+
+                            <div class="input-group">
+
+                                <ui-select ng-model="government.selected">
+                                    <ui-select-match placeholder="输入单位名称...">{{$select.selected.name}}</ui-select-match>
+                                    <ui-select-choices repeat="government in governments track by $index"
+                                                       refresh="refreshGovernments($select.search)"
+                                                       refresh-delay="0">
+                                        <div ng-bind-html="government.name | highlight: $select.search"></div>
+                                    </ui-select-choices>
+                                </ui-select>
+
+                                <span class="input-group-btn">
+                                    <button ng-click="government.selected = null" class="btn btn-default">
+                                        <span class="glyphicon glyphicon-trash"></span>
+                                    </button>
+                                </span>
+                            </div>
+
+                            
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <label class="col-sm-12 control-label m-t-xs">产权单位性质</label>
+                        <div class="col-sm-6">
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.government.isGovernment"><i></i> 行政单位
+                            </label>
+
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.government.isCompany"><i></i> 国有企业
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.government.isInstitution"><i></i> 事业单位
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-sm-12 control-label m-t-xs">空间范围</label>
+                        <div class="col-sm-6">
+                            <label class="radio i-checks">
+                                <input type="radio" ng-model="search.params.extent.type" value="none" ng-click="drawExtent()"><i></i> 无
+                            </label>
+
+                            <label class="radio i-checks">
+                                <input type="radio" ng-model="search.params.extent.type" value="circle" ng-click="drawExtent()"><i></i> 圆形
+                            </label>                         
+
+                            <label class="radio i-checks">
+                                <input type="radio" ng-model="search.params.extent.type" value="rectangle" ng-click="drawExtent()"><i></i> 矩形
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="radio i-checks">
+                                <input type="radio" ng-model="search.params.extent.type" value="current" ng-click="drawExtent()"><i></i> 视野内
+                            </label>
+
+                            <label class="radio i-checks">
+                                <input type="radio" ng-model="search.params.extent.type" value="polygon" ng-click="drawExtent()"><i></i> 多边形
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-sm-12 control-label m-t-xs">资产类别</label>
+                        <div class="col-sm-6">
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.propertyType.construct"><i></i> 房产
+                            </label>
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.propertyType.constructOnLand"><i></i> 房产对应土地
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.propertyType.land"><i></i> 土地
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-sm-12 control-label m-t-xs">区域</label>
+                        <div class="col-sm-6">
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.region.old"><i></i> 老城区(含南区)
+                            </label>
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.region.west"><i></i> 西区
+                            </label>
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.region.jjq"><i></i> 集聚区
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.region.kc"><i></i> 柯城区
+                            </label>
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.region.qj"><i></i> 衢江区
+                            </label>
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.region.other"><i></i> 其他区域
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-sm-12 control-label m-t-xs">证件情况</label>
+                        <div class="col-sm-6">
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.certificate.both" ><i></i> 两证齐全
+                            </label>
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.certificate.land" ><i></i> 无房有土
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.certificate.construct" ><i></i> 有房无土
+                            </label>
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.certificate.none" ><i></i> 两证全无
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-sm-12 control-label m-t-xs">使用现状</label>
+                        <div class="col-sm-6">
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.current.self"><i></i> 自用
+                            </label>
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.current.rent"><i></i> 出租
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.current.lend"><i></i> 出借
+                            </label>
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.current.idle"><i></i> 闲置
+                            </label>
+                        </div>
+                    </div>
+                    <!--<div class="row">
+                        <label class="col-sm-12 control-label m-t-xs">下一步打算</label>
+                        <div class="col-sm-6">
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.nextStep.ct"><i></i> 注入国资公司-城投
+                            </label>
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.nextStep.auction"><i></i> 拍卖处置
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.nextStep.jt"><i></i> 注入国资公司-交投
+                            </label>
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.nextStep.adjust"><i></i> 调剂使用
+                            </label>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.nextStep.storeAndDev"><i></i> 国有收储（含房地产开发）
+                            </label>
+                        </div>
+                    </div>-->
+                    <div class="row" ng-if="search.params.propertyType.construct">
+                        <label class="col-sm-12 control-label m-t-xs">建筑面积（平方米）</label>
+                        <div class="col-sm-6">
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.constructArea.l" value="0"><i></i> 5000以下
+                            </label>
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.constructArea.m"><i></i> 5000-10000
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.constructArea.h"><i></i>10001-20000
+                            </label>
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.constructArea.t"><i></i> 20000以上
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-sm-12 control-label m-t-xs">土地面积（亩）</label>
+                        <div class="col-sm-6">
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.landArea.l" value="0"><i></i> 50以下
+                            </label>
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.landArea.m"><i></i> 51-300
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.landArea.h"><i></i> 301-500
+                            </label>
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.landArea.t"><i></i> 500以上
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-sm-12 control-label m-t-xs">账面价值（万元）</label>
+                        <div class="col-sm-6">
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.price.l"><i></i> 500以下
+                            </label>
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.price.m"><i></i> 501-5000
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.price.h"><i></i> 5001-10000
+                            </label>
+                            <label class="checkbox i-checks">
+                                <input type="checkbox" ng-model="search.params.price.t"><i></i> 10000 以上
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row m-t-xs">
+                        <label class="col-sm-6 control-label">使用年限</label>
+                        <!--<label class="col-sm-6 control-label">取得时间</label>-->
+                        <div class="col-sm-12">
+                            <slider ng-model="search.params.lifeTime.min" ng-model-range="search.params.lifeTime.max" floor="0" ceiling="100">
+                        </div>
+                        <!--<div class="col-sm-6">
+                            <slider ng-model="search.params.getedDate.min" ng-model-range="search.params.getedDate.max" floor="1949" ceiling="2017">
+                            </slider>
+                        </div>-->
+                    </div>
+                </div>
+                <div class="panel-footer bg-white">
+                    <div class="pull-left">
+                        <button class="btn btn-info btn-sm" ng-click="search.config.showAdvance=false;">关闭</button>
+                    </div>
+                    <div class="pull-right">
+                        <button class="btn btn-primary btn-sm  pull-right" ng-click="searchProperties(true);"  ng-disabled ="search.config.searching">确定</button>
+                        <button class="btn btn-danger btn-sm pull-right m-r-sm" ng-click="resetAdvance()">重置</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--工具条结束-->
+
+    <!--地图类型-->
+    <div id="mapTools" class="layerbox usel mapType">
+        <div id="layerbox_item">
+            <!-- 工具组 -->
+            <div class="show-list">
+                <a class="layer_item advance item " href="javascript:void(0)" ng-class="{'active':mapType==0}" ng-click="setMapType(0)">
+                    <span class="name">资产分布总图</span>
+                </a>
+                <a class="layer_item advance item " href="javascript:void(0)" ng-class="{'active':mapType==1}" ng-click="setMapType(1)">
+                    <span class="name">注入国资公司分布图</span>
+                </a>
+                <a class="layer_item advance item " href="javascript:void(0)" ng-class="{'active':mapType==2}" ng-click="setMapType(2)">
+                    <span class="name">拍卖处置分布图</span>
+                </a>
+                <a class="layer_item heatmap item" href="javascript:void(0)" ng-class="{'active':mapType==3}" ng-click="setMapType(3)">
+                    <span class="name">国有收储（含已收储）分布图</span>
+                </a>
+                <a class="layer_item advance item " ui-sref="app.officeadjust" ng-class="{'active':mapType==4}">
+                    <span class="name">办公场所分布图</span>
+                </a>
+            </div>
+
+            <!--筛选面板 " -->
+            <div ng-if="search.params.nextStep.injection" class="panel-default fade-in-right-big" id="injectionSettings">
+                <div class="panel-body bg-white">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <label class="checkbox-inline i-checks">
+                                <input type="checkbox" ng-model="search.params.nextStep.ct" ng-click="searchProperties(true);"><i></i>
+                                <span class="icon"><i class="fa fa-circle" style="color:{{search.params.nextStep.ct?'red':''}}"></i></span> 城投
+                            </label>
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="checkbox-inline i-checks">
+                                <input type="checkbox" ng-model="search.params.nextStep.jt" ng-click="searchProperties(true);"><i></i>
+                                <span class="icon"><i class="fa fa-circle" style="color:{{search.params.nextStep.jt?'green':''}}"></i></span> 交投
+                            </label>
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="checkbox-inline i-checks">
+                                <input type="checkbox" ng-model="search.params.nextStep.jk" ng-click="searchProperties(true);"><i></i>
+                                <span class="icon"><i class="fa fa-circle" style="color:{{search.params.nextStep.jk?'blue':''}}"></i></span> 金控
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mask" ng-if="search.config.searching"></div>
+    </div>
+    <!--地图类型 结束-->
+
+    <!--对话框-->
+    <!--图例-->
+    <div id="legend" ng-if="cluseter.active"></div>
+    </div>
+
+<script type="text/ng-template" id="dialog.html">
+    <div class="modal-header">
+        <h3 class="modal-title">统计结果（图上资产）</h3>
+    </div>
+    <div class="modal-body" ng-style="dialogHeight" >
+        <div  ng-nicescroll nice-option="{cursorcolor: '#e2edff'}" style="overflow:hidden;height:100%">
+            <h4>基本情况</h4>            
+            <div class="row row-sm text-center">
+                <div class="col-xs-4">
+                    <div class="panel padder-v item">                        
+                        <div class="h1 text-info font-thin h1">{{statistics.overview.totalCount | unit}}</div>
+                        <span class="text-muted text-xs">资产数</span>
+                    </div>
+                </div>
+                <div class="col-xs-4">
+                    <div class="block panel padder-v bg-primary item">                        
+                        <span class="text-white font-thin h1 block">{{statistics.overview.constructCount | unit}}</span>
+                        <span class="text-muted text-xs">房产数</span>
+                    </div>
+                </div>
+                <div class="col-xs-4">
+                    <div class="block panel padder-v bg-info item">                        
+                        <span class="text-white font-thin h1 block">{{statistics.overview.landCount | unit}}</span>
+                        <span class="text-muted text-xs">纯土数</span>
+                    </div>
+                </div>
+
+                <div class="col-xs-4">
+                    <div class="panel padder-v item">                        
+                        <div class="font-thin h1">{{statistics.overview.totalPrice | unit:'price'}}</div>
+                        <span class="text-muted text-xs">账面价值</span>
+                    </div>
+                </div>
+                <div class="col-xs-4">
+                    <div class="block panel padder-v bg-primary item">                        
+                        <div class="font-thin h1">{{statistics.overview.constructPrice | unit:'price'}}</div>
+                        <span class="text-muted text-xs">房产账面价值</span>
+                    </div>
+                </div>
+                <div class="col-xs-4">
+                    <div class="block panel padder-v bg-info item">                        
+                        <div class="font-thin h1">{{statistics.overview.landPrice | unit:'price'}}</div>
+                        <span class="text-muted text-xs">纯土地账面价值</span>
+                    </div>
+                </div>
+
+                <div class="col-xs-4">
+                    <div class="block panel padder-v bg-primary item">                        
+                        <div class="font-thin h1">{{statistics.overview.constructArea | unit:'carea'}}</div>
+                        <span class="text-muted text-xs">房产建筑面积</span>
+                    </div>
+                </div>
+                <div class="col-xs-4">
+                    <div class="block panel padder-v bg-primary item">                        
+                        <span class="text-white font-thin h1 block">{{statistics.overview.constrcutLandArea | unit:'larea'}}</span>
+                        <span class="text-muted text-xs">  房屋对应土地面积</span>
+                    </div>
+                </div>
+                <div class="col-xs-4">
+                    <div class="block panel padder-v bg-info item">                        
+                        <span class="text-white font-thin h1 block">{{statistics.overview.landArea | unit:'larea' }}</span>
+                        <span class="text-muted text-xs">纯土地面积</span>
+                    </div>
+                </div>
+            </div>
+            <h4>使用现状情况</h4>       
+            <div class="row">
+
+                <div class="col-sm-6">
+                    <div class="panel wrapper" style="padding-bottom:5px">
+                        <h4 class="font-thin m-t-none m-b text-muted">房屋</h4>
+                        <div class="" id="chart1" style="height:300px;"></div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <div class="panel wrapper" style="padding-bottom:5px">
+                        <h4 class="font-thin m-t-none m-b text-muted">纯土地</h4>
+                        <div class="" id="chart2" style="height:300px;"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</script>

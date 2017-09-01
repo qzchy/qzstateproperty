@@ -1,0 +1,26 @@
+﻿<div ng-controller="AccountListCtrl">
+
+    <div class="bg-light lter b-b wrapper-md">
+        <h1 class="m-n font-thin h3">用户列表</h1>
+    </div>    
+
+    <div class="wrapper-md">
+        <div class="clearfix m-b">
+            <a ui-sref="app.systemmanage.account.create" tooltip="" class="btn btn-sm btn-primary btn-addon">
+                <i class="fa fa-plus"></i>添加用户
+            </a>
+        </div>
+
+
+        <div class="panel panel-default">
+            <qmtable processing="processing" params="params" response="response" columns="columns" tools="{{tools}}" reset="reset" ajax="ajax()"
+                     ext-buttons="extButtons" table-eidt-and-delete="tableEidtAndDelete" show-advance="false" advance-search="advanceSearch">
+            </qmtable>
+        </div>
+    </div>
+
+    <!--对话框-->
+    <script type="text/ng-template" id="dialog.html">
+        <div ng-include="'app/views/blocks/dialog.html'"></div>
+    </script>
+</div>

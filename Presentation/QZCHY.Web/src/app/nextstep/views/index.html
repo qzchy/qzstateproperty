@@ -1,0 +1,332 @@
+﻿<div ng-controller="NextStepCtrl" id="mapContainer">
+    <div id="map" ng-style="mapHeight"></div>
+
+    <!--搜索框-->
+    <section id="search" class="search">
+        <header class="searchbox">
+            <div class="iptbox">
+                <input type="text" ng-model="search.params.query" id="searchipt" placeholder="输入名称、资产地址..." maxlength="256" autocomplete="off" ng-change="propertiesSuggest()">
+                <div class="iptAddOn" ng-if="search.config.searching">
+                    <span id="loading" class="ring"></span>
+                </div>
+            </div>
+            <div class="advanceSearch" ng-click="searchProperties()">
+                <i class="iconfont icon-search searchBtn" title="搜索"></i>
+            </div>
+
+            <div ng-if="suggestedProperties.length>0" class="autocomplete-suggestions fade-in-left">
+
+                <div class="poi autocomplete-suggestion" data-index="{{$index}}" ng-repeat="suggestProperty in suggestedProperties" ng-click="searchPropertyBySuggestion(suggestProperty)">
+                    <p>
+                        <i class="iconfont icon-location"></i>
+                        <span class="sug_val" ng-bind-html="suggestProperty.name | highlight:search.params.query"></span>
+                        <span class="district" poiid="{{suggestProperty.id}}" ng-bind-html="suggestProperty.governmentName | highlight:search.params.query"></span>
+                    </p>
+                </div>
+            </div>
+        </header>
+    </section>
+    <!--搜索框 结束-->
+    <!--搜索结果   -->
+    <div ng-if="search.config.filterModel && selectedProperty==null" id="searchResultBox">
+        <section class="searchContainer  wrapper-xs">
+            <section id="serp">
+                <header class="serp-head">
+                    <h5 class="serp-title text-center">共有<span class="text-danger-dker font-bold">{{properties.length}}</span>个结果</h5>
+                    <a href="javascript:void(0)" class="upButton text-info" ng-click="search.config.searchResultBoxFolder=!search.config.searchResultBoxFolder">
+                        <i ng-if="!search.config.searchResultBoxFolder">下拉</i>
+                        <i ng-if="search.config.searchResultBoxFolder">收起</i>
+                    </a>
+                    <div class="serp-filter"></div>
+                </header>
+                <div class="serp-body" ng-style="mapSearchResultHeight" ng-if="search.config.searchResultBoxFolder">
+                    <div class="scrollContainer" ng-nicescroll nice-option="{cursorcolor: '#e2edff'}" ng-if="properties.length>0">
+                        <ul class="serp-list no-padder" infinite-scroll='loadMore()' infinite-scroll-distance='2' infinite-scroll-container='".scrollContainer"'>
+                            <li class="poibox poibox-normal amap-marker" id="{{property.id}}" ng-repeat="property in showProperties" ng-click="selectProperty(property.id,true)">
+                                <div class="poi-imgbox">
+                                    <span class="poi-img" style="background-image:url(../../../img/timg.jpg)"></span>
+                                </div>
+                                <div class="poi-info-left">
+                                    <div class="poi-title">
+                                        <span class="poi-name" title="{{property.name}}">{{$index+1}}.&nbsp;{{property.name}}</span>
+                                    </div>
+                                    <div class="poi-info">
+                                        <p class="poi-propertyType">{{property.propertyType}}</p>
+                                        <p class="poi-region">{{property.region}}</p>
+                                        <p class="poi-address">{{property.address}}</p>
+                                        <p class="poi-governmentName">{{property.governmentName}}</p>
+                                    </div>
+                                </div>
+                                <div class="clear"></div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="serp-paging" ng-if="false">
+                    <b class="paging-current">1/44页</b>
+                    <span class="paging-next" pageno="2"><i class="iconfont icon-chevronright"></i></span>
+                    <span class="paging-index" pageno="1">首页</span>
+                </div>
+            </section>
+        </section>
+    </div>
+    <!--搜索结果 结束-->
+    <!--详细信息-->
+    <div ng-if="selectedProperty!=null" id="propertyDetailBox" class="panel-list fade-in-up">
+        <header class="placeimg">
+            <div class="imgfeedlist" style="display: block;">
+                <a href="/detail/B023B1CBOT?citycode=330100" target="_blank">
+                    <div class="imgfeed" style="background-image: url(../../../img/timg.jpg)"></div>
+                </a>
+            </div>
+            <a ng-click="clearSelcted()" style="position:absolute;top:0px;right:10px;">返回</a>
+        </header>
+        <h4 class="text-primary font-bold padder">
+            <a ui-sref="app.property.detail({id:selectedProperty.id})">{{selectedProperty.name}}</a>
+        </h4>
+        <div ng-style="mapDetailHeight">
+            <div class="panel-default" style="height:100%" ng-nicescroll nice-option="{cursorcolor: '#e2edff'}">
+                <!--<div class="panel-heading">基本信息</div>-->
+                {{property}}
+                <table class="table table-striped table-hover table-border m-b-none">
+                    <tbody>
+                        <tr>
+                            <td class="font-bold">资产类型</td>
+                            <td>{{selectedProperty.propertyType}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">区域</td>
+                            <td>{{selectedProperty.region}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">产权单位</td>
+                            <td><a ui-sref="app.property.government({id:selectedProperty.governmentId})" class="text-info font-bold" title="点击查看产权单位全部资产">{{selectedProperty.governmentName}}</a></td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">位置坐落</td>
+                            <td>{{selectedProperty.address}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">建筑面积</td>
+                            <td>{{selectedProperty.constructArea | unit:'carea'}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">土地面积</td>
+                            <td>{{selectedProperty.landArea | unit:'larea'}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">产权情况</td>
+                            <td>{{selectedProperty.propertyID}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">房产性质</td>
+                            <td>{{selectedProperty.propertyNature}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">土地性质</td>
+                            <td>{{selectedProperty.landNature}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">账面价格</td>
+                            <td>{{selectedProperty.price | unit:'price'}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">取得时间</td>
+                            <td>{{selectedProperty.getedDate}} </td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">使用年限</td>
+                            <td>{{selectedProperty.lifeTime}} 年</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">使用方</td>
+                            <td>{{selectedProperty.usedPeople}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">自用面积：</td>
+                            <td>{{selectedProperty.currentUse_Self | unit:'carea'}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">出租面积：</td>
+                            <td>{{selectedProperty.currentUse_Lend | unit:'carea'}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">出借面积：</td>
+                            <td>{{selectedProperty.currentUse_Rent | unit:'carea'}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">闲置面积：</td>
+                            <td>{{selectedProperty.currentUse_Idle | unit:'carea'}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">下一步使用打算</td>
+                            <td>{{selectedProperty.nextStepUsage}}</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">备注</td>
+                            <td>{{selectedProperty.description}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!--详细信息 结束-->
+    <!--工具条-->
+    <div id="mapTools" class="layerbox usel">
+        <div id="layerbox_item">
+            <!-- 工具组 -->
+            <div class="show-list">
+                <a class="layer_item advance item " href="javascript:void(0)" ng-class="{'active':search.params.nextStep.injection}" ng-click="setNextStepParams(0)">
+                    <span class="icon"></span>
+                    <span class="name">注入国资公司</span>
+                </a>
+                <a class="layer_item advance item " href="javascript:void(0)" ng-class="{'active':search.params.nextStep.auction}" ng-click="setNextStepParams(1)">
+                    <span class="icon"> <i class="fa fa-circle" style="color:{{search.params.nextStep.auction?colors[4]:''}}"></i> </span>
+                    <span class="name">拍卖处置</span>
+                </a>
+                <a class="layer_item heatmap item" href="javascript:void(0)" ng-class="{'active':search.params.nextStep.storeUp}" ng-click="setNextStepParams(2)">
+                    <span class="icon"> <i class="fa fa-circle" style="color:{{search.params.nextStep.storeUp?colors[3]:''}}"></i> </span>
+                    <span class="name">国有收储（含房地产开发）</span>
+                </a>
+                <a class="layer_item advance item " href="javascript:void(0)" ng-class="{'active':search.params.nextStep.adjust}" ng-click="setNextStepParams(3)">
+                    <span class="icon"> <i class="fa fa-circle" style="color:{{search.params.nextStep.adjust?colors[5]:''}}"></i> </span>
+                    <span class="name">调剂使用</span>
+                </a>
+                <!--<a class="layer_item advance item " href="javascript:void(0)" ng-class="{'active':search.params.nextStep.self}" ng-click="search.params.nextStep.self=!search.params.nextStep.self;searchProperties(true);">
+                    <span class="icon"> <i class="fa fa-circle" style="color:{{search.params.nextStep.self?colors[5]:''}}"></i> </span>
+                    <span class="name">自用</span>
+                </a>
+                <a class="layer_item cluster item" href="javascript:void(0)" ng-class="{'active':search.params.nextStep.development}" ng-click="search.params.nextStep.development=!search.params.nextStep.development;searchProperties(true);">
+                    <span class="icon"> <i class="fa fa-circle" style="color:{{search.params.nextStep.development?colors[6]:''}}"></i> </span>
+                    <span class="name">房产开发</span>
+                </a>
+                <a class="layer_item advance item " href="javascript:void(0)" ng-class="{'active':search.params.nextStep.greenland}" ng-click="search.params.nextStep.greenland=!search.params.nextStep.greenland;searchProperties(true);">
+                    <span class="icon"> <i class="fa fa-circle" style="color:{{search.params.nextStep.greenland?colors[7]:''}}"></i> </span>
+                    <span class="name">公共绿地</span>
+                </a>
+                <a class="layer_item advance item " href="javascript:void(0)" ng-class="{'active':search.params.nextStep.greenland}">
+                    <span class="icon"> <i class="fa fa-circle" style="color:{{search.params.nextStep.greenland?colors[8]:''}}"></i> </span>
+                    <span class="name">保障性住房</span>
+                </a>-->
+                <a class="layer_item chart item " href="javascript:void(0)" ng-class="{'active':search.config.showChart}" ng-click="showCharts()">
+                    <span class="icon"> <i class="iconfont icon-pie"></i> </span>
+                    <span class="name">统计</span>
+                </a>
+            </div>
+
+            <!--筛选面板  -->
+            <div ng-if="search.params.nextStep.injection"  class="panel-default fade-in-right-big" id="injectionSettings">
+                <div class="panel-body bg-white">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <label class="checkbox-inline i-checks">
+                                <input type="checkbox" ng-model="search.params.nextStep.ct" ng-click="searchProperties(true);"><i></i>
+                                <span class="icon"><i class="fa fa-circle" style="color:{{search.params.nextStep.ct?colors[0]:''}}"></i></span> 城投公司
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="checkbox-inline i-checks">
+                                <input type="checkbox" ng-model="search.params.nextStep.jt" ng-click="searchProperties(true);"><i></i>
+                                <span class="icon"><i class="fa fa-circle" style="color:{{search.params.nextStep.jt?colors[1]:''}}"></i></span> 交投公司                                
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mask" ng-if="search.config.searching"></div>
+
+
+    </div>
+    <!--工具条结束-->
+    <!--对话框-->
+
+</div>
+
+<script type="text/ng-template" id="dialog.html">
+    <div class="modal-header">
+        <h3 class="modal-title">统计结果（图上资产）</h3>
+    </div>
+    <div class="modal-body" ng-style="dialogHeight">
+        <div ng-nicescroll nice-option="{cursorcolor: '#e2edff'}" style="overflow:hidden;height:100%">
+            <h4>基本情况</h4>
+            <div class="row row-sm text-center">
+                <div class="col-xs-4">
+                    <div class="panel padder-v item">
+                        <div class="h1 text-info font-thin h1">{{statistics.overview.totalCount | unit}}</div>
+                        <span class="text-muted text-xs">资产数</span>
+                    </div>
+                </div>
+                <div class="col-xs-4">
+                    <div class="block panel padder-v bg-primary item">
+                        <span class="text-white font-thin h1 block">{{statistics.overview.constructCount | unit}}</span>
+                        <span class="text-muted text-xs">房产数</span>
+                    </div>
+                </div>
+                <div class="col-xs-4">
+                    <div class="block panel padder-v bg-info item">
+                        <span class="text-white font-thin h1 block">{{statistics.overview.landCount | unit}}</span>
+                        <span class="text-muted text-xs">纯土数</span>
+                    </div>
+                </div>
+
+                <div class="col-xs-4">
+                    <div class="panel padder-v item">
+                        <div class="font-thin h1">{{statistics.overview.totalPrice | unit:'price'}}</div>
+                        <span class="text-muted text-xs">账面价值</span>
+                    </div>
+                </div>
+                <div class="col-xs-4">
+                    <div class="block panel padder-v bg-primary item">
+                        <div class="font-thin h1">{{statistics.overview.constructPrice | unit:'price'}}</div>
+                        <span class="text-muted text-xs">房产账面价值</span>
+                    </div>
+                </div>
+                <div class="col-xs-4">
+                    <div class="block panel padder-v bg-info item">
+                        <div class="font-thin h1">{{statistics.overview.landPrice | unit:'price'}}</div>
+                        <span class="text-muted text-xs">纯土地账面价值</span>
+                    </div>
+                </div>
+
+                <div class="col-xs-4">
+                    <div class="block panel padder-v bg-primary item">
+                        <div class="font-thin h1">{{statistics.overview.constructArea | unit:'carea'}}</div>
+                        <span class="text-muted text-xs">房产建筑面积</span>
+                    </div>
+                </div>
+                <div class="col-xs-4">
+                    <div class="block panel padder-v bg-primary item">
+                        <span class="text-white font-thin h1 block">{{statistics.overview.constrcutLandArea | unit:'larea'}}</span>
+                        <span class="text-muted text-xs">房产土地面积</span>
+                    </div>
+                </div>
+                <div class="col-xs-4">
+                    <div class="block panel padder-v bg-info item">
+                        <span class="text-white font-thin h1 block">{{statistics.overview.landArea | unit:'larea' }}</span>
+                        <span class="text-muted text-xs">纯土地面积</span>
+                    </div>
+                </div>
+            </div>
+            <h4>使用现状情况</h4>
+            <div class="row">
+
+                <div class="col-sm-6">
+                    <div class="panel wrapper" style="padding-bottom:5px">
+                        <h4 class="font-thin m-t-none m-b text-muted">房屋</h4>
+                        <div class="" id="chart1" style="height:300px;"></div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <div class="panel wrapper" style="padding-bottom:5px">
+                        <h4 class="font-thin m-t-none m-b text-muted">纯土地</h4>
+                        <div class="" id="chart2" style="height:300px;"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</script>

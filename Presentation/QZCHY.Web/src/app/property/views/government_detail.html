@@ -1,0 +1,122 @@
+﻿<div ng-controller="GovernmentCtrl" id="propertyDetialContainer">
+    <div class="bg-light lter b-b wrapper-md">
+        <h1 class="m-n font-thin h3">资产权属单位信息--{{government.name}}</h1>
+    </div>
+    <div class="wrapper-md">
+
+        <!-- toaster directive -->
+        <toaster-container toaster-options="{'position-class': 'toast-bottom-right', 'close-button':true,'time-out': 1000}"></toaster-container>
+        <!-- / toaster directive -->
+
+        <div class="row">
+
+            <div class="col-lg-12 col-md-12">
+                <div class="m-b-md">
+                    <a ui-sref="app.property.list" class="btn btn-default"> <i class="fa fa-arrow-circle-o-left"></i> 资产列表  </a>
+                </div>
+
+                <!--后台错误-->
+                <div class="form-group" ng-if="errorMsg">
+                    <div class="col-lg-12 col-md-12">
+                        <div class="alert alert-danger" ng-bind-html="errorMsg">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-6 col-md-12">
+                        <div class="panel panel-default" style="min-height:483px">
+                            <div class="panel-heading">
+                                基本信息
+                            </div>
+                            <table class="table table-striped table-hover table-border m-b-none">
+                                <tbody>
+                                    <tr>
+                                        <td class="font-bold">名称</td>
+                                        <td>{{government.name}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">单位性质</td>
+                                        <td>{{government.governmentType}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">单位地址</td>
+                                        <td>{{government.address}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">联系人</td>
+                                        <td>{{government.person}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">联系方式</td>
+                                        <td>{{government.tel}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">上级单位</td>
+                                        <td>
+                                           <a ui-sref="app.property.government({id:government.parentGovernmentId})" class="text-info font-bold" title="点击查看产权单位全部资产">{{government.parentGovernment}}</a>
+                                        </td>
+                                    </tr>            
+                                    <tr>
+                                        <td class="font-bold">下级单位</td>
+                                        <td>
+                                            <div ng-repeat="children in government.childrenGorvernments">
+                                               {{$index+1}} . <a ui-sref="app.property.government({id:children.id})" class="text-info font-bold" title="点击查看产权单位全部资产">{{children.name}}</a>
+                                            </div>
+                                        </td>
+                                    </tr>                         
+                                </tbody>
+                            </table>
+                        </div>                                                                                                                       
+                    </div>
+                    
+                    <div class="col-lg-6 col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                资产清单(共{{government.properties.length}}处资产)                                  
+                                <label class="i-switch m-l pull-right">
+                                    <input type="checkbox" ng-model="loadChildrenProperties" ng-change="getProperties()">
+                                    <i></i>
+                                </label>  
+                                <span class="pull-right">
+                                    加载下级单位资产
+                                </span>                                                                                        
+                            </div>
+                            <div class="panel-body no-padder" style="max-height:400px; overflow-y:scroll;overflow-x:auto">
+                                <table class="table table-striped table-hover table-border m-b-none" >
+                                    <thead>
+                                        <tr>
+                                            <th>序号</th>
+                                            <th>名称</th>
+                                            <th>单位</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="property in government.properties">
+                                            <td>{{$index+1}}</td>
+                                            <td>
+                                                <a ui-sref="app.property.detail({id:property.id})" class="text-info font-bold" title="点击查看资产详细信息">{{property.name}}</a>
+                                            </td>
+                                            <td>
+                                                {{property.governmentName}}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="panel-footer" style="height:40px;">
+                              <!--  <a ui-sref="app.map"><i class="fa fa-map-marker"></i> 在地图中查看</a>-->
+                            </div>
+                        </div>                       
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!--对话框-->
+    <script type="text/ng-template" id="dialog.html">
+        <div ng-include="'app/views/blocks/dialog.html'"></div>
+    </script>
+</div>

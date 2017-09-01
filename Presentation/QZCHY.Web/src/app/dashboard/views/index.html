@@ -1,0 +1,103 @@
+﻿<div ng-controller="DashboardCtrl" id="PropertyCreateContainer">
+    <div class="bg-light lter b-b wrapper-md">
+        <div class="row">
+            <div class="col-sm-6 col-xs-12">
+                <h1 class="m-n font-thin h3 text-black">工作台</h1>
+                <small class="text-muted">欢迎使用{{app.name}}</small>
+            </div>
+            <div class="col-sm-6">
+                <div class="pull-right" ng-if="isAdmin">
+                    <div class="m-b-xs">
+                        <span>仅显示本单位：</span>
+                        <label class="i-switch bg-primary pull-right">
+                            <input type="checkbox" ng-model="onlyShowSelf" ng-change="statistics(onlyShowSelf)">
+                            <i></i>
+                        </label>
+                    </div>
+                    <!--<div class="" ng-if="onlyShowSelf">
+                        <span>包括下级单位：</span>
+                        <label class="i-switch bg-info pull-right">
+                            <input type="checkbox" ng-model="showSubGovernemts">
+                            <i></i>
+                        </label>
+                    </div>-->
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="wrapper-md">
+        <div class="row">
+            <div ng-include="'app/statistics/views/overview.html'"></div>
+
+            <div class="col-sm-12">
+                <div class="panel wrapper" style="padding-bottom:5px;position:relative;">
+                    <h4 class="font-thin m-t-none m-b text-muted">
+                        资产明细-{{groupStatisticsOption.propertyType=="0"?"房产":(groupStatisticsOption.propertyType=="1"?"纯土地":"对应房屋土地")}}-
+                        {{getStatisticsFieldAlias()}}
+                    </h4>
+                    <div class="" id="chart0" style="height:600px;"></div>
+                    <div class="row">
+                        <div class="form-group">
+                            <label class="col-lg-1 col-sm-2 control-label">统计类型：</label>
+                            <div class="col-lg-5 col-sm-10">
+                                <label class="radio radio-inline i-checks m-n">
+                                    <input type="radio" ng-model="groupStatisticsOption.propertyType" value="0" name="groupStatisticsOptionPropertyType" ng-change="groupStatisticsOptionChange(onlyShowSelf)"><i></i> 房产
+                                </label>
+                                <label class="radio radio-inline i-checks m-n">
+                                    <input type="radio" ng-model="groupStatisticsOption.propertyType" value="1" name="groupStatisticsOptionPropertyType" ng-change="groupStatisticsOptionChange(onlyShowSelf)"><i></i> 纯土地
+                                </label>
+                                <!--<label class="radio radio-inline i-checks m-n">
+                                    <input type="radio" ng-model="groupStatisticsOption.propertyType" value="2" name="groupStatisticsOptionPropertyType" ng-change="groupStatisticsOptionChange(onlyShowSelf)"><i></i> 房产对应土地
+                                </label>-->
+                            </div>
+                            <label class="col-lg-1 col-sm-2 control-label">统计字段：</label>
+                            <div class="col-lg-5 col-sm-10">
+                                <label class="radio radio-inline i-checks m-n" ng-if="groupStatisticsOption.propertyType==0">
+                                    <input type="radio" ng-model="groupStatisticsOption.statisticsField" value="ConstructArea" name="groupStatisticsOptionField" ng-change="statisticsGroup(onlyShowSelf)"><i></i> 建筑面积
+                                </label>
+                                <label class="radio radio-inline i-checks m-n">
+                                    <input type="radio" ng-model="groupStatisticsOption.statisticsField" value="LandArea" name="groupStatisticsOptionField" ng-change="statisticsGroup(onlyShowSelf)"><i></i> 土地面积
+                                </label>
+                                <label class="radio radio-inline i-checks m-n">
+                                    <input type="radio" ng-model="groupStatisticsOption.statisticsField" value="Price" name="groupStatisticsOptionField" ng-change="statisticsGroup(onlyShowSelf)"><i></i> 账面价值
+                                </label>
+                                <label class="radio radio-inline i-checks m-n">
+                                    <input type="radio" ng-model="groupStatisticsOption.statisticsField" value="Count" name="groupStatisticsOptionField" ng-change="statisticsGroup(onlyShowSelf)"><i></i> 数量
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6">
+                <div class="panel wrapper" style="padding-bottom:5px">
+                    <h4 class="font-thin m-t-none m-b text-muted">使用现状情况——房屋</h4>
+                    <div class="" id="chart1" style="height:300px;"></div>
+                </div>
+            </div>
+
+            <div class="col-sm-6">
+                <div class="panel wrapper" style="padding-bottom:5px">
+                    <h4 class="font-thin m-t-none m-b text-muted">使用现状情况——纯土地</h4>
+                    <div class="" id="chart2" style="height:300px;"></div>
+                </div>
+            </div>
+
+            <!--<div class="col-sm-6">
+                <div class="panel wrapper" style="padding-bottom:5px">
+                    <h4 class="font-thin m-t-none m-b text-muted">下一步打算情况</h4>
+                    <div class="" id="chart2" style="height:300px;"></div>
+                </div>
+            </div>-->
+            <!--<div class="col-sm-12">
+                <div class="panel wrapper" style="padding-bottom:5px">
+                    <h4 class="font-thin m-t-none m-b text-muted">发展历史情况</h4>
+                    <div class="" id="chart3" style="height:600px;"></div>
+                </div>
+            </div>-->
+        </div>
+    </div>
+</div>

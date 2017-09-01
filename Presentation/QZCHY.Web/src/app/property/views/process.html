@@ -1,0 +1,693 @@
+﻿<div ng-controller="PropertyProcessCtrl">
+
+    <div class="bg-light lter b-b wrapper-md">
+        <div class="row">
+            <div class="col-sm-6 col-xs-12">
+                <h1 class="m-n font-thin h3 text-black">资产处置</h1>
+            </div>
+             
+        </div>
+    </div>
+    
+        <div class="wrapper-md">
+
+            <div class="clearfix m-b">
+                <a ui-sref="app.property.list" class="btn btn-default btn-addon"> <i class="fa fa-arrow-circle-o-left"></i> 资产列表</a>
+
+                <!--<a ui-sref="app.property.list" class="btn btn-danger btn-addon pull-right m-l-sm form-horizontal form-validation w5c-form" role="form" > <i class="fa fa-check"></i> 提交</a>
+                <a ui-sref="app.property.list" class="btn btn-primary btn-addon pull-right"> <i class="fa fa-eye"></i> 查看</a>-->
+            </div>
+
+            <div class="row">
+                <div class="col-md-9 col-xs-12">
+                    <div class="panel panel-default" id="inProcessProperties">
+                        <div class="panel-heading">
+                            待处理资产
+                            <a class="pull-right " ng-click="clearAll()"><i class="fa fa-trash"></i> 一键清空</a>
+                            <!-- <a class="pull-right m-r-sm" ng-click="advanceSearch()" href="javascript:void(0)"><i class="fa fa-plus"></i> 添加资产</a>-->
+                        </div>
+                        <div class="panel-body">
+                            <div class="row" ng-nicescroll nice-option="{cursorcolor: '#e2edff'}" style="min-height:300px;max-height:300px">
+                                <div class="col-xs-12 col-md-3" ng-repeat="p in processlist">
+                                    <div class="thumbnail">
+                                        <a><img src="img/timg.jpg" alt="..."></a>
+                                        <h4>{{p.name}}</h4>
+                                        <div>地址：{{p.address}}</div>
+                                        <div>区域：{{p.region}}</div>
+                                        <div>产权单位：{{p.g}}</div>
+                                        <div>
+                                            <button class="btn btn-xs m-r-sm" ng-click="showDetail(p)">查看详情</button>
+                                            <button class="btn btn-xs" ng-click="removeProcess(p)">移除</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="panel-footer">共计<strong>{{listlength}}</strong>个</div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 col-xs-12">
+                    <div class="panel panel-default" id="inProcessProperties">
+                        <div class="panel-heading">
+                            可处理资产
+                            <a class="pull-right" ng-click="advanceSearch()" href="javascript:void(0)"><i class="fa fa-plus"></i> 条件过滤</a>
+                        </div>
+                        <div class="panel-body">
+                            <div class="row text-center listContainer" ng-nicescroll nice-option="{cursorcolor: '#e2edff'}" style="min-height:300px;max-height:300px">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center" style="width:30px;"></th>
+                                            <th class="text-center" style="width:70px;">序号</th>
+                                            <th>资产名称</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody infinite-scroll='loadMore()' infinite-scroll-distance='2' infinite-scroll-container='".listContainer"' >
+                                        <tr ng-nicescroll ng-repeat="property in showProperties">
+                                            <td class="text-center" style="width:20px;">
+                                                <label class="i-checks m-b-none">
+                                                    <input type="checkbox" ng-checked="property.row.selected" ng-model="property.row.selected" ng-change="selectedRowChange(property)"><i></i>
+                                                </label>
+                                            </td>
+                                            <td class="text-center text-muted">{{$index+1}}</td>
+                                            <td class="text-left">{{property.name}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="panel-footer" style="height:50px">
+                            <div class="row">
+                                <div class="col-sm-4 m-b-md"> 共计<strong>{{processproperties.length}}</strong>个</div>
+                                <div class="col-sm-8 m-b-md">
+                                    <input type="text" class="input-sm form-control" placeholder="输入关键字搜索...." ng-model="params.query" ng-change="setParams(true)">
+                                </div>
+                            </div>
+                                                   
+                        </div>
+                        
+                          <!--（所有资产<strong>6000</strong>个）-->
+                    </div>
+                </div>
+            </div>
+
+            <!--后台错误-->
+            <div class="form-group" ng-if="errorMsg">
+                <div class="col-lg-12 col-md-12">
+                    <div class="alert alert-danger" ng-bind-html="errorMsg">
+                    </div>
+                </div>
+            </div>
+
+            <form name="propertyProcessForm" class="form-horizontal form-validation w5c-form" role="form" w5c-form-validate="validation.options" novalidate>
+
+                <div class="clearfix m-b">                   
+                    <button class="btn btn-primary btn-addon pull-right m-l-sm form-horizontal form-validation w5c-form" role="form" w5c-form-submit="validation.saveEntity(process.type,true)" ng-disabled="processing"> <i class="fa fa-check"></i> 保存，并提交</button>
+                    <button class="btn btn-primary btn-addon pull-right m-l-sm form-horizontal form-validation w5c-form" role="form" w5c-form-submit="validation.saveEntity(process.type)" ng-disabled="processing"> <i class="fa fa-check"></i> 保存</button>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-heading">处理方式</div>
+                   
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <label class="col-lg-2 control-label">处置方式</label>
+                            <div class="col-lg-10">
+                                <div class="radio radio-inline p-l-n">
+                                    <label class="i-checks">
+                                        <input type="radio" ng-model="process.type" ng-checked="true" value="lend" name="pprocess.type"><i></i> 出借
+                                    </label>
+                                </div>
+                                <div class="radio radio-inline">
+                                    <label class="i-checks">
+                                        <input type="radio" ng-model="process.type" value="rent" name="pprocess.type"><i></i> 出租
+                                    </label>
+                                </div>
+                                <div class="radio radio-inline">
+                                    <label class="i-checks">
+                                        <input type="radio" ng-model="process.type" value="allot" name="pprocess.type"><i></i> 划拨
+                                    </label>
+                                </div>
+                                <div class="radio radio-inline">
+                                    <label class="i-checks">
+                                        <input type="radio" ng-model="process.type" value="off" name="pprocess.type"><i></i> 核销
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div ng-if="process.type=='lend'">
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label">借用方</label>
+                                <div class="col-lg-10">
+                                    <input type="text" name="lendName" class="form-control" placeholder="输入借用方名称...." ng-model="process.lend.name"
+                                           w5c-dynamic-element ng-minlength="1" ng-required="true">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label">借用时间</label>
+                                <div class="col-sm-10">
+                                    <input type="text" ui-jq="daterangepicker" class="form-control" name="daterange" ng-model="process.lend.lendTime" ui-options="dateOption" w5c-dynamic-element  ng-required="true" />
+                                </div>
+                            </div>
+
+                            <!--<div class="form-group">
+                                <label class="col-lg-2 control-label">归还时间</label>
+                                <div class="col-sm-10">
+                                    <input type="text" ui-jq="daterangepicker" class="form-control" name="backtime" ng-model="process.lend.backTime" ui-options="dateOption" />
+                                </div>
+                            </div>-->
+
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label">出借面积</label>
+                                <div class="col-lg-10">
+                                    <input ui-jq="TouchSpin" name="lendArea" type="text" ng-model="process.lend.lendArea" class="form-control" data-min='0' data-step="0.0001" data-max='10000000'  data-decimals="2" data-postfix="平方米"
+                                           w5c-dynamic-element  ng-required="true" >
+                                </div>
+                            </div>
+
+                            <webuploader pictures="process.lend.lendPictures" files="process.lend.lendFiles" swf-url="swfUrl" 
+                                         picture-upload-url="pictureUploadUrl" file-upload-url="fileUploadUrl" toaster="show()"></webuploader>
+
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label">备注</label>
+                                <div class="col-lg-10">
+                                    <textarea ng-model="process.lend.remark" class="form-control" name="premark"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div ng-if="process.type=='rent'">
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label">租用方</label>
+                                <div class="col-lg-10">
+                                    <input type="text" name="rentName" class="form-control" placeholder="输入租用方名称...." ng-model="process.rent.name"
+                                           w5c-dynamic-element ng-minlength="1" ng-required="true">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label">出租起止时间</label>
+                                <div class="col-sm-10">
+                                    <input type="text" ui-jq="daterangepicker" class="form-control" name="daterange" ng-model="process.rent.rentTime" ui-options="dateRangeOption" w5c-dynamic-element  ng-required="true" ng-change="rentTimeChange()"/>
+                                </div>
+                            </div>
+                         
+
+                            <div class="form-group" ng-repeat="d in yearNumber">
+                                <label class="col-lg-2 control-label">第{{d.index}}年租金</label>
+                                <div class="col-lg-4">
+                                    <input ui-jq="TouchSpin" type="text" name="rentPrice" ng-model="d.model" class="form-control" data-min='0' data-step="0.01" data-max='100000000' data-decimals="2" data-postfix="元"
+                                           w5c-dynamic-element ng-required="true">
+                                </div>
+                            </div>
+
+                            <div class="form-group" >
+                                <label class="col-lg-2 control-label">出租面积</label>
+                                <div class="col-lg-10">
+                                    <input ui-jq="TouchSpin" name="rentArea" type="text" ng-model="process.rent.rentArea" class="form-control" data-min='0' data-step="0.0001" data-max='10000000' data-decimals="2" data-postfix="平方米"
+                                           w5c-dynamic-element  ng-required="true" >
+                                </div>
+                            </div>
+
+                            <!--<div class="form-group">
+                                <label class="col-lg-2 control-label">出租时间</label>
+                                <div class="col-lg-10">
+                                    <input ui-jq="TouchSpin" type="text" name="rentMonth" ng-model="process.rent.rentMonth" class="form-control" data-min='1' data-step="1" data-max='10000000' data-decimals="0" data-postfix="月"
+                                           w5c-dynamic-element  ng-required="true" >
+                                </div>
+                            </div>-->
+
+                   
+
+                            <webuploader pictures="process.rent.rentPictures" files="process.rent.rentFiles" swf-url="swfUrl"
+                                         picture-upload-url="pictureUploadUrl" file-upload-url="fileUploadUrl" toaster="show()"></webuploader>
+
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label">备注</label>
+                                <div class="col-lg-10">
+                                    <textarea ng-model="process.rent.remark" class="form-control" name="premark"></textarea>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div ng-if="process.type=='allot'">
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label">目标单位</label>
+                                <div class="col-lg-10">
+                                    <div class="input-group">
+                                        <ui-select ng-model="government.selected">
+                                            <ui-select-match placeholder="输入单位名称...">{{$select.selected.name}}</ui-select-match>
+                                            <ui-select-choices repeat="government in governments track by $index"
+                                                               refresh="refreshGovernments($select.search)"
+                                                               refresh-delay="0">
+                                                <div ng-bind-html="government.name | highlight: $select.search"></div>
+                                            </ui-select-choices>
+                                        </ui-select>
+
+                                        <span class="input-group-btn">
+                                            <button ng-click="government.selected = null" class="btn btn-default">
+                                                <span class="glyphicon glyphicon-trash"></span>
+                                            </button>
+                                        </span>
+
+                                        <input type="hidden" name="" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label">划拨时间</label>
+                                <div class="col-sm-10">
+                                    <input type="text" ui-jq="daterangepicker" class="form-control" name="daterange" ng-model="process.allot.allotTime" ui-options="dateOption" w5c-dynamic-element  ng-required="true" />
+                                </div>
+                            </div>
+
+                            <webuploader pictures="process.allot.allotPictures" files="process.allot.allotFiles" swf-url="swfUrl"
+                                         picture-upload-url="pictureUploadUrl" file-upload-url="fileUploadUrl" toaster="show()"></webuploader>
+
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label">备注</label>
+                                <div class="col-lg-10">
+                                    <textarea ng-model="process.allot.remark" class="form-control" name="premark"></textarea>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div ng-if="process.type=='off'">
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label">核销原因</label>
+                                <div class="col-lg-10">
+                                    <textarea ng-model="process.off.reason" class="form-control" name="offReason" w5c-dynamic-element  ng-required="true" ></textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label">核销时间</label>
+                                <div class="col-sm-10">
+                                    <input type="text" ui-jq="daterangepicker" class="form-control" name="daterange" ng-model="process.off.offTime" ui-options="dateOption" w5c-dynamic-element  ng-required="true" />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label">核销类别</label>
+                                <div class="col-lg-10">
+                                    <select class="form-control" ng-model="process.off.offType" w5c-dynamic-element  ng-required="true" name="offType">
+                                        <option value="">---请选择---</option>
+                                        <option value="0">拍卖</option>
+                                        <option value="1">拆迁</option>
+                                        <option value="2">收储</option>
+                                        <option value="3">区域外划拨</option>
+                                        <option value="4">征收安置</option>
+                                        <option value="5">其他</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label">金额</label>
+                                <div class="col-lg-10">
+                                    <input ui-jq="TouchSpin" type="text" name="offPrice" ng-model="process.off.price" class="form-control"data-min='0' data-step="0.01" data-max='100000000' data-decimals="2"  data-postfix="元" w5c-dynamic-element  ng-required="true" >
+                                </div>
+                            </div>
+
+                            <webuploader pictures="process.off.offPictures" files="process.off.offFiles" swf-url="swfUrl"
+                                         picture-upload-url="pictureUploadUrl" file-upload-url="fileUploadUrl" toaster="show()"></webuploader>
+
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label">备注</label>
+                                <div class="col-lg-10">
+                                    <textarea ng-model="process.off.remark" class="form-control" name="offRemark"></textarea>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                    </div>
+                </div>
+            </form>
+
+        </div>
+
+   
+</div>
+
+<script type="text/ng-template" id="advDialog.html">
+    <!--<div ng-include="'app/views/blocks/dialog.html'"></div>-->
+    <div class="modal-header">
+        <h3 class="modal-title">条件过滤</h3>
+    </div>
+    <div class="modal-body" ng-style="dialogHeight">
+        <div ng-nicescroll nice-option="{cursorcolor: '#e2edff'}" style="overflow:hidden;height:100%">
+            <div class="row">
+                <label class="col-sm-12 control-label m-t-xs">单位</label>
+                <div class="col-sm-4">
+                    <label class="radio i-checks">
+                        <input type="radio" ng-model="params.manage" value="true" name="p.government" ng-checked="true"><i></i> 主管单位
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="radio i-checks">
+                        <input type="radio" ng-model="params.manage" value="false" name="p.government"><i></i> 产权单位
+                    </label>
+                </div>
+                <div class="col-sm-4"></div>
+                <div class="col-sm-12">
+
+                    <div class="input-group">
+
+                        <ui-select ng-model="government.selected">
+                            <ui-select-match placeholder="输入单位名称...">{{$select.selected.name}}</ui-select-match>
+                            <ui-select-choices repeat="government in governments track by $index"
+                                               refresh="refreshGovernments($select.search)"
+                                               refresh-delay="0">
+                                <div ng-bind-html="government.name | highlight: $select.search"></div>
+                            </ui-select-choices>
+                        </ui-select>
+
+                        <span class="input-group-btn">
+                            <button ng-click="government.selected = null" class="btn btn-default">
+                                <span class="glyphicon glyphicon-trash"></span>
+                            </button>
+                        </span>
+                    </div>
+
+
+                </div>
+            </div>
+
+            <div class="row">
+                <label class="col-sm-12 control-label m-t-xs">单位性质</label>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.isGovernment"><i></i> 行政单位
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.isInstitution"><i></i> 事业单位
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.isCompany"><i></i> 国有企业
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <label class="col-sm-12 control-label m-t-xs">资产类别</label>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.construct"><i></i> 房产
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.land"><i></i> 土地
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.constructOnLand"><i></i> 房产对应土地
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <label class="col-sm-12 control-label m-t-xs">区域</label>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.old"><i></i> 老城区(含南区)
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.qj"><i></i> 衢江区
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.kc"><i></i> 柯城区
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.jjq"><i></i> 集聚区
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.west"><i></i> 西区
+                    </label>
+
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.other"><i></i> 其他区域
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <label class="col-sm-12 control-label m-t-xs">证件情况</label>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.certi_both"><i></i> 两证齐全
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.certi_land"><i></i> 无房有土
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.certi_construct"><i></i> 有房无土
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.certi_none"><i></i> 两证全无
+                    </label>
+                </div>
+                <div class="col-sm-4">
+
+                </div>
+            </div>
+            <div class="row">
+                <label class="col-sm-12 control-label m-t-xs">使用现状</label>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.current_self"><i></i> 自用
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.current_rent"><i></i> 出租
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.current_lend"><i></i> 出借
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.current_idle"><i></i> 闲置
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                </div>
+            </div>
+            <div class="row">
+                <label class="col-sm-12 control-label m-t-xs">下一步打算</label>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.injection"><i></i> 注入国资
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.storeUp"><i></i> 国有收储
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.auction"><i></i> 拍卖处置
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                </div>
+            </div>
+            <div class="row" ng-if="p.propertyType.construct">
+                <label class="col-sm-12 control-label m-t-xs">建筑面积（平方米）</label>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.constructArea.l" value="0"><i></i> 5000以下
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.constructArea.m"><i></i> 10001-20000
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.constructArea.h"><i></i> 5000-10000
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.constructArea.t"><i></i> 20000以上
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                </div>
+            </div>
+            <div class="row">
+                <label class="col-sm-12 control-label m-t-xs">土地面积（亩）</label>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.landArea.l" value="0"><i></i> 100以下
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.landArea.m"><i></i> 501-1000
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.landArea.h"><i></i> 101-500
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.landArea.t"><i></i> 1000以上
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                </div>
+            </div>
+            <div class="row">
+                <label class="col-sm-12 control-label m-t-xs">账面价值（元）</label>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.price.l"><i></i> 500以下
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.price.m"><i></i> 5001-10000
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.price.h"><i></i> 501-5000
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.price.t"><i></i> 10000 以上
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                </div>
+            </div>
+            <div class="row m-t-xs">
+                <label class="col-sm-6 control-label">使用年限</label>
+                <label class="col-sm-6 control-label">取得时间</label>
+                <div class="col-sm-12">
+                    <slider ng-model="params.lifeTime.min" ng-model-range="params.lifeTime.max" floor="0" ceiling="100">
+                </div>
+                <!--<div class="col-sm-6">
+                    <slider ng-model="params.getedDate.min" ng-model-range="params.getedDate.max" floor="1949" ceiling="2017">
+                    </slider>
+                </div>-->
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-danger pull-left" ng-click="resetParams()">重置</button>
+        <button class="btn btn-default" ng-click="cancel()">取消</button>
+        <button class="btn btn-primary" ng-click="ok()">确定</button>
+    </div>
+</script>
+
+
+
+<script type="text/ng-template" id="propertyDetail.html">
+    <!--<div ng-include="'app/views/blocks/dialog.html'"></div>-->
+    <div class="modal-header">
+        <h3 class="modal-title">详细信息</h3>
+    </div>
+    <div class="modal-body" ng-style="dialogHeight">
+        <div ng-nicescroll nice-option="{cursorcolor: '#e2edff'}" style="overflow:hidden;height:100%">
+            
+            <div class="row">
+
+                <div class="col-lg-12 col-md-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            基本信息
+                        </div>
+                        <table class="table table-striped table-hover table-border m-b-none">
+                            <tbody>
+                                <tr>
+                                    <td class="font-bold">资产名称</td>
+                                    <td>{{property.name}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">资产编码</td>
+                                    <td>{{property.code}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">资产类型</td>
+                                    <td>{{property.propertyType}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">区域</td>
+                                    <td>{{property.region}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">产权单位</td>
+                                    <td><a ui-sref="app.property.government({id:property.governmentId})" class="text-info font-bold" title="点击查看产权单位全部资产">{{property.governmentName}}</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">位置坐落</td>
+                                    <td>{{property.address}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">建筑面积</td>
+                                    <td>{{property.constructArea | unit:'carea'}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">土地面积</td>
+                                    <td>{{property.landArea | unit:'larea'}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">产权情况</td>
+                                    <td>{{property.propertyID}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">房产性质</td>
+                                    <td>{{property.propertyNature}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">土地性质</td>
+                                    <td>{{property.landNature}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">账面价格</td>
+                                    <td>{{property.price | unit:'price'}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">取得时间</td>
+                                    <td>{{property.getedDate}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">使用年限</td>
+                                    <td>{{property.lifeTime}} 年</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">使用方</td>
+                                    <td>{{property.usedPeople}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">下一步使用打算</td>
+                                    <td>{{property.nextStepUsage}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">备注</td>
+                                    <td>{{property.description}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>            
+                </div>
+
+                <div class="modal-footer">                  
+                    <button class="btn btn-primary" ng-click="ok()">确定</button>
+                </div>
+            </div>
+          
+        </div>
+    </div>
+   
+</script>

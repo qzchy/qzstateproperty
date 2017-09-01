@@ -1,0 +1,69 @@
+﻿<div class="col-sm-12">
+    <div class="row row-sm text-center">
+        <div class="col-xs-4">
+            <div class="panel padder-v item">
+                <i ng-if="s" class="fa fa-spinner "></i>
+                <div class="h1 text-info font-thin h1" ng-if="!s">{{overviewStatistics.totalCount | unit}}</div>
+                <span class="text-muted text-xs">资产（总）</span>
+            </div>
+        </div>
+        <div class="col-xs-4">
+            <div class="block panel padder-v bg-primary item">
+                <i ng-if="s" class="fa fa-spinner "></i>
+                <span class="text-white font-thin h1 block" ng-if="!s">{{overviewStatistics.constructCount | unit}}</span>
+                <span class="text-muted text-xs">房产（总）</span>
+            </div>
+        </div>
+        <div class="col-xs-4">
+            <div class="block panel padder-v bg-info item">
+                <i ng-if="s" class="fa fa-spinner "></i>
+                <span class="text-white font-thin h1 block" ng-if="!s">{{overviewStatistics.landCount | unit}}</span>
+                <span class="text-muted text-xs">纯土地（总）</span>
+            </div>
+        </div>
+
+        <div class="col-xs-4">
+            <div class="panel padder-v item">
+                <i ng-if="s" class="fa fa-spinner "></i>
+                <div class="font-thin h1" ng-if="!s">{{overviewStatistics.totalPrice | unit:'price'}}</div>
+                <span class="text-muted text-xs">账面价值（总）</span>
+            </div>
+        </div>
+        <div class="col-xs-4">
+            <div class="block panel padder-v bg-primary item">
+                <i ng-if="s" class="fa fa-spinner "></i>
+                <div class="font-thin h1" ng-if="!s">{{overviewStatistics.constructPrice | unit:'price'}}</div>
+                <span class="text-muted text-xs">房产账面价值（总）</span>
+            </div>
+        </div>
+        <div class="col-xs-4">
+            <div class="block panel padder-v bg-info item">
+                <i ng-if="s" class="fa fa-spinner "></i>
+                <div class="font-thin h1" ng-if="!s">{{overviewStatistics.landPrice | unit:'price'}}</div>
+                <span class="text-muted text-xs">纯土地账面价值（总）</span>
+            </div>
+        </div>
+
+        <div class="col-xs-4">
+            <div class="block panel padder-v bg-primary item">
+                <i ng-if="s" class="fa fa-spinner "></i>
+                <div class="font-thin h1" ng-if="!s">{{overviewStatistics.constructArea | unit:'carea'}}</div>
+                <span class="text-muted text-xs">房产建筑面积（总）</span>
+            </div>
+        </div>
+        <div class="col-xs-4">
+            <div class="block panel padder-v bg-primary item">
+                <i ng-if="s" class="fa fa-spinner "></i>
+                <span class="text-white font-thin h1 block" ng-if="!s">{{overviewStatistics.constrcutLandArea | unit:'larea'}}</span>
+                <span class="text-muted text-xs">  房屋对应土地面积（总）</span>
+            </div>
+        </div>
+        <div class="col-xs-4">
+            <div class="block panel padder-v bg-info item">
+                <i ng-if="s" class="fa fa-spinner "></i>
+                <span class="text-white font-thin h1 block" ng-if="!s">{{overviewStatistics.landArea | unit:'larea' }}</span>
+                <span class="text-muted text-xs">纯土地面积（总）</span>
+            </div>
+        </div>
+    </div>
+</div>

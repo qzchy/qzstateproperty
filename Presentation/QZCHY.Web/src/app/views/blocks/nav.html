@@ -1,0 +1,76 @@
+﻿<!-- list -->
+<ul class="nav">
+  <!--<li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
+    <span>导航</span>
+  </li>-->
+    <li ng-class="{active:$state.includes('app.home')}">
+        <a ui-sref="app.home">
+            <i class="fa fa-home"></i>
+            <span class="font-bold">首页</span>
+        </a>
+    </li>
+    <li ng-class="{active:$state.includes('app.overview')}">
+        <a ui-sref="app.overview">
+            <i class="fa fa-line-chart"></i>
+            <span class="font-bold">基本概况</span>
+        </a>
+    </li>
+    <li ng-class="{active:$state.includes('app.property')}">
+        <a ui-sref="app.property.list">
+            <i class="fa fa-building"></i>
+            <span>资产清册</span>
+        </a>        
+    </li>
+    <li ng-class="{active:$state.includes('app.map')||$state.includes('app.officeadjust')}">
+        <a ui-sref="app.map">
+            <i class="fa fa-ravelry fa-fw"></i>
+            <span>空间分布</span>
+        </a>        
+    </li>
+    <!--<li ng-class="{active:$state.includes('app.nextstep')}">
+        <a ui-sref="app.nextstep">
+            <i class="fa fa-retweet fa-fw"></i>
+            <span>处置意见</span>
+        </a>
+    </li>
+    <li ng-class="{active:$state.includes('app.officeadjust')}">
+        <a ui-sref="app.officeadjust">
+            <i class="fa fa-support fa-fw"></i>
+            <span>办公调剂</span>
+        </a>
+    </li>-->
+    <li ng-class="{active:$state.includes('app.systemmanage')}" >
+        <a>
+            <i class="fa fa-cogs"></i>
+            <span>系统管理</span>
+        </a>
+        <ul class="nav nav-sub dk">
+            <li ng-class="{active:$state.includes('app.systemmanage.account')}"ng-if="isAdmin">
+               <!-- ui-sref-active="active"-->
+                <a ui-sref="app.systemmanage.account.list">
+                    <span> 用户管理</span>
+                </a>
+            </li>
+            <li ng-class="{active:$state.includes('app.systemmanage.government')}"ng-if="isAdmin">
+                <!-- ui-sref-active="active"-->
+                <a ui-sref="app.systemmanage.government">
+                    <span> 单位管理</span>
+                </a>
+            </li>
+            <li ng-class="{active:$state.includes('app.systemmanage.government_edit')}">
+                <!-- ui-sref-active="active"-->
+                <a ui-sref="app.systemmanage.government_edit">
+                    <span>信息维护</span>
+                </a>
+            </li>
+            <li ng-class="{active:$state.includes('app.systemmanage.account.resetpwd')}">
+                <!-- ui-sref-active="active"-->
+                <a ui-sref="app.systemmanage.account.resetpwd({name:account})">
+                    <span>修改密码</span>
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+</ul>
+<!-- / list -->

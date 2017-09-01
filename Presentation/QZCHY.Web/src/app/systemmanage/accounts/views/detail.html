@@ -1,0 +1,137 @@
+﻿<div ng-controller="AccountCtrl" id="accountDetialContainer">
+    <div class="bg-light lter b-b wrapper-md">
+        <h1 class="m-n font-thin h3">用户信息</h1>
+    </div>
+    <div class="wrapper-md" >
+
+        <!-- toaster directive -->
+        <toaster-container toaster-options="{'position-class': 'toast-bottom-right', 'close-button':true,'time-out': 1000}"></toaster-container>
+        <!-- / toaster directive -->
+
+        <div class="row">
+
+            <div class="col-lg-12 col-md-12">
+                <div class="m-b-md">
+                    <a ui-sref="app.systemmanage.account.list" class="btn btn-default"> <i class="fa fa-arrow-circle-o-left"></i> 用户列表  </a>
+
+                    <div class="pull-right m-t-n-xs">
+                        <a class="btn btn-rounded btn-icon btn-default" ui-sref="app.systemmanage.account.edit({id:{{accountId}}})" title="编辑"><i class="fa fa-pencil"></i></a>
+                        <button class="btn btn-rounded btn-icon btn-danger" title="删除用户" ng-click="deleteAccount()"><i class="fa fa-times"></i></button>                 
+                    </div>
+                </div>
+
+                <!--后台错误-->
+                <div class="form-group" ng-if="errorMsg">
+                    <div class="col-lg-12 col-md-12">
+                        <div class="alert alert-danger" ng-bind-html="errorMsg">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+
+                    <div class="col-lg-6 col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                基本信息
+                            </div>
+                            <table class="table table-striped table-hover table-border m-b-none">
+                                <tbody>
+                                    <tr>
+                                        <td class="font-bold">用户名</td>
+                                        <td>{{account.userName}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">用户名</td>
+                                        <td>{{account.nickName}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">用户名</td>
+                                        <td>{{account.roleList}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">管理员帐号</td>
+                                        <td class="text-left">
+                                            <i ng-if="account.isAdministrator" class="fa fa-check text-success"></i>
+                                            <i ng-if="!account.isAdministrator" class="fa fa-times text-danger"></i>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">激活</td>
+                                        <td class="text-left">
+                                            <i ng-if="account.active" class="fa fa-check text-success"></i>
+                                            <i ng-if="!account.active" class="fa fa-times text-danger"></i>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">最近登录IP</td>
+                                        <td>{{account.lastIpAddress}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">最近登录时间</td>
+                                        <td>{{account.lastLoginDate}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">最近操作时间</td>
+                                        <td>{{account.lastActivityDate}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">备注</td>
+                                        <td>{{account.remark}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>                         
+                    </div>
+
+                    <div class="col-lg-6 col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                所属单位信息
+                            </div>
+                            <table class="table table-striped table-hover table-border m-b-none">
+                                <tbody>
+                                    <tr>
+                                        <td class="font-bold">名称</td>
+                                        <td>{{government.name}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">单位性质</td>
+                                        <td>{{government.governmentType}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">单位地址</td>
+                                        <td>{{government.address}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">联系人</td>
+                                        <td>{{government.person}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">联系方式</td>
+                                        <td>{{government.tel}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">上级单位</td>
+                                        <td>{{government.parentGovernment}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">下级单位</td>
+                                        <td>{{government.childrenGorvernmentsName}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>                        
+        </div>
+    </div>
+     
+
+    <!--对话框-->
+    <script type="text/ng-template" id="dialog.html">
+        <div ng-include="'app/views/blocks/dialog.html'"></div>
+    </script>
+</div>

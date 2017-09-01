@@ -1,0 +1,129 @@
+﻿<div class="hbox hbox-auto-xs hbox-auto-sm" ng-controller="GovernmentListCtrl" id="storeCategoryTreeview">
+    <div class="col w-lg bg-light b-r bg-auto">
+        <div class="wrapper-md">
+            <h4>共获取单位数目{{allGovernmentsCount}}个<br />一级单位数目{{firstGovernmentsCount}}个</h4>
+            <div class="line b-b line-lg"></div>
+            <h5>目录树操作</h5>
+            <button ng-click="my_tree.select_first_branch()" class="btn btn-default btn-sm" ng-disabled="doing_async">选中第一个</button>
+
+            <div class="m-t-sm m-b-sm">
+                <button ng-click="my_tree.select_prev_sibling()" class="btn btn-default btn-sm" ng-disabled="doing_async ||selectedGovernment==null">上一个节点</button>
+                <button ng-click="my_tree.select_next_sibling()" class="btn btn-default btn-sm" ng-disabled="doing_async ||selectedGovernment==null">下一个节点</button>
+            </div>
+            <div class="m-b-sm">
+                <button ng-click="my_tree.select_prev_branch()" class="btn btn-default btn-sm" ng-disabled="doing_async ||selectedGovernment==null">上个单位</button>
+                <button ng-click="my_tree.select_next_branch()" class="btn btn-default btn-sm" ng-disabled="doing_async ||selectedGovernment==null">下个单位</button>
+            </div>
+            <button ng-click="my_tree.select_parent_branch()" class="btn btn-default btn-sm" ng-disabled="doing_async ||selectedGovernment==null">父节点</button>
+            <div class="m-t-sm m-b-sm">
+                <button ng-click="my_tree.expand_branch()" class="btn btn-default btn-sm" ng-disabled="doing_async ||selectedGovernment==null">展开</button>
+                <button ng-click="my_tree.collapse_branch()" class="btn btn-default btn-sm" ng-disabled="doing_async ||selectedGovernment==null">折叠</button>
+            </div>
+            <div class="m-t-sm m-b-sm">
+                <button ng-click="my_tree.expand_all()" class="btn btn-default btn-sm" ng-disabled="doing_async ||selectedGovernment==null">全部展开</button>
+                <button ng-click="my_tree.collapse_all()" class="btn btn-default btn-sm" ng-disabled="doing_async ||selectedGovernment==null">全部折叠</button>
+            </div>
+            <div class="m-t-sm m-b-sm">
+                <button ng-click="clearSelection()" class="btn btn-default btn-sm" ng-disabled="doing_async ||selectedGovernment==null">清除选择</button>
+            </div>
+            <div class="line b-b line-lg"></div>
+            <div class="m-t-sm m-b-sm">
+                <button ng-click="refresh()" class="btn btn-default btn-sm btn-block" ng-disabled="doing_async"><i class="fa fa-fw m-r-xs fa-refresh"></i> 刷新</button>
+            </div>
+            <div class="m-t-sm m-b-sm">
+                <button  ng-click="adding_a_branch()" class="btn btn-success btn-sm"><i class="fa fa-fw m-r-xs fa-plus"></i> 添加</button>
+                <button ng-if="selectedGovernment!=null" ng-click="removing_a_branch()" class="btn btn-danger btn-sm"><i class="fa fa-fw m-r-xs fa-remove"></i> 删除</button>
+            </div>            
+        </div>
+    </div>
+    <div class="col" >
+        <div class="wrapper-md">
+            <div class="b-a bg-light dk r r-2x treeContainer" style="height:{{maxHeight}}px"  >
+                <span ng-if="doing_async"><i class="fa fa-spinner fa-spin"></i> 加载中...</span>
+                <div ng-nicescroll style="height:100%">
+                    <abn-tree tree-data="my_data" ng-nicescroll
+                          tree-control="my_tree"
+                          on-select="my_tree_handler(branch)"
+                          expand-level="1"
+                          initial-selection="{{initial_selection}}"
+                          icon-leaf="fa fa-file-o"
+                          icon-expand="fa fa-plus"
+                          icon-collapse="fa fa-minus">
+                    </abn-tree>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="wrapper-md">
+            <uib-alert ng-if="error"  type="danger" close="clearError(0)">{{error}}</uib-alert>
+            <form ng-if="selectedGovernment!=null" name="governmentForm" class="form-horizontal form-validation w5c-form"  w5c-form-validate="vm.validateOptions" novalidate>
+                <div class="form-group">
+                    <label class="col-lg-2 control-label">名称</label>
+                    <div class="col-lg-10">
+                        <input type="text" name="gname" class="form-control" placeholder="输入单位名称" ng-model="selectedGovernment.name" ng-minlength="2" ng-maxlength="20" ng-required="true"
+                               w5c-unique-check="{url:$root.apiUrl+'Systemmanage/Governments/Unique/'+selectedGovernment.name,value:selectedGovernment.name,defaultValue:nameDefaultValue}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-lg-2 control-label">单位性质</label>
+                    <div class="col-lg-10">
+                        <select class="form-control" ng-model="selectedGovernmentType" ng-change="governmentTypeSelected(selectedGovernmentType)" ng-required="true" name="gType"
+                                ng-options="item as item.label for item in governmentTypes track by item.value">
+                            <option value="">---请选择---</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-lg-2 control-label">地址</label>
+                    <div class="col-lg-10">
+                        <input type="text" name="gaddress" class="form-control" placeholder="输入单位地址" ng-model="selectedGovernment.address" ng-required="true">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-lg-2 control-label">联系人</label>
+                    <div class="col-lg-10">
+                        <input type="text" name="gperson" class="form-control" placeholder="输入单位联系人" ng-model="selectedGovernment.person" ng-minlength="2" ng-maxlength="5" ng-required="true">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-lg-2 control-label">联系方式</label>
+                    <div class="col-lg-10">
+                        <input type="text" name="gtel" class="form-control"  placeholder="输入单位联系方式，手机号码，支持区号-座机，以及手机号" ng-model="selectedGovernment.tel" ng-pattern="/^(0[0-9]{2,3}\-)?([2-9][0-9]{6,7})+(\-[0-9]{1,4})?$|(^(13[0-9]|15[0|3|6|7|8|9]|18[0-9])\d{8}$)/">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-lg-2 control-label">显示次序</label>
+                    <div class="col-lg-10">
+                        <input ui-jq="TouchSpin" type="text" value="1" class="form-control" data-min='0' data-verticalbuttons="true"
+                               data-verticalupclass="fa fa-caret-up" data-verticaldownclass="fa fa-caret-down" ng-model="selectedGovernment.displayOrder">
+                    </div>
+                </div>    
+
+                <div class="form-group">
+                    <label class="col-lg-2 control-label">备注</label>
+                    <div class="col-lg-10">
+                        <textarea class="form-control" rows="6" placeholder="输入备注信息" ng-model="selectedGovernment.description"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-lg-offset-2 col-lg-10">
+                        <button type="submit" class="btn btn-info btn-block" w5c-form-submit="saveGovernment()"  ng-disabled="!governmentForm.$valid || processing"><i class="fa fa-save"></i> 保存</button>
+                    </div>
+                </div>
+            </form> 
+        </div>
+    </div>
+    
+
+    <!--对话框-->
+    <script type="text/ng-template" id="dialog.html">
+        <div ng-include="'app/views/blocks/dialog.html'"></div>
+    </script>
+</div>

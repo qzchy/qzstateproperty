@@ -1,0 +1,71 @@
+﻿<div ng-controller="PropertyAllotEditCtrl">
+
+    <div class="bg-light lter b-b wrapper-md">
+        <div class="row">
+            <div class="col-sm-6 col-xs-12">
+                <h1 class="m-n font-thin h3 text-black">划拨编辑</h1>
+            </div>
+             
+        </div>
+    </div>
+
+<div class="wrapper-md">
+   
+
+    <form name="propertyProcessForm" class="form-horizontal form-validation w5c-form" role="form" w5c-form-validate="validation.options" novalidate>
+        <div class="clearfix m-b" style="margin-top: 20px;">
+            <a ui-sref="app.property.process_approve({approveType:'allot'})" class="btn btn-default btn-addon"> <i class="fa fa-arrow-circle-o-left"></i> 资产处置列表</a>
+            <button class="btn btn-danger btn-addon pull-right m-l-sm form-horizontal form-validation w5c-form" role="form" w5c-form-submit="validation.saveEntity($event,true)" ng-disabled="processing"> <i class="fa fa-check"></i> 保存，并提交</button>
+            <button class="btn btn-danger btn-addon pull-right m-l-sm form-horizontal form-validation w5c-form" role="form" w5c-form-submit="validation.saveEntity($event)" ng-disabled="processing"> <i class="fa fa-check"></i> 保存</button>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">资产划拨</div>
+
+            <div class="panel-body">
+
+
+                <div class="form-group">
+                    <label class="col-lg-2 control-label">目标单位</label>
+                    <div class="col-lg-10">
+                        <div class="input-group">
+                            <ui-select ng-model="government.selected">
+                                <ui-select-match placeholder="输入单位名称...">{{$select.selected.name}}</ui-select-match>
+                                <ui-select-choices repeat="government in governments track by $index"
+                                                   refresh="refreshGovernments($select.search)"
+                                                   refresh-delay="0">
+                                    <div ng-bind-html="government.name | highlight: $select.search"></div>
+                                </ui-select-choices>
+                            </ui-select>
+
+                            <span class="input-group-btn">
+                                <button ng-click="government.selected = null" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-trash"></span>
+                                </button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-lg-2 control-label">划拨时间</label>
+                    <div class="col-sm-10">
+                        <input type="text" ui-jq="daterangepicker" class="form-control" name="daterange" ng-model="process.allot.allotTime" ui-options="dateOption" />
+                    </div>
+                </div>
+
+                <webuploader pictures="allot.allotPictures" files="allot.allotFiles" swf-url="swfUrl"
+                             picture-upload-url="pictureUploadUrl" file-upload-url="fileUploadUrl" toaster="show()"></webuploader>
+
+                <div class="form-group">
+                    <label class="col-lg-2 control-label">备注</label>
+                    <div class="col-lg-10">
+                        <textarea ng-model="process.allot.remark" class="form-control" name="premark"></textarea>
+                    </div>
+                </div>
+          </div>
+        </div>
+    </form>
+</div>
+        
+</div>

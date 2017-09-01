@@ -1,0 +1,117 @@
+﻿<html>
+<head>
+  <meta charset=utf-8 />
+  <title>Historic Topographic Maps</title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.css" rel="stylesheet">
+  <!-- Load Leaflet from CDN-->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet-src.js"></script>
+
+  <!-- Load Esri Leaflet from CDN -->
+  <script src="https://unpkg.com/esri-leaflet@2.0.8"></script>
+    <script src="https://cdn.bootcss.com/proj4js/2.4.3/proj4.js"></script>
+    <script src="https://cdn.bootcss.com/proj4leaflet/1.0.1/proj4leaflet.min.js"></script>
+  <style>
+    body { margin:0; padding:0; }
+  </style>
+</head>
+<body>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="map" style="height:600px;"></div>
+        </div>
+        <div class="col-md-12">
+            <form class="form-inline">
+                <div class="form-group">
+                    <label for="mapUrl">服务地址</label>
+                    <input type="url" class="form-control" placeholder="服务地址" id="mapUrl">
+                </div>
+                <div class="form-group">
+                    <label for="level">显示级别</label>
+                    <input type="number" class="form-control" id="mapLevel" value="18" placeholder="显示级别">
+                </div>
+                <div class="form-group">
+                    <label for="mapX">经度</label>
+                    <input type="number" class="form-control" id="mapX" value="118.8713836669922" placeholder="经度">
+                </div>
+                <div class="form-group">
+                    <label for="mapY">纬度</label>
+                    <input type="number" class="form-control" id="mapY"  value="28.949874831897045" placeholder="纬度">
+                </div>
+                <button type="button" class="btn btn-default" onclick="addLayer()">叠加</button>
+            </form>
+        </div>
+        <div class="col-md-12">
+            当前地图等级：<span id="currentLevel" style="color:antiquewhite"></span>
+        </div>
+    </div>
+<script>
+    var centerPoint = new L.LatLng(28.949874831897045, 118.8713836669922); // 设置地图中心
+    var crs = new L.Proj.CRS("EPSG:4490", "+proj=longlat +ellps=GRS80 +no_defs ",
+    {
+        origin: [-180, 90],
+        resolutions: [
+1.406250026231581,
+0.7031250131157905,
+             0.3515625065578952,
+     0.1757812532789476,
+     0.0878906266394738,
+ 0.0439453133197369,
+ 0.02197265665986845,
+ 0.010986328329934226,
+ 0.005493164164967113,
+ 0.0027465820824835565,
+ 0.0013732910412417782,
+ 6.866455206208891E-4,
+ 3.4332276031044456E-4,
+ 1.7166138015522228E-4,
+ 8.583069007761114E-5,
+ 4.291534503880557E-5,
+ 2.1457672519402785E-5,
+ 1.0728836259701392E-5,
+ 5.364418129850696E-6,
+ 2.682209064925348E-6,
+ 1.341104532462674E-6
+        ]
+    });
+    var mapOptions = {
+        center: centerPoint,
+        zoom: 18,
+        crs: crs,
+        attributionControl: true,
+    };
+
+    var map = L.map('map', mapOptions);
+   
+    map.on('zoomend', function () {
+        var currentLevel = document.getElementById("currentLevel");
+        currentLevel.innerHTML = map.getZoom();
+    });
+
+    function addLayer() {
+        var mapUrlIpt = document.getElementById("mapUrl");
+        var url = mapUrlIpt.value;
+
+        var mapLevelIpt = document.getElementById("mapLevel");
+        var level = mapLevelIpt.value;
+
+        var mapXIpt = document.getElementById("mapX");
+        var x = mapXIpt.value;
+
+        var mapYIpt = document.getElementById("mapY");
+        var y = mapYIpt.value;
+
+        map.eachLayer(function (l) {
+            map.removeLayer(l);
+        });
+
+        var layer = customBaselayer = L.esri.tiledMapLayer({ url: url }).addTo(map);
+
+        map.panTo([y, x]);
+ 
+    }
+</script>
+
+</body>
+</html>

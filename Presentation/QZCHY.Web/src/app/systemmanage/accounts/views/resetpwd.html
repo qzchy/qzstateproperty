@@ -1,0 +1,81 @@
+﻿<div ng-controller="ResetpwdCtrl"  id="accountCreateContainer">
+    <div class="bg-light lter b-b wrapper-md">        
+        <h1 class="m-n font-thin h3">修改密码</h1>
+    </div>
+
+    <div class="wrapper-md">
+        <!-- toaster directive -->
+        <toaster-container toaster-options="{'position-class': 'toast-bottom-right', 'close-button':true,'time-out': 1000}"></toaster-container>
+        <!-- / toaster directive -->
+        <div class="row">
+            <div class="col-lg-12 col-md-12">
+                <form name="accountForm" class="form-horizontal form-validation w5c-form" role="form" w5c-form-validate="validation.options" novalidate>
+
+                    <div class="m-b-md">
+                        <a ui-sref="app.systemmanage.account.list" class="btn btn-default"> <i class="fa fa-arrow-circle-o-left"></i> 用户列表  </a>
+
+                        <div class="pull-right m-t-n-xs">                       
+                            <button type="submit" class="btn  btn-info" w5c-form-submit="validation.saveEntity($event)" ng-disabled="processingStatus">提交</button>
+                        </div>
+                    </div>
+
+                    <!--后台错误-->
+                    <div class="form-group" ng-if="errorMsg">
+                        <div class="col-lg-12 col-md-12">
+                            <div class="alert alert-danger" ng-bind-html="errorMsg">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12">
+                            <!--基本信息-->
+                            <div class="panel panel-default">
+                                <div class="panel-heading font-bold">修改信息</div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">用户名</label>
+                                        <div class="col-lg-10">
+                                            <label class="control-label">{{accountName}}</label>
+                                        </div>
+                                        <!--<div class="col-lg-10 btn-group" role="group">
+                                            <button type="button" class="btn btn-default" style="width:200px">{{accountName}}</button>
+                                        </div>-->
+                                   
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">原密码</label>
+                                        <div class="col-lg-10">
+                                            <input type="password" name="opassword" class="form-control" placeholder="输入密码，6-15位字母数字组合" ng-model="password"  ng-minlength="6" ng-maxlength="15" ng-required="true">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">新密码</label>
+                                        <div class="col-lg-10">
+                                            <input type="password" name="npassword" class="form-control" placeholder="输入密码，6-15位字母数字组合" ng-model="newpassword" ng-minlength="6" ng-maxlength="15" ng-required="true">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">再次输入新密码</label>
+                                        <div class="col-lg-10">
+                                            <input type="password" name="apassword" class="form-control" placeholder="输入密码，6-15位字母数字组合" ng-model="againpassword" ng-minlength="6" ng-maxlength="15" ng-required="true">
+                                        </div>
+                                    </div>
+                     
+                                </div>
+                            </div>
+                            <!--基本信息 结束-->
+                        </div>
+                        
+                    </div>
+
+                </form>
+            </div>
+        </div>            
+    </div>
+
+    <!--对话框-->
+    <script type="text/ng-template" id="dialog.html">
+        <div ng-include="'app/views/blocks/dialog.html'"></div>
+    </script>
+</div>

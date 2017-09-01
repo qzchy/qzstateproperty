@@ -1,0 +1,59 @@
+﻿<div id="fileUploadContainer">
+
+    <div class="form-group">
+        <label class="col-sm-2 control-label">图片附件<br />（已上传{{pictures.length}}个）</label>
+        <div class="col-sm-10">
+            <div id="filePicker0">选择图片</div>
+        </div>
+
+        <div class="uploader-list form-group" id="fileList">
+            <div class="col-lg-12 col-lg-offset-2">
+
+                <div id="{{img.fileId}}" class="file-item thumbnail m-r-md" ng-class="{'selected':img.selected}" ng-repeat="img in pictures track by $index"
+                     ng-mouseenter="img.hovered=true" ng-mouseleave="img.hovered=false" ng-click="selectPicutre(img);">
+                    <div class="file-panel" ng-if="img.hovered">
+                        <span title="删除" ng-click="removeImg(img,$index)"><i class="fa fa-trash"></i></span>
+                    </div>
+
+                    <a title="{{img.title}}" ng-href="{{img.href}}" fancyboxable>
+                        <img alt="" ng-src="{{img.href}}" />
+                    </a>
+
+                    <div ng-if="img.id==undefined">
+                        <div class="status" ng-class="{'error':img.error,'success':!img.error}" ng-if="img.uploaded">{{img.status}}</div>
+                        <div class="status processing" ng-if="!img.uploaded">上传中... {{img.percentage}}%</div>
+                    </div>
+
+                    <div>
+                        <div class="status success">{{img.title}}</div>
+                    </div>
+
+                </div>
+
+            </div>
+            <div class="col-lg-12 col-lg-offset-2">
+                <button class="btn btn-danger btn-sm" ng-if="pictures.length>0" ng-click="removeAll('img')"><i class="fa fa-trash"></i> 移除所有</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="col-sm-2 control-label">其他附件<br />（已上传{{files.length}}个）</label>
+        <div class="col-sm-10">
+            <div id="filePicker1">选择文件</div>
+            <table class="table table-bordered table-hover">
+                <tr ng-repeat="file in files track by $index">
+                    <td style="width:30px;">{{$index+1}}</td>
+                    <td>
+                        <a class="text-info" ng-href="{{file.src}}" target="_blank">{{file.title}}</a>
+                        <uib-progressbar class="progress-striped active" value="file.percentage" type="info" ng-if="file.percentage!=100"><b>{{file.percentage}}%</b></uib-progressbar>
+                    </td>
+                    <td style="width:50px;"><a ng-click="removeFile(file,$index)" ng-if="file.uploaded"><i class="fa fa-times"></i></a></td>
+                </tr>
+            </table>
+            <button class="btn btn-danger btn-sm" ng-if="files.length>0" ng-click="removeAll('file')"><i class="fa fa-trash"></i> 移除所有</button>
+        </div>
+
+    </div>
+
+</div>

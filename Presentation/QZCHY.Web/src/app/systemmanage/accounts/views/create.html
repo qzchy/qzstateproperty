@@ -1,0 +1,142 @@
+﻿<div ng-controller="AccountCreateOrEditCtrl"  id="accountCreateContainer">
+    <div class="bg-light lter b-b wrapper-md">        
+        <h1 class="m-n font-thin h3">{{accountId==undefined?"新增":"编辑"}}用户</h1>
+    </div>
+
+    <div class="wrapper-md">
+        <!-- toaster directive -->
+        <toaster-container toaster-options="{'position-class': 'toast-bottom-right', 'close-button':true,'time-out': 1000}"></toaster-container>
+        <!-- / toaster directive -->
+        <div class="row">
+            <div class="col-lg-12 col-md-12">
+                <form name="accountForm" class="form-horizontal form-validation w5c-form" role="form" w5c-form-validate="validation.options" novalidate>
+
+                    <div class="m-b-md">
+                        <a ui-sref="app.systemmanage.account.list" class="btn btn-default"> <i class="fa fa-arrow-circle-o-left"></i> 用户列表  </a>
+
+                        <div class="pull-right m-t-n-xs">
+                            <a ui-sref="app.catalog.account.detail({id:{{accountId}}})" class="btn btn-default" ng-if="accountId!=undefined">
+                                <i class="fa fa-bookmark"></i> 详细信息
+                            </a>
+                            <button type="submit" class="btn  btn-info" w5c-form-submit="validation.saveEntity($event)" ng-disabled="processingStatus">保存</button>
+                            <button type="submit" class="btn  btn-info" w5c-form-submit="validation.saveEntity($event,true)" ng-disabled="processingStatus">保存，继续编辑</button>
+                        </div>
+                    </div>
+
+                    <!--后台错误-->
+                    <div class="form-group" ng-if="errorMsg">
+                        <div class="col-lg-12 col-md-12">
+                            <div class="alert alert-danger" ng-bind-html="errorMsg">
+                            </div>
+                        </div>
+                    </div>
+ 
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12">
+                            <!--基本信息-->
+                            <div class="panel panel-default">
+                                <div class="panel-heading font-bold">基本信息</div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">用户名</label>
+                                        <div class="col-lg-10">
+                                            <input type="text" name="aname" class="form-control" placeholder="输入账号登录名，长度1-20个字符或汉字" ng-model="account.userName" ng-minlength="1" ng-maxlength="20"
+                                                   w5c-unique-check="{url:$root.apiUrl+'Systemmanage/Accounts/Unique/'+account.userName,value:account.userName,defaultValue:nameDefaultValue}" ng-required="true">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">昵称</label>
+                                        <div class="col-lg-10">
+                                            <input type="text" name="anickname" class="form-control" placeholder="输入账号昵称，长度1-20个字符或汉字" ng-model="account.nickName" ng-minlength="1" ng-maxlength="20"
+                                                    ng-required="true">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">角色</label>
+                                        <div class="col-lg-10">
+                                            <select class="form-control" ng-model="account.roleName" ng-required="true" name="arole">
+                                                <option value="">---请选择---</option>
+                                                <option value="管理员">超级管理员</option>
+                                                <option value="数据查看员">数据查看员</option>
+                                                <option value="行政事业审批员">行政事业审批员</option>
+                                                <option value="国资企业审批员">国有企业审批员</option>
+                                                <option value="主管部门审批员">主管部门审批员</option>
+                                                <option value="注册单位">注册单位</option>
+                                            </select>                                       
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">所属单位</label>
+                                        <div class="col-lg-10">
+                                            <div class="input-group">
+
+                                                <ui-select ng-model="government.selected">
+                                                    <ui-select-match placeholder="输入单位名称...">{{$select.selected.name}}</ui-select-match>
+                                                    <ui-select-choices repeat="government in governments track by $index"
+                                                                       refresh="refreshGovernments($select.search)"
+                                                                       refresh-delay="0">
+                                                        <div ng-bind-html="government.name | highlight: $select.search"></div>
+                                                    </ui-select-choices>
+                                                </ui-select>
+
+                                                <span class="input-group-btn">
+                                                    <button ng-click="clearGovernment()" class="btn btn-default">
+                                                        <span class="glyphicon glyphicon-trash"></span>
+                                                    </button>
+                                                </span>
+
+                                                
+                                            </div>
+                                            <input type="hidden" ng-model="account.governmentName" ng-required="true" name="agovernment" />
+                                        </div>
+                                    </div>
+
+                                    
+
+                                    <div class="form-group"  ng-if="!(accountId ==undefined||accountId ==null||accountId =='' ||accountId ==0)">
+                                        <div class="col-lg-offset-2 col-lg-10">
+                                            <div class="checkbox">
+                                                <label class="i-checks">
+                                                    <input type="checkbox" ng-model="account.initPassword"><i></i> 密码初始化，初始密码为123456
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="col-lg-offset-2 col-lg-10">
+                                            <div class="checkbox">
+                                                <label class="i-checks">
+                                                    <input type="checkbox" ng-model="account.active"><i></i> 激活
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="form-group">
+                                        <label class="col-lg-2 control-label">备注</label>
+                                        <div class="col-lg-10">
+                                            <input type="text" name="aremark" class="form-control" placeholder="" ng-model="account.remark">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--基本信息 结束-->
+                        </div>
+                        
+                    </div>
+
+                </form>
+            </div>
+        </div>            
+    </div>
+
+    <!--对话框-->
+    <script type="text/ng-template" id="dialog.html">
+        <div ng-include="'app/views/blocks/dialog.html'"></div>
+    </script>
+</div>

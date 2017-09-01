@@ -1,0 +1,333 @@
+﻿<div ng-controller="PropertyListCtrl">
+
+    <div class="bg-light lter b-b wrapper-md">
+        <div class="row">
+            <div class="col-sm-6 col-xs-12">
+                <h1 class="m-n font-thin h3 text-black">资产列表</h1>
+            </div>
+            <div class="col-sm-6">
+                <div class="pull-right" ng-if="isAdmin">
+                    <!--<div class="m-b-xs">
+                        <span>仅显示本单位：</span>
+                        <label class="i-switch bg-primary pull-right">
+                            <input type="checkbox" ng-model="onlyShowSelf" ng-change="statistics(onlyShowSelf)">
+                            <i></i>
+                        </label>
+                    </div>-->
+                    <!--<div class="" ng-if="onlyShowSelf">
+                    <span>包括下级单位：</span>
+                    <label class="i-switch bg-info pull-right">
+                        <input type="checkbox" ng-model="showSubGovernemts">
+                        <i></i>
+                    </label>
+                </div>-->
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="wrapper-md">
+
+        <div class="clearfix m-b">
+            <a ui-sref="app.property.create" tooltip="" class="btn btn-sm btn-primary btn-addon">
+                <i class="fa fa-plus"></i> 新增资产
+            </a>
+            <a ui-sref="app.property.process" tooltip="" class="btn btn-sm btn-primary btn-addon ">
+                <i class="fa fa-support"></i> 资产处置
+            </a>
+            <a ui-sref="app.property.process_approve({approveType:'newCreate'})" tooltip="" class="btn btn-sm btn-primary btn-addon  m-l-sm">
+                <i class="fa fa-support"></i> 处置查询
+            </a>
+        
+        </div>
+
+        <!--<div class="panel panel-default">
+            <div class="panel-heading">资产审批情况
+                <a class="pull-right">查看所有</a>
+            </div>
+            <div class="panel-body"> 
+                <div class="row text-center">
+                    <div class="col-xs-6 col-md-4">
+                        总资产数目：<strong>20</strong>
+                    </div>
+                    <div class="col-xs-6 col-md-4">
+                        新增审批中：<strong>20</strong>
+                    </div>
+                    <div class="col-xs-6 col-md-4">
+                        出借审批中：<strong>20</strong>
+                    </div>
+                    <div class="col-xs-6 col-md-4">
+                        出租审批中：<strong>20</strong>
+                    </div>
+                    <div class="col-xs-6 col-md-4">
+                        划拨审批中：<strong>20</strong>
+                    </div>
+                    <div class="col-xs-6 col-md-4">
+                        核销审批中：<strong>20</strong>
+                    </div>
+                </div>
+            </div>
+        </div>-->
+
+
+        <div class="panel panel-default">
+            <qmtable processing="processing" params="params" response="response" columns="columns" tools="{{tools}}" reset="reset" ajax="ajax()"
+                        ext-buttons="extButtons" table-eidt-and-delete="tableEidtAndDelete" advance-search="advanceSearch()" show-advance="true">
+            </qmtable>
+        </div>
+        </div>
+</div>
+
+<script type="text/ng-template" id="advDialog.html">
+    <!--<div ng-include="'app/views/blocks/dialog.html'"></div>-->
+    <div class="modal-header">
+        <h3 class="modal-title">高级搜索</h3>
+    </div>
+    <div class="modal-body" ng-style="dialogHeight">
+        <div ng-nicescroll nice-option="{cursorcolor: '#e2edff'}" style="overflow:hidden;height:100%">
+            <div class="row">
+                <label class="col-sm-12 control-label m-t-xs">单位</label>
+                <div class="col-sm-4">
+                    <label class="radio i-checks">
+                        <input type="radio" ng-model="params.manage" value="true" name="p.government" ng-checked="true"><i></i> 主管单位
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="radio i-checks">
+                        <input type="radio" ng-model="params.manage" value="false" name="p.government"><i></i> 产权单位
+                    </label>
+                </div>
+                <div class="col-sm-4"></div>
+                <div class="col-sm-12">
+
+                    <div class="input-group">
+
+                        <ui-select ng-model="government.selected">
+                            <ui-select-match placeholder="输入单位名称...">{{$select.selected.name}}</ui-select-match>
+                            <ui-select-choices repeat="government in governments track by $index"
+                                               refresh="refreshGovernments($select.search)"
+                                               refresh-delay="0">
+                                <div ng-bind-html="government.name | highlight: $select.search"></div>
+                            </ui-select-choices>
+                        </ui-select>
+
+                        <span class="input-group-btn">
+                            <button ng-click="government.selected = null" class="btn btn-default">
+                                <span class="glyphicon glyphicon-trash"></span>
+                            </button>
+                        </span>
+                    </div>
+
+
+                </div>
+            </div>
+
+            <div class="row">
+                <label class="col-sm-12 control-label m-t-xs">单位性质</label>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.isGovernment"><i></i> 行政单位
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.isInstitution"><i></i> 事业单位
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.isCompany"><i></i> 国有企业
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <label class="col-sm-12 control-label m-t-xs">资产类别</label>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.construct"><i></i> 房产
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.land"><i></i> 土地
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.constructOnLand"><i></i> 房产对应土地
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <label class="col-sm-12 control-label m-t-xs">区域</label>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.old"><i></i> 老城区(含南区)
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.qj"><i></i> 衢江区
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.kc"><i></i> 柯城区
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.jjq"><i></i> 集聚区
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.west"><i></i> 西区
+                    </label>
+
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.other"><i></i> 其他区域
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <label class="col-sm-12 control-label m-t-xs">证件情况</label>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.certi_both"><i></i> 两证齐全
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.certi_land"><i></i> 无房有土
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.certi_construct"><i></i> 有房无土
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.certi_none"><i></i> 两证全无
+                    </label>
+                </div>
+                <div class="col-sm-4">
+
+                </div>
+            </div>
+            <div class="row">
+                <label class="col-sm-12 control-label m-t-xs">使用现状</label>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.current_self"><i></i> 自用
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.current_rent"><i></i> 出租
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.current_lend"><i></i> 出借
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.current_idle"><i></i> 闲置
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                </div>
+            </div>
+            <div class="row">
+                <label class="col-sm-12 control-label m-t-xs">下一步打算</label>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.injection"><i></i> 注入国资
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.storeUp"><i></i> 国有收储
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.auction"><i></i> 拍卖处置
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                </div>
+            </div>
+            <div class="row" ng-if="p.propertyType.construct">
+                <label class="col-sm-12 control-label m-t-xs">建筑面积（平方米）</label>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.constructArea.l" value="0"><i></i> 5000以下
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.constructArea.m"><i></i> 10001-20000
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.constructArea.h"><i></i> 5000-10000
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.constructArea.t"><i></i> 20000以上
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                </div>
+            </div>
+            <div class="row">
+                <label class="col-sm-12 control-label m-t-xs">土地面积（亩）</label>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.landArea.l" value="0"><i></i> 100以下
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.landArea.m"><i></i> 501-1000
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.landArea.h"><i></i> 101-500
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.landArea.t"><i></i> 1000以上
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                </div>
+            </div>
+            <div class="row">
+                <label class="col-sm-12 control-label m-t-xs">账面价值（元）</label>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.price.l"><i></i> 500以下
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.price.m"><i></i> 5001-10000
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.price.h"><i></i> 501-5000
+                    </label>
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="params.price.t"><i></i> 10000 以上
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                </div>
+            </div>
+            <div class="row m-t-xs">
+                <label class="col-sm-6 control-label">使用年限</label>
+                <label class="col-sm-6 control-label">取得时间</label>
+                <div class="col-sm-12">
+                    <slider ng-model="params.lifeTime.min" ng-model-range="params.lifeTime.max" floor="0" ceiling="100">
+                </div>
+                <!--<div class="col-sm-6">
+                    <slider ng-model="params.getedDate.min" ng-model-range="params.getedDate.max" floor="1949" ceiling="2017">
+                    </slider>
+                </div>-->
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-danger pull-left" ng-click="resetParams()">重置</button>
+        <button class="btn btn-default" ng-click="cancel()">取消</button>
+        <button class="btn btn-primary" ng-click="ok()">确定</button>
+    </div>
+</script>
+

@@ -1,0 +1,239 @@
+﻿<div ng-controller="PropertyApproveDetailCtrl" id="propertyDetialContainer">
+    <div class="bg-light lter b-b wrapper-md">
+        <h1 class="m-n font-thin h3">出租处置审批--《{{approve.property.name}}》</h1>
+    </div>
+    <div class="wrapper-md">
+
+        <!-- toaster directive -->
+        <toaster-container toaster-options="{'position-class': 'toast-bottom-right', 'close-button':true,'time-out': 1000}"></toaster-container>
+        <!-- / toaster directive -->
+
+        <div class="row">
+
+            <div class="col-lg-12 col-md-12">
+                <div class="m-b-md">
+                    <a ui-sref="app.property.process_approve({approveType:approveType})" class="btn btn-default"> <i class="fa fa-arrow-circle-o-left"></i> 资产处置列表  </a>
+
+                    <div class="pull-right m-t-n-xs">
+
+                        <a class="btn btn-default" ui-sref="app.property.process_rentedit({id:approve.propertyRent.id})" title="编辑" ng-if="approve.canEditAndDelete"><i class="fa fa-pencil"></i> 编辑</a>
+                        <button class="btn btn-danger" title="删除" ng-click="deleteProperty()" ng-if="approve.canEditAndDelete"><i class="fa fa-times"></i> 删除</button>
+
+                        <button class="btn btn-primary" title="提交审批申请" ng-click="submitApprove()" ng-if="approve.canEditAndDelete"><i class="fa fa-upload"></i> 提交处置申请</button>
+
+                        <button class="btn btn-primary" title="资产审批" ng-click="showApproveDialog()" ng-if="approve.canApprove"><i class="fa fa-gavel"></i> 资产审批</button>
+                    </div>
+                </div>
+
+                <!--后台错误-->
+                <div class="form-group" ng-if="errorMsg">
+                    <div class="col-lg-12 col-md-12">
+                        <div class="alert alert-danger" ng-bind-html="errorMsg">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-6 col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                基本信息
+                            </div>
+                            <table class="table table-striped table-hover table-border m-b-none">
+                                <tbody>
+                                    <tr>
+                                        <td class="font-bold">资产名称</td>
+                                        <td>{{approve.property.name}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">资产编码</td>
+                                        <td>{{approve.property.code}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">资产类型</td>
+                                        <td>{{approve.property.propertyType}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">区域</td>
+                                        <td>{{approve.property.region}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">产权单位</td>
+                                        <td><a ui-sref="app.property.government({id:property.governmentId})" class="text-info font-bold" title="点击查看产权单位全部资产">{{approve.property.governmentName}}</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">位置坐落</td>
+                                        <td>{{approve.property.address}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">建筑面积</td>
+                                        <td>{{approve.property.constructArea | unit:'carea'}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">土地面积</td>
+                                        <td>{{approve.property.landArea | unit:'larea'}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">产权情况</td>
+                                        <td>{{approve.property.propertyID}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">房产性质</td>
+                                        <td>{{approve.property.propertyNature}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">土地性质</td>
+                                        <td>{{approve.property.landNature}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">账面价格</td>
+                                        <td>{{approve.property.price | unit:'price'}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">取得时间</td>
+                                        <td>{{approve.property.getedDate}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">使用年限</td>
+                                        <td>{{approve.property.lifeTime}} 年</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">使用方</td>
+                                        <td>{{approve.property.usedPeople}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">下一步使用打算</td>
+                                        <td>{{approve.property.nextStepUsage}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">备注</td>
+                                        <td>{{approve.property.description}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                位置信息
+                            </div>
+                            <div class="panel-body">
+                                <div id="map" style="height:400px;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                出借审批信息
+                            </div>
+                            <table class="table table-striped table-hover table-border m-b-none">
+                                <tbody>
+                                    <tr>
+                                        <td class="font-bold">申请时间</td>
+                                        <td>{{approve.propertyRent.processDate}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">审批状态</td>
+                                        <td>{{approve.propertyRent.state}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">租用人</td>
+                                        <td>{{approve.propertyRent.name}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">租用起止时间</td>
+                                        <td>{{approve.propertyRent.rentTime}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">租用面积</td>
+                                        <td>{{approve.propertyRent.rentArea}} 平方米</td>
+                                    </tr>
+                                    <!--<tr>
+                                        <td class="font-bold">租用期限</td>
+                                        <td>{{approve.propertyRent.rentMonth}} 个月</td>
+                                    </tr>-->
+                                    <tr ng-repeat="d in yearNumber">
+                                        <td class="font-bold">第{{d.index}}年租金</td>
+                                        <td>{{d.model}} 元</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">图片附件</td>
+                                        <td>
+
+                                            <a rel="example_group" title="{{img.title}}" ng-href="{{img.href}}" fancyboxable ng-repeat="img in approve.propertyRent.rentPictures track by $index">
+                                                <img alt="" ng-src="{{img.href}}" style="height:150px;width:150px;" />
+                                            </a>
+
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">文件附件</td>
+                                        <td>
+                                            <ul class="list-group">
+                                                <li ng-repeat="file in approve.propertyRent.rentFiles track by $index">{{$index+1}} . <a class="text-info" ng-href="{{file.src}}" target="_blank">{{file.title}}</a></li>
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">备注</td>
+                                        <td>{{approve.propertyRent.remark}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">审批状态</td>
+                                        <td>{{approve.propertyRent.state}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">主管部门意见</td>
+                                        <td>{{approve.propertyRent.dSuggestion}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">主管部门审批时间</td>
+                                        <td>{{approve.propertyRent.dApproveDate}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">管理员意见</td>
+                                        <td>{{approve.propertyRent.aSuggestion}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">管理员审批时间</td>
+                                        <td>{{approve.propertyRent.aApproveDate}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">联系人</td>
+                                        <td>{{approve.linkMan}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">联系方式</td>
+                                        <td>{{approve.linkTel}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!--对话框-->
+    <script type="text/ng-template" id="dialog.html">
+        <div ng-include="'app/views/blocks/dialog.html'"></div>
+    </script>
+
+    <!--审批 对话框-->
+    <script type="text/ng-template" id="approveDialog.html">
+        <div class="modal-header">
+            <h3 class="modal-title">资产处置审批</h3>
+        </div>
+        <div class="modal-body">
+            <textarea placeholder="资产审批意见..." class="form-control" ng-model="suggestion"></textarea>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-success" ng-click="ok()"><i class="fa fa-check"></i> 同意</button>
+            <button class="btn btn-danger" ng-click="cancel()" ng-disabled="suggestion==''"><i class="fa fa-times"></i> 不同意</button>
+        </div>
+    </script>
+</div>
