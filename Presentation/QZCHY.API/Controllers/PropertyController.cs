@@ -1872,7 +1872,7 @@ namespace QZCHY.API.Controllers
                                 var pcrl = pcr.ToListModel();
 
                                 pcrl.RentTime = pcr.RentTime.ToString("yyyy/MM/dd") +" - "+pcr.BackTime.ToString("yyyy/MM/dd");
-
+                                pcrl.PriceString = "";
                                 var priceList = pcr.PriceString.Split(';');
                                 var index = 1;
                                 foreach(var price in priceList)
@@ -2415,7 +2415,7 @@ namespace QZCHY.API.Controllers
 
             var property = _propertyService.GetPropertyById(newCreate.Property_Id);
 
-            if (!PropertyBelongCurrentUser(property, false)) return BadRequest("没有操作权限");
+            //if (!PropertyBelongCurrentUser(property, false)) return BadRequest("没有操作权限");
 
             var response = new PropertyNewCreateApproveModel
             {
@@ -2449,7 +2449,7 @@ namespace QZCHY.API.Controllers
             if (edit == null || edit.Deleted) return BadRequest("无法找到资源");
 
             var property = _propertyService.GetPropertyById(edit.Property.Id);
-            if (!PropertyBelongCurrentUser(property, false)) return BadRequest("没有操作权限");
+            //if (!PropertyBelongCurrentUser(property, false)) return BadRequest("没有操作权限");
 
             var copyProperty = _copyPropertyService.GetCopyPropertyById(edit.CopyProperty_Id);
             var govermentName = _governmentService.GetGovernmentUnitById(copyProperty.Government_Id).Name;
