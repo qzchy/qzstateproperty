@@ -31,20 +31,14 @@ namespace QZCHY.Services.Property
         /// <param name="showHidden"></param>
         /// <param name="sortConditions"></param>
         /// <returns></returns>
-        IPagedList<QZCHY.Core.Domain.Properties.Property> GetAllProperties(string search = "", int governmentId = 0, bool includeChildren = true, int pageIndex = 0, int pageSize = int.MaxValue, bool showHidden = false, PropertyAdvanceConditionRequest advanceCondition=null, params PropertySortCondition[] sortConditions);
+        IPagedList<QZCHY.Core.Domain.Properties.Property> GetAllProperties(IList<int> governmentIds, string search = "",int pageIndex = 0, int pageSize = int.MaxValue, bool showHidden = false, PropertyAdvanceConditionRequest advanceCondition=null, params PropertySortCondition[] sortConditions);
 
 
-        IList<QZCHY.Core.Domain.Properties.Property> GetAllProcessProperties(IList<int> governmentIds, string search = "", int governmentId = 0, bool includeChildren = true, bool showHidden = false,  PropertyAdvanceConditionRequest advanceCondition = null, params PropertySortCondition[] sortConditions);
+        IList<QZCHY.Core.Domain.Properties.Property> GetAllProcessProperties(IList<int> governmentIds, string search = "", PropertyAdvanceConditionRequest advanceCondition = null, params PropertySortCondition[] sortConditions);
 
-        IQueryable<QZCHY.Core.Domain.Properties.Property> GetAllProperties(int governmentId = 0, bool includeChildren = true, bool showHidden = true);
+        IQueryable<QZCHY.Core.Domain.Properties.Property> GetAllProperties(IList<int> governmentIds, bool showHidden = true);
 
-        //IQueryable<QZCHY.Core.Domain.Properties.Property> GetAllProperties(int governmentId = 0, bool includeChildren = true, QZCHY.Core.Domain.Properties.PropertyType propertyType = Core.Domain.Properties.PropertyType.House);
-
-        /// <summary>
-        /// 获取产权单位下的资产
-        /// </summary>
-        /// <returns></returns>
-        IList<QZCHY.Core.Domain.Properties.Property> GetPropertiesByGovernmentId(IList<int> idList, bool loadChildren = false, bool showHidden = true);
+        IQueryable<QZCHY.Core.Domain.Properties.Property> GetPropertiesByGovernmentId(IList<int> governmentIds);
 
         /// <summary>
         /// 更新

@@ -47,7 +47,15 @@ namespace QZCHY.API.Controllers
         {
             var currentUser = _workContext.CurrentAccountUser;
 
-            var properties = _propertyService.GetAllProperties(currentUser.IsAdmin() && !showSelf ? 0 : currentUser.Government.Id,false);
+            IList<int> governmentIds = new List<int>();
+            if (showSelf)
+            {
+                governmentIds = _governmentService.GetGovernmentIdsByParentId(currentUser.Government.Id);
+                if (!governmentIds.Contains(currentUser.Government.Id)) governmentIds.Add(currentUser.Government.Id);
+            }
+            else governmentIds = _governmentService.GetGovernmentIdsByCurrentUser();
+
+            var properties = _propertyService.GetAllProperties(governmentIds, false);
             var constructProperties = properties.Where(p => p.PropertyType == PropertyType.House);
             var constructLandProperties = properties.Where(p => p.PropertyType == PropertyType.LandUnderHouse);
             var landProperties = properties.Where(p => p.PropertyType == PropertyType.Land);
@@ -85,7 +93,14 @@ namespace QZCHY.API.Controllers
             var response = new List<ArrayList>();
 
             var currentUser = _workContext.CurrentAccountUser;
-            var properties = _propertyService.GetAllProperties(currentUser.IsAdmin() && !showSelf ? 0 : currentUser.Government.Id,false);
+            IList<int> governmentIds = new List<int>();
+            if (showSelf)
+            {
+                governmentIds = _governmentService.GetGovernmentIdsByParentId(currentUser.Government.Id);
+                if (!governmentIds.Contains(currentUser.Government.Id)) governmentIds.Add(currentUser.Government.Id);
+            }
+            else governmentIds = _governmentService.GetGovernmentIdsByCurrentUser();
+            var properties = _propertyService.GetAllProperties(governmentIds, false);
             //var c1 = properties.Count();
             var statisticsProperties = propertyType == 0 ? properties.Where(p => p.PropertyType != PropertyType.Land) :
                 properties.Where(p => p.PropertyType == PropertyType.Land);
@@ -155,7 +170,14 @@ namespace QZCHY.API.Controllers
             var response = new List<dynamic>();
 
             var currentUser = _workContext.CurrentAccountUser;
-            var properties = _propertyService.GetAllProperties(currentUser.IsAdmin() && !showSelf ? 0 : currentUser.Government.Id, false);
+            IList<int> governmentIds = new List<int>();
+            if (showSelf)
+            {
+                governmentIds = _governmentService.GetGovernmentIdsByParentId(currentUser.Government.Id);
+                if (!governmentIds.Contains(currentUser.Government.Id)) governmentIds.Add(currentUser.Government.Id);
+            }
+            else governmentIds = _governmentService.GetGovernmentIdsByCurrentUser();
+            var properties = _propertyService.GetAllProperties(governmentIds, false);
 
             var constructProperties = properties.Where(p => p.PropertyType != PropertyType.Land);
             var landProperties = properties.Where(p => p.PropertyType == PropertyType.Land);

@@ -4,12 +4,14 @@ using QZCHY.Core.Domain.AccountUsers;
 using QZCHY.Core.Domain.Common;
 using QZCHY.Core.Domain.Media;
 using QZCHY.Core.Domain.Properties;
+using QZCHY.Core.Domain.Security;
 using QZCHY.Services.AccountUsers;
 using QZCHY.Services.Authentication;
 using QZCHY.Services.Common;
 using QZCHY.Services.Configuration;
 using QZCHY.Services.Messages;
 using QZCHY.Services.Property;
+using QZCHY.Services.Security;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity.Spatial;
@@ -37,12 +39,14 @@ namespace QZCHY.API.Controllers
         private readonly IPropertyNewCreateService _propertyNewCreateService;
         private readonly IPropertyOffService _propertyOffService;
         private readonly IPropertyRentService _propertyRentService;
-
+        private readonly IEncryptionService _encryptionService;
 
         private readonly IWebHelper _webHelper;
         private readonly IWorkContext _workContext;
         private readonly AccountUserSettings _accountUserSettings;
         private readonly CommonSettings _commonSettings;
+        private readonly SecuritySettings _securitySettings;
+
 
         private readonly ISettingService _settingService;
 
@@ -56,10 +60,10 @@ namespace QZCHY.API.Controllers
         IGenericAttributeService genericAttributeService,
        IWorkflowMessageService workflowMessageService, IGovernmentService governmentService, IPropertyService propertyService,
        IPropertyAllotService propertyAllotService, IPropertyLendService propertyLendService, IPropertyNewCreateService propertyNewCreateService,
-       IPropertyOffService propertyOffService, IPropertyRentService propertyRentService,
+       IPropertyOffService propertyOffService, IPropertyRentService propertyRentService, IEncryptionService encryptionService,
         IWebHelper webHelper,
             IWorkContext workContext,
-        AccountUserSettings customerSettings, CommonSettings commonSettings, ISettingService settingService
+        AccountUserSettings customerSettings, CommonSettings commonSettings, SecuritySettings securitySettings, ISettingService settingService
             )
         {
             _authenticationService = authenticationService;
@@ -74,19 +78,26 @@ namespace QZCHY.API.Controllers
             _propertyNewCreateService = propertyNewCreateService;
             _propertyOffService = propertyOffService;
             _propertyRentService = propertyRentService;
-
+            _encryptionService = encryptionService;
 
             _webHelper = webHelper;
             _workContext = workContext;
             _accountUserSettings = customerSettings;
 
             _commonSettings = commonSettings;
+            _securitySettings = securitySettings;
             _settingService = settingService;
         }
-
+        [HttpGet]
         [Route("settings")]
         public IHttpActionResult GetAll()
         {
+            _accountUserSettings.DefaultPasswordFormat = PasswordFormat.Encrypted;
+       
+            _settingService.SaveSetting<AccountUserSettings>(_accountUserSettings);
+
+            _securitySettings.EncryptionKey = "qzczjwithqzghchy";
+            _settingService.SaveSetting(_securitySettings);
 
             _commonSettings.TelAndMobliePartten = @"^(0[0-9]{2,3}\-)?([2-9][0-9]{6,7})+(\-[0-9]{1,4})?$|(^(13[0-9]|15[0|3|6|7|8|9]|18[0-9])\d{8}$)";
             _commonSettings.Time24Partten = @"^((1|0?)[0-9]|2[0-4]):([0-5][0-9])";           
@@ -114,6 +125,21 @@ namespace QZCHY.API.Controllers
             _settingService.SaveSetting(_accountUserSettings);
 
             return Ok("配置保存成功");
+        }
+        [HttpGet]
+        [Route("resetpwd")]
+        public IHttpActionResult ResetPWD()
+        {
+            var users = _accountUserService.GetAllAccountUsers();
+            foreach(var user in users)
+            {
+                user.PasswordFormat = PasswordFormat.Encrypted;
+                user.Password = _encryptionService.EncryptText(user.Password);
+
+                _accountUserService.UpdateAccountUser(user);
+            }
+
+            return Ok();
         }
 
         [HttpGet]
@@ -178,20 +204,34 @@ namespace QZCHY.API.Controllers
         public IHttpActionResult SetPropertyConut() {
 
             var goverments = _governmentService.GetAllGovernmentUnits();
-
+            var role = _accountUserService.GetAccountUserRoleBySystemName(SystemAccountUserRoleNames.ParentGovernmentorAuditor);
             foreach (var g in goverments) {
-
-                if (g.ParentGovernmentId != 0) {
-                    var goverment = _governmentService.GetGovernmentUnitById(g.Id);
+                g.PropertyConut = g.Properties.Count;
+                if (g.ParentGovernmentId != 0) { 
                     var parent = _governmentService.GetGovernmentUnitById(g.ParentGovernmentId);
 
-                    goverment.ParentName = parent.Name;
-                    _governmentService.UpdateGovernmentUnit(goverment);
+                    g.ParentName = parent.Name;
+
+              
 
                 }
-               
 
-             
+                _governmentService.UpdateGovernmentUnit(g);
+
+                var users = g.Users;
+                foreach(var user in users)
+                {
+                    if(g.ParentGovernmentId==0)
+                    {
+                        if(user.AccountUserRoles.Where(ur=>ur.Name==SystemAccountUserRoleNames.ParentGovernmentorAuditor).Count()==0)
+                        {
+
+                            user.AccountUserRoles.Add(role);
+                            _accountUserService.UpdateAccountUser(user);
+                        }
+                    }
+                }
+
             }
 
 

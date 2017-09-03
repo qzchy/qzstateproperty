@@ -48,6 +48,14 @@ namespace QZCHY.Core.Domain.Properties
 
         public virtual Property Property { get; set; }
 
+        /// <summary>
+        /// 变更审批通过前存储的新资产信息
+        /// </summary>
         public int CopyProperty_Id { get; set; }
+
+        /// <summary>
+        /// 变更审批通过后存储的原资产信息
+        /// </summary>
+        public int OriginCopyProperty_Id { get; set; }
     }
 }

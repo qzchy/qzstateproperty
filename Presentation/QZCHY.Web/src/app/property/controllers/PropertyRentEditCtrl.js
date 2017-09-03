@@ -59,13 +59,12 @@ app.controller('PropertyRentEditCtrl', ['$window', '$rootScope', '$uibModal', '$
 
             var timestring = $scope.rent.rentTime;
             var time = timestring.split("-");
-            var renttime = time[0].split("/");
-            var backtime = time[1].split("/");
-            var prices =$scope.rent.priceString.split(";");
+            var backtime = moment(time[1]);
+            var renttime = moment(time[0]);
 
+            var diff = backtime.diff(renttime, "year", true);
+            var num = Math.ceil(diff);
             $scope.yearNumber = [];
-            var num = backtime[2] - renttime[2];
-            if (num <= 0) num = 1;
             for (var i = 1; i <= num; i++) {
                 var p=  prices.length < i ? 0 : prices[i - 1];
                 var d = {

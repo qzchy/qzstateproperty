@@ -8,8 +8,8 @@ angular.module('app').controller('AppCtrl', ['$scope', '$localStorage', '$window
     isIE && angular.element($window.document.body).addClass('ie');
     isSmartDevice($window) && angular.element($window.document.body).addClass('smart');
 
-    $rootScope.apiUrl = 'http://localhost/qzstateproperty/api/'
-    $rootScope.baseUrl = 'http://localhost/qzstateproperty/';
+    $rootScope.apiUrl = 'http://localhost/api/'
+    $rootScope.baseUrl = 'http://localhost/';
     //config
     $scope.app = {
         name: '衢州市级行政事业单位和市直国有企业房产土地管理系统',
@@ -87,9 +87,11 @@ angular.module('app').controller('AppCtrl', ['$scope', '$localStorage', '$window
 
     //登录成功后推送用户名
     $scope.account = authService.authentication.account;
+    $scope.nickName = authService.authentication.nickName;
     $scope.isAdmin = authService.authentication.isAdmin;
     $scope.$on('to-parent', function (e, data) {
-        $scope.account = data.account;  //用户名
+        $scope.account = data.account;  //登录名
+        $scope.nickName = data.nickName; //昵称
         $scope.isAdmin = data.isAdmin;
     });
 
@@ -128,7 +130,6 @@ angular.module('app').controller('AppCtrl', ['$scope', '$localStorage', '$window
     }
 
     $scope.$watch('app.settings', function () {
-
         //保存到local storage
         $localStorage.settings = $scope.app.settings;
     }, true);

@@ -161,7 +161,7 @@ app.controller('PropertyProcessCtrl', ['$window', '$rootScope', '$uibModal', '$s
 
             modalInstance.result.then(function () {
             }, function () {
-                $state.reload();
+               // $state.reload();
             });
         };
 
@@ -340,16 +340,13 @@ app.controller('PropertyProcessCtrl', ['$window', '$rootScope', '$uibModal', '$s
           
             var timestring = $scope.process.rent.rentTime;
             var time = timestring.split("-");
-            var renttime = time[0].split("/");
-            var backtime = time[1].split("/");
 
-            var a = moment(backtime).subtract(renttime);
-            console.log(a);
+            var backtime = moment(time[1]);
+            var renttime = moment(time[0]);
              
-
+            var diff = backtime.diff(renttime, "year", true);  
+            var num = Math.ceil(diff);
             $scope.yearNumber = [];
-            var num = backtime[0] - renttime[0];
-            if (num <= 0) num = 1;
                 for (var i = 1; i <= num; i++) {
                   var d = {
                         index: i,

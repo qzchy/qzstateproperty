@@ -46,6 +46,8 @@ namespace QZCHY.Core.Domain.AccountUsers
 
         public string SystemName { get; set; }
 
+        public int DisplayOrder { get; set; }
+
         public string Remark { get; set; }
 
         /// <summary>

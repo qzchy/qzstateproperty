@@ -7,6 +7,6 @@ angular.module('app').config(function ($httpProvider) {
 }]);
 
 angular.module('app').constant('ngAuthSettings', {
-    apiServiceBaseUri: 'http://localhost/qzstateproperty/',
+    apiServiceBaseUri: 'http://localhost/',
     clientId: 'administration',
 });

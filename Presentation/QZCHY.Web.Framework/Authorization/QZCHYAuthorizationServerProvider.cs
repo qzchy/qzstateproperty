@@ -29,7 +29,7 @@ namespace QZCHY.Web.Framework.Security.Authorization
             }
 
             var identity = new ClaimsIdentity(context.Options.AuthenticationType);
-            identity.AddClaim(new Claim(ClaimTypes.Name, string.IsNullOrWhiteSpace(user.NickName) ? "" : user.NickName));
+            identity.AddClaim(new Claim(ClaimTypes.Name, string.IsNullOrWhiteSpace(user.UserName) ? "" : user.UserName));
             identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.AccountUserGuid.ToString()));
             foreach (var role in user.AccountUserRoles)
             {
@@ -43,7 +43,10 @@ namespace QZCHY.Web.Framework.Security.Authorization
                     "as:client_id", context.ClientId ?? string.Empty
                 },
                 {
-                    "userName", user.NickName
+                    "userName", user.UserName
+                },
+                {
+                    "nickName", user.NickName
                 },
                 {
                     "userRoles",string.Join(",", user.AccountUserRoles.Select(cr=>cr.Name).ToArray())

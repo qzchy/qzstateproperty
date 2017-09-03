@@ -13,9 +13,9 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
         //自定义参数集合
         var params = {
             showHidden: true,
+            pageIndex:0,
             pageSize: 15,
-            query: "",
-            sort: "name,asc;",
+            sort: "getedDate,desc;",
             manage: "true",
             isGovernment: false,
             isInstitution: false,

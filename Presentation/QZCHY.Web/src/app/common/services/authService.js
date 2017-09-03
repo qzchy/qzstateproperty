@@ -8,6 +8,7 @@ app.factory('authService', ['$http', '$q', '$localStorage', 'ngAuthSettings', fu
     var _authentication = {
         isAuth: false,
         account: "",
+        nickName:"",
         useRefreshTokens: false,
         roles: "",
         isAdmin: true
@@ -38,7 +39,7 @@ app.factory('authService', ['$http', '$q', '$localStorage', 'ngAuthSettings', fu
             }
             else
             {
-                var authroziationData = { token: response.access_token, userName: loginData.account, refreshToken:"", useRefreshTokens: false, roles: response.userRoles, isAdmin: _userHasRole(response.userRoles, "管理员") > -1 };
+                var authroziationData = { token: response.access_token, userName: loginData.account,nickName:response.nickName, refreshToken:"", useRefreshTokens: false, roles: response.userRoles, isAdmin: _userHasRole(response.userRoles, "管理员") > -1 };
                 
                 if (loginData.useRefreshTokens) {
                     authroziationData.useRefreshTokens = true;
@@ -49,6 +50,7 @@ app.factory('authService', ['$http', '$q', '$localStorage', 'ngAuthSettings', fu
 
                 _authentication.isAuth = true;
                 _authentication.account = loginData.account;
+                _authentication.nickName = response.nickName;
                 _authentication.useRefreshTokens = loginData.useRefreshTokens;
                 _authentication.roles = response.userRoles;
                 _authentication.isAdmin = _userHasRole(response.userRoles, "管理员") > -1;
@@ -71,6 +73,7 @@ app.factory('authService', ['$http', '$q', '$localStorage', 'ngAuthSettings', fu
 
         _authentication.isAuth = false;
         _authentication.account = "";
+        _authentication.nickName = "";
         _authentication.useRefreshTokens = false;
 
     };
@@ -86,6 +89,7 @@ app.factory('authService', ['$http', '$q', '$localStorage', 'ngAuthSettings', fu
         if (authData) {
             _authentication.isAuth = true;
             _authentication.account = authData.userName;
+            _authentication.nickName = authData.nickName;
             _authentication.roles = authData.roles;
             _authentication.useRefreshTokens = authData.useRefreshTokens;
             _authentication.isAdmin = authData.isAdmin;
@@ -108,7 +112,7 @@ app.factory('authService', ['$http', '$q', '$localStorage', 'ngAuthSettings', fu
 
                 $http.post(serviceBase + 'token', data, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }).success(function (response) {
 
-                    $localStorage.authorizationData = { token: response.access_token, userName: response.account, refreshToken: response.refresh_token, useRefreshTokens: true, isAdmin: _userHasRole(response.userRoles, "管理员") > -1 };
+                    $localStorage.authorizationData = { token: response.access_token, userName: response.account,nickName:response.nickName, refreshToken: response.refresh_token, useRefreshTokens: true, isAdmin: _userHasRole(response.userRoles, "管理员") > -1 };
 
                     deferred.resolve(response);
 

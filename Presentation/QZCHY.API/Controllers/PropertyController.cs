@@ -55,8 +55,8 @@ namespace QZCHY.API.Controllers
              IPropertyLendService propertyLendService,
              IPropertyRentService propertyRentService,
              IPropertyAllotService propertyAllotService, IPropertyOffService propertyOffService,
-              IPropertyEditService propertyEditService, ICopyPropertyService copyPropertyService, 
-              IPictureService pictureService,IFileService fileService,
+              IPropertyEditService propertyEditService, ICopyPropertyService copyPropertyService,
+              IPictureService pictureService, IFileService fileService,
         IWorkContext workContext)
         {
             _propertyService = propertyService;
@@ -76,14 +76,16 @@ namespace QZCHY.API.Controllers
             _fileService = fileService;
         }
 
-        #region utility
+        #region utility     
 
         /// <summary>
         /// 模型检查
         /// </summary>
         /// <param name="propertyCreateModel"></param>
         /// <returns></returns>
-        protected string PropertyCreateModelValid(PropertyCreateModel propertyCreateModel)
+        [NonAction]
+
+        protected virtual string PropertyCreateModelValid(PropertyCreateModel propertyCreateModel)
         {
 
             if (propertyCreateModel.PropertyTypeId == 0)
@@ -118,7 +120,9 @@ namespace QZCHY.API.Controllers
         /// </summary>
         /// <param name="property"></param>
         /// <param name="propertyModel"></param>
-        protected void PrepareProperty(Property property, PropertyCreateModel propertyCreateModel)
+        [NonAction]
+
+        protected virtual void PrepareProperty(Property property, PropertyCreateModel propertyCreateModel)
         {
             #region 日期处理
             if (!string.IsNullOrEmpty(propertyCreateModel.GetedDate))
@@ -184,7 +188,8 @@ namespace QZCHY.API.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <param name="request"></param>
-        protected PropertyAdvanceConditionRequest PrepareAdvanceCondition(PropertyAdvanceConditionModel propertyAdvanceConditionModel)
+        [NonAction]
+        protected virtual PropertyAdvanceConditionRequest PrepareAdvanceCondition(PropertyAdvanceConditionModel propertyAdvanceConditionModel)
         {
             var advanceCondition = new PropertyAdvanceConditionRequest();
 
@@ -240,7 +245,7 @@ namespace QZCHY.API.Controllers
             }
             //if (propertyAdvanceConditionModel.NextStep.Self) advanceCondition.NextStep.Add((int)NextStepType.Self);
             //if (propertyAdvanceConditionModel.NextStep.StoreUp) advanceCondition.NextStep.Add((int)NextStepType.Storeup);
-         
+
             //if (propertyAdvanceConditionModel.NextStep.Greenland) advanceCondition.NextStep.Add((int)NextStepType.Greenland);
             //if (propertyAdvanceConditionModel.NextStep.Auction) advanceCondition.NextStep.Add((int)NextStepType.Auction);
             //if (propertyAdvanceConditionModel.NextStep.Adjust) advanceCondition.NextStep.Add((int)NextStepType.Adjust);
@@ -296,7 +301,8 @@ namespace QZCHY.API.Controllers
         /// </summary>
         /// <param name="rangeStr"></param>
         /// <returns></returns>
-        protected RangeList PrepareRanges(string rangeStr)
+        [NonAction]
+        protected virtual RangeList PrepareRanges(string rangeStr)
         {
             var rangeList = new RangeList() { Ranges = new List<Range>() };
             if (!string.IsNullOrEmpty(rangeStr))
@@ -319,7 +325,8 @@ namespace QZCHY.API.Controllers
             return rangeList;
         }
 
-        protected Range PrepareRange(string rangeStr)
+        [NonAction]
+        protected virtual Range PrepareRange(string rangeStr)
         {
             var minAndMax = rangeStr.Split('_');
             if (minAndMax.Length == 2)
@@ -339,16 +346,16 @@ namespace QZCHY.API.Controllers
         /// </summary>
         /// <param name="property"></param>
         /// <returns></returns>
-        protected bool PropertyBelongCurrentUser(Property property)
+        [NonAction]
+        protected virtual bool PropertyBelongCurrentUser(Property property, bool exceptGovernmentHasUsers = false)
         {
             var currentUser = _workContext.CurrentAccountUser;
             var ownerGovernment = property.Government;
             if (ownerGovernment.Id == currentUser.Government.Id) return true;  //本单位
             else
             {
-                //判断当前资产是否有账户
-                if (ownerGovernment.Users.Count > 0) return false;
-                return (currentUser.Government.Id == ownerGovernment.ParentGovernmentId); //判断是否为上级单位
+                var childrenGovernmentIds = _governmentService.GetGovernmentIdsByParentId(currentUser.Government.Id, exceptGovernmentHasUsers);
+                return childrenGovernmentIds.Contains(ownerGovernment.Id);
             }
         }
 
@@ -358,7 +365,8 @@ namespace QZCHY.API.Controllers
         /// <param name="state"></param>
         /// <param name="suggestionId"></param>
         /// <returns></returns>
-        protected bool PropertyCanApprove(PropertyApproveState state, int suggestionId)
+        [NonAction]
+        protected virtual bool PropertyCanApprove(PropertyApproveState state, int suggestionId)
         {
             var currentUser = _workContext.CurrentAccountUser;
             var g = _governmentService.GetGovernmentUnitById(suggestionId);
@@ -366,9 +374,12 @@ namespace QZCHY.API.Controllers
 
             //部门审核阶段
             if (state == PropertyApproveState.DepartmentApprove)
-            {             
+            {
                 //必须是主管单位才能审核
-                return currentUser.Government.ParentGovernmentId == 0 && currentUser.Government.Id == g.ParentGovernmentId;
+                var childrenGovernmentIds = _governmentService.GetGovernmentIdsByParentId(currentUser.Government.Id);
+                if (!childrenGovernmentIds.Contains(currentUser.Government.Id)) childrenGovernmentIds.Add(currentUser.Government.Id);
+                return childrenGovernmentIds.Contains(suggestionId) && currentUser.IsParentGovernmentorAuditor();
+                //return currentUser.Government.ParentGovernmentId == 0 && currentUser.Government.Id == g.ParentGovernmentId;
             }
             else if (state == PropertyApproveState.AdminApprove)
             {
@@ -380,13 +391,43 @@ namespace QZCHY.API.Controllers
         }
 
         /// <summary>
+        /// 是否可以编辑
+        /// </summary>
+        /// <param name="state"></param>
+        /// <param name="suggestionId"></param>
+        /// <returns></returns>
+        [NonAction]
+        protected virtual bool PropertyApproveCanEditDeleteAndSubmit(PropertyApproveState state, int suggestionId)
+        {
+            var currentUser = _workContext.CurrentAccountUser;
+
+            if (state != PropertyApproveState.Start) return false;
+
+            //必须是申请的人才有权限
+            return suggestionId == currentUser.Government.Id;
+        }
+
+        /// <summary>
+        /// 资产是否可以查看
+        /// </summary>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        [NonAction]
+        protected virtual bool PropertyCanView(Property property)
+        {
+            return PropertyBelongCurrentUser(property, false);
+        }
+
+
+        /// <summary>
         /// 资产是否可以编辑
         /// </summary>
         /// <param name="property"></param>
         /// <returns></returns>
-        protected bool PropertyCanEditDelete(Property property)
+        [NonAction]
+        protected virtual bool PropertyCanEditDelete(Property property)
         {
-            if(PropertyBelongCurrentUser(property))
+            if (PropertyBelongCurrentUser(property, true))
             {
                 return !property.Published;
             }
@@ -399,9 +440,10 @@ namespace QZCHY.API.Controllers
         /// </summary>
         /// <param name="property"></param>
         /// <returns></returns>
-        protected bool PropertyCanChange(Property property)
+        [NonAction]
+        protected virtual bool PropertyCanChange(Property property)
         {
-            if (PropertyBelongCurrentUser(property))
+            if (PropertyBelongCurrentUser(property, true))
             {
                 var edits = _propertyEditService.GetPropertyEditByPropertyId(property.Id);
 
@@ -424,7 +466,8 @@ namespace QZCHY.API.Controllers
             return false;
         }
 
-        protected CopyProperty CopyPropertyChange(CopyProperty copy, PropertyCreateModel propertyCreateModel, Property property, Picture logoPicture)
+        [NonAction]
+        protected virtual CopyProperty CopyPropertyChange(CopyProperty copy, PropertyCreateModel propertyCreateModel, Property property, Picture logoPicture)
         {
             copy.GetedDate = Convert.ToDateTime(propertyCreateModel.GetedDate);
             copy.PropertyID = property.PropertyID;
@@ -437,17 +480,6 @@ namespace QZCHY.API.Controllers
             copy.FileIds = string.Join("_", propertyCreateModel.Files.Select(p => p.FileId).ToArray());
             if (logoPicture != null) copy.LogoPicture_Id = logoPicture.Id;
             return copy;
-        }
-
-        //是否可以编辑
-        protected bool PropertyApproveCanEditDeleteAndSubmit(PropertyApproveState state, int suggestionId)
-        {
-            var currentUser = _workContext.CurrentAccountUser;
-
-            if (state != PropertyApproveState.Start) return false;
-
-            //必须是申请的人才有权限
-            return suggestionId == currentUser.Government.Id;
         }
 
         [NonAction]
@@ -484,7 +516,7 @@ namespace QZCHY.API.Controllers
                 propertyFileModel.Src = _fileService.GetFileUrl(propertyFileModel.FileId);
                 propertyFileModel.Uploaded = true;
                 propertyFileModel.Percentage = 100;
-            }            
+            }
         }
 
         [NonAction]
@@ -495,7 +527,7 @@ namespace QZCHY.API.Controllers
                 propertyFileModel.Src = _fileService.GetFileUrl(propertyFileModel.FileId);
                 propertyFileModel.Uploaded = true;
                 propertyFileModel.Percentage = 100;
-            }            
+            }
         }
 
         [NonAction]
@@ -876,7 +908,7 @@ namespace QZCHY.API.Controllers
         [NonAction]
         protected virtual PropertyPicture GetLogoPicture(Property property)
         {
-         
+
             //获取logo图片
             var logoPicture = property.Pictures.Where(sp => sp.IsLogo).SingleOrDefault();
 
@@ -902,16 +934,16 @@ namespace QZCHY.API.Controllers
         /// </summary>
         /// <param name="locked"></param>
         /// <param name="property"></param>
-        protected virtual void SwitchPropertyLockState(bool locked,Property property)
+        protected virtual void SwitchPropertyLockState(bool locked, Property property)
         {
-            if(property.Locked!=locked)
+            if (property.Locked != locked)
             {
                 property.Locked = locked; //资产被锁定，无法进行其他操作
                 _propertyService.UpdateProperty(property);
 
                 //activity log
                 _accountUserActivityService.InsertActivity("LockPropertySwitch", "{1} 名为 {0} 的资产", property.Name, locked ? "锁定" : "解锁");
-            }         
+            }
         }
 
         #endregion
@@ -936,7 +968,7 @@ namespace QZCHY.API.Controllers
             if (property == null || property.Deleted)
                 return NotFound();
 
-            if (!currentUser.IsAdmin() && !(property.Government.Id == currentUser.Government.Id || property.Government.ParentGovernmentId == currentUser.Government.Id))
+            if (!(currentUser.IsAdmin()|| currentUser.IsDataReviewer() || PropertyCanView(property))) 
                 return NotFound();
 
             var model = property.ToModel();
@@ -1073,6 +1105,8 @@ namespace QZCHY.API.Controllers
         {
             var currentUser = _workContext.CurrentAccountUser;
 
+            showHidden = currentUser.IsRegistered() && currentUser.AccountUserRoles.Count == 1;  //只是注册单位可以获取未发布的
+
             //初始化排序条件
             var sortConditions = PropertySortCondition.Instance(sort);
 
@@ -1098,16 +1132,10 @@ namespace QZCHY.API.Controllers
             //高级搜索参数设置
             PropertyAdvanceConditionRequest request = PrepareAdvanceCondition(advance);
 
-            //根据不同的角色，设置相应的数据权限
-
-            if(currentUser.IsAdmin()||currentUser.IsDataReviewer())
-            {
-
-            }
-
-
-            var properties = _propertyService.GetAllProperties(query, currentUser.IsAdmin() ? 0 : currentUser.Government.Id, true, pageIndex, pageSize,
-                !currentUser.IsAdmin(), request, sortConditions);
+            var governmentIds =_governmentService.GetGovernmentIdsByCurrentUser();  //获取当前账户的可查询的资产
+           
+            var properties = _propertyService.GetAllProperties(governmentIds, query, pageIndex, pageSize,
+               showHidden, request, sortConditions);
 
             var response = new ListResponse<PropertyListModel>
             {
@@ -1141,11 +1169,14 @@ namespace QZCHY.API.Controllers
             return Ok(response);
         }
 
+
         [HttpPost]
         [Route("")]
         public IHttpActionResult GetAll(PropertyAdvanceConditionModel advance)
         {
             var currentUser = _workContext.CurrentAccountUser;
+
+          var  showHidden = currentUser.IsRegistered() && currentUser.AccountUserRoles.Count == 1;  //只是注册单位可以获取未发布的
 
             //初始化排序条件
             var sortConditions = PropertySortCondition.Instance(advance.Sort);
@@ -1156,9 +1187,10 @@ namespace QZCHY.API.Controllers
             //高级搜索参数设置
             PropertyAdvanceConditionRequest request = PrepareAdvanceCondition(advance);
 
+            var governmentIds = _governmentService.GetGovernmentIdsByCurrentUser();  //获取当前账户的可查询的资产
 
-            var properties = _propertyService.GetAllProperties(advance.Query, currentUser.IsAdmin() ? 0 : currentUser.Government.Id, true, advance.PageIndex, advance.PageSize,
-                true, request, sortConditions);
+            var properties = _propertyService.GetAllProperties(governmentIds,advance.Query, advance.PageIndex, advance.PageSize,
+                showHidden, request, sortConditions);
 
             var response = new ListResponse<PropertyModel>
             {
@@ -1198,6 +1230,8 @@ namespace QZCHY.API.Controllers
         {
             var currentUser = _workContext.CurrentAccountUser;
 
+            var showHidden = currentUser.IsRegistered() && currentUser.AccountUserRoles.Count == 1;  //只是注册单位可以获取未发布的
+
             //初始化排序条件
             var sortConditions = PropertySortCondition.Instance(advance.Sort);
 
@@ -1206,9 +1240,8 @@ namespace QZCHY.API.Controllers
 
             //高级搜索参数设置
             PropertyAdvanceConditionRequest request = PrepareAdvanceCondition(advance);
-
-            var properties = _propertyService.GetAllProperties(advance.Query, currentUser.IsAdmin() ? 0 : currentUser.Government.Id, true,
-                0, int.MaxValue, true, request, sortConditions);
+            var governmentIds = _governmentService.GetGovernmentIdsByCurrentUser();  //获取当前账户的可查询的资产
+            var properties = _propertyService.GetAllProperties(governmentIds, advance.Query, 0, int.MaxValue, showHidden, request, sortConditions);
 
             var response = new ListResponse<GeoPropertyModel>
             {
@@ -1242,7 +1275,9 @@ namespace QZCHY.API.Controllers
         public IHttpActionResult GetMapBigData()
         {
             var currentUser = _workContext.CurrentAccountUser;
-            var properties = _propertyService.GetAllProperties(currentUser.IsAdmin() ? 0 : currentUser.Government.Id, true);
+            var showHidden = currentUser.IsRegistered() && currentUser.AccountUserRoles.Count == 1;
+            var governmentIds = _governmentService.GetGovernmentIdsByCurrentUser();
+            var properties = _propertyService.GetAllProperties(governmentIds, showHidden);
 
             var mapProperties = properties.ToList().Select(p => { return p.ToGeoModel(); });
 
@@ -1261,11 +1296,13 @@ namespace QZCHY.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("geo/suggestion")]
-        public IHttpActionResult Suggestion(string query = "",long time=0, int pageSize = 10, bool showHidden = true)
+        public IHttpActionResult Suggestion(string query = "",long time=0, int pageSize = 10, bool showHidden = false)
         {
             var currentUser = _workContext.CurrentAccountUser;
 
-            var properties = _propertyService.GetAllProperties(query, currentUser.IsAdmin() ? 0 : currentUser.Government.Id, true, 0,  pageSize, showHidden);
+            var governmentIds = _governmentService.GetGovernmentIdsByCurrentUser();
+
+            var properties = _propertyService.GetAllProperties(governmentIds, query, 0, pageSize, false);
 
             var response = new ListResponse<GeoPropertyModel>
             {
@@ -1625,13 +1662,13 @@ namespace QZCHY.API.Controllers
 
             if(loadChildren)
             {
-                var childrenGovernments = _governmentService.GetAllGovernmentsByParentGovernmentId(governmentId);
-                governmentIdList.AddRange(childrenGovernments.Select(g => g.Id).ToList());
+                var childrenGovernments = _governmentService.GetGovernmentIdsByParentId(governmentId);
+                governmentIdList.AddRange(childrenGovernments);
             }
 
             governmentIdList.Add(governmentId);
 
-            var properties = _propertyService.GetPropertiesByGovernmentId(governmentIdList, loadChildren).Select(p =>
+            var properties = _propertyService.GetPropertiesByGovernmentId(governmentIdList).ToList().Select(p =>
             {
                 return new SimplePropertyModel
                 {
@@ -1653,10 +1690,9 @@ namespace QZCHY.API.Controllers
         public IHttpActionResult GetPropertyProcess() {
 
             var currentAccount = _workContext.CurrentAccountUser;
-            var governmentId = currentAccount.Government.Id;
-            var govermentIds = _governmentService.GetChildrenGovernmentIds(governmentId);
+            var governmentIds = _governmentService.GetGovernmentIdsByCurrentUser(true);
            
-            var properties = _propertyService.GetProcessProperties(govermentIds).Select(sp => {
+            var properties = _propertyService.GetProcessProperties(governmentIds).Select(sp => {
                 return new
                 {
                     Id = sp.Id,
@@ -1686,7 +1722,7 @@ namespace QZCHY.API.Controllers
             var currentUser = _workContext.CurrentAccountUser;          
             var government = currentUser.Government;
 
-            var targetGovIds = new List<int>();
+            IList<int> targetGovIds = new List<int>();
 
             if (currentUser.IsGovAuditor())
             {
@@ -1700,7 +1736,8 @@ namespace QZCHY.API.Controllers
             }
             else
             {
-                targetGovIds = _governmentService.GetChildrenGovernmentIds(government.Id);
+                targetGovIds = _governmentService.GetGovernmentIdsByParentId(government.Id, false);
+                if (!targetGovIds.Contains(currentUser.Government.Id)) targetGovIds.Add(currentUser.Government.Id);
             }
 
             //初始化排序条件
@@ -1835,7 +1872,18 @@ namespace QZCHY.API.Controllers
                                 var pcrl = pcr.ToListModel();
 
                                 pcrl.RentTime = pcr.RentTime.ToString("yyyy/MM/dd") +" - "+pcr.BackTime.ToString("yyyy/MM/dd");
-                                pcrl.PriceString = pcr.PriceString;
+
+                                var priceList = pcr.PriceString.Split(';');
+                                var index = 1;
+                                foreach(var price in priceList)
+                                {
+                                    if (index > 2) {
+                                        pcrl.PriceString += "...";
+                                        break;
+                                    }
+                                    pcrl.PriceString += string.Format("第{0}年租金{1}元;", index, price);
+                                    index++;
+                                }
 
                                 pcrl.Property_Id = pcr.Property.Id;
                                 pcrl.ApproveType = approveType;
@@ -1943,6 +1991,8 @@ namespace QZCHY.API.Controllers
                     if (property.Locked || property.Deleted || !property.Published)
                         return BadRequest("无法对该资产进行操作或该资产已经不存在");
 
+                    if (!PropertyBelongCurrentUser(property, true)) return BadRequest("没有操作权限");
+
                     PropertyLend propertyLendRecord = new PropertyLend();
                     propertyLendRecord.Name = propertyLendModel.Name;
                     propertyLendRecord.Title = property.Name;
@@ -1956,7 +2006,7 @@ namespace QZCHY.API.Controllers
                     propertyLendRecord.SuggestGovernmentId = suggestGovernmentId;
                
                     //如果当前用户是主管部门，则跳过主管部门审核环节
-                    if (propertyLendModel.Submit && _workContext.CurrentAccountUser.Government.ParentGovernmentId == 0)
+                    if (propertyLendModel.Submit && _workContext.CurrentAccountUser.IsParentGovernmentorAuditor())
                     {
                         propertyLendRecord.State = PropertyApproveState.AdminApprove;
                         propertyLendRecord.DSuggestion = "同意";
@@ -2001,7 +2051,8 @@ namespace QZCHY.API.Controllers
                     if (property == null) continue;  //防止错误的PropertyId传入
                     if (property.Locked || property.Deleted || !property.Published)
                         return BadRequest("无法对该资产进行操作或该资产已经不存在");
-                 
+
+                    if (!PropertyBelongCurrentUser(property, true)) return BadRequest("没有操作权限");
 
                     PropertyRent rent = new PropertyRent();
                     rent.Name = propertyRentModel.Name;
@@ -2018,7 +2069,7 @@ namespace QZCHY.API.Controllers
                     rent.SuggestGovernmentId = currentUser.Government.Id;
 
                     //如果当前用户是主管部门，则跳过主管部门审核环节
-                    if (propertyRentModel.Submit && _workContext.CurrentAccountUser.Government.ParentGovernmentId == 0)
+                    if (propertyRentModel.Submit && _workContext.CurrentAccountUser.IsParentGovernmentorAuditor())
                     {
                         rent.State = PropertyApproveState.AdminApprove;
                         rent.DSuggestion = "同意";
@@ -2065,6 +2116,8 @@ namespace QZCHY.API.Controllers
                     if (property.Locked || property.Deleted || !property.Published)
                         return BadRequest("无法对该资产进行操作或该资产已经不存在");
 
+                    if (!PropertyBelongCurrentUser(property, true)) return BadRequest("没有操作权限");
+
                     var nowGovernmentOwner = _governmentService.GetGovernmentUnitByName(propertyAllotModel.NowPropertyOwner);
                     if (nowGovernmentOwner == null) return BadRequest("目标产权单位无效");
 
@@ -2080,7 +2133,7 @@ namespace QZCHY.API.Controllers
                     allot.SuggestGovernmentId = currentUser.Government.Id;
 
                     //如果当前用户是主管部门，则跳过主管部门审核环节
-                    if (propertyAllotModel.Submit && _workContext.CurrentAccountUser.Government.ParentGovernmentId == 0)
+                    if (propertyAllotModel.Submit && _workContext.CurrentAccountUser.IsParentGovernmentorAuditor())
                     {
                         allot.State = PropertyApproveState.AdminApprove;
                         allot.DSuggestion = "同意";
@@ -2121,6 +2174,8 @@ namespace QZCHY.API.Controllers
                     if (property.Locked || property.Deleted || !property.Published)
                         return BadRequest("无法对该资产进行操作或该资产已经不存在");
 
+                    if (!PropertyBelongCurrentUser(property, true)) return BadRequest("没有操作权限");
+
                     PropertyOff off = new PropertyOff();
                     off.Reason = propertyOffModel.Reason;
                     off.OffTime = Convert.ToDateTime(propertyOffModel.OffTime);
@@ -2146,7 +2201,7 @@ namespace QZCHY.API.Controllers
 
 
                     //如果当前用户是主管部门，则跳过主管部门审核环节
-                    if (propertyOffModel.Submit && _workContext.CurrentAccountUser.Government.ParentGovernmentId == 0)
+                    if (propertyOffModel.Submit && _workContext.CurrentAccountUser.IsParentGovernmentorAuditor())
                     {
                         off.State = PropertyApproveState.AdminApprove;
                         off.DSuggestion = "同意";
@@ -2174,14 +2229,13 @@ namespace QZCHY.API.Controllers
             return Ok();
         }
 
-
         [HttpPut]
         [Route("UpdateLend/{id}")]   
         public IHttpActionResult UpdateLendRecord(int id,PropertyLendModel propertyLendModel)
         {
             var currentUser = _workContext.CurrentAccountUser;
             var lend = _propertyLendService.GetPropertyLendById(id);
-
+            
             if (!PropertyApproveCanEditDeleteAndSubmit(lend.State, lend.SuggestGovernmentId)) return BadRequest("该项目已无法编辑");
 
             lend = propertyLendModel.ToEntity(lend);
@@ -2202,7 +2256,7 @@ namespace QZCHY.API.Controllers
                 lend.State = PropertyApproveState.DepartmentApprove;
 
                 //如果当前用户是主管部门，则跳过主管部门审核环节
-                if (currentUser.Government.ParentGovernmentId == 0)
+                if (currentUser.IsParentGovernmentorAuditor())
                 {
                     lend.State = PropertyApproveState.AdminApprove;
                     lend.DSuggestion = "同意";
@@ -2224,7 +2278,6 @@ namespace QZCHY.API.Controllers
 
             var currentUser = _workContext.CurrentAccountUser;
             var rent = _propertyRentService.GetPropertyRentById(id);
-
             if (!PropertyApproveCanEditDeleteAndSubmit(rent.State, rent.SuggestGovernmentId)) return BadRequest("该项目已无法编辑");
 
               rent = propertyRentModel.ToEntity(rent);
@@ -2245,7 +2298,7 @@ namespace QZCHY.API.Controllers
                 rent.State = PropertyApproveState.DepartmentApprove;
 
                 //如果当前用户是主管部门，则跳过主管部门审核环节
-                if (currentUser.Government.ParentGovernmentId == 0)
+                if (currentUser.IsParentGovernmentorAuditor())
                 {
                     rent.State = PropertyApproveState.AdminApprove;
                     rent.DSuggestion = "同意";
@@ -2269,7 +2322,6 @@ namespace QZCHY.API.Controllers
         {
             var currentUser = _workContext.CurrentAccountUser;
             var allot = _propertyAllotService.GetPropertyAllotById(id);
-
             if (!PropertyApproveCanEditDeleteAndSubmit(allot.State, allot.SuggestGovernmentId)) return BadRequest("该项目已无法编辑");
             allot = propertyAllotModel.ToEntity(allot);
 
@@ -2281,7 +2333,7 @@ namespace QZCHY.API.Controllers
                 allot.State = PropertyApproveState.DepartmentApprove;
 
                 //如果当前用户是主管部门，则跳过主管部门审核环节
-                if (currentUser.Government.ParentGovernmentId == 0)
+                if (currentUser.IsParentGovernmentorAuditor())
                 {
                     allot.State = PropertyApproveState.AdminApprove;
                     allot.DSuggestion = "同意";
@@ -2306,7 +2358,6 @@ namespace QZCHY.API.Controllers
         {
             var currentUser = _workContext.CurrentAccountUser;
             var off = _propertyOffService.GetPropertyOffById(id);
-
 
             if (!PropertyApproveCanEditDeleteAndSubmit(off.State, off.SuggestGovernmentId)) return BadRequest("该项目已无法编辑");
             off = propertyOffModel.ToEntity(off);
@@ -2338,7 +2389,7 @@ namespace QZCHY.API.Controllers
                 off.State = PropertyApproveState.DepartmentApprove;
 
                 //如果当前用户是主管部门，则跳过主管部门审核环节
-                if (currentUser.Government.ParentGovernmentId == 0)
+                if (currentUser.IsParentGovernmentorAuditor())
                 {
                     off.State = PropertyApproveState.AdminApprove;
                     off.DSuggestion = "同意";
@@ -2361,6 +2412,10 @@ namespace QZCHY.API.Controllers
 
             var newCreate = _propertyNewCreateService.GetPropertyNewCreateById(id);
             if (newCreate == null || newCreate.Deleted) return BadRequest("无法找到资源");
+
+            var property = _propertyService.GetPropertyById(newCreate.Property_Id);
+
+            if (!PropertyBelongCurrentUser(property, false)) return BadRequest("没有操作权限");
 
             var response = new PropertyNewCreateApproveModel
             {
@@ -2392,13 +2447,15 @@ namespace QZCHY.API.Controllers
 
             var edit = _propertyEditService.GetPropertyEditById(id);
             if (edit == null || edit.Deleted) return BadRequest("无法找到资源");
-           
+
+            var property = _propertyService.GetPropertyById(edit.Property.Id);
+            if (!PropertyBelongCurrentUser(property, false)) return BadRequest("没有操作权限");
+
             var copyProperty = _copyPropertyService.GetCopyPropertyById(edit.CopyProperty_Id);
             var govermentName = _governmentService.GetGovernmentUnitById(copyProperty.Government_Id).Name;
 
             var response = new PropertyEditApproveModel
             {
-                Property = edit.Property.ToModel(),
                 CopyProperty = copyProperty.ToModel(),               
                 PropertyEdit = edit.ToModel(),
                 CanApprove = PropertyCanApprove(edit.State, edit.SuggestGovernmentId),
@@ -2406,15 +2463,7 @@ namespace QZCHY.API.Controllers
                 LinkMan = edit.Property.Government.Person,
                 LinkTel = edit.Property.Government.Tel
             };
-            response.CopyProperty.GovernmentName = govermentName;
-
-            #region 原数据库对象
-            response.Property.LogoUrl = GetLogoUrl(edit.Property);
-            //获取图片
-            PreparePropertyPictures(response.Property);
-            //获取文件
-            PreparePropertyFiles(response.Property);
-            #endregion
+            response.CopyProperty.GovernmentName = govermentName;            
 
             #region 新数据库对象
             #region 获取图片
@@ -2461,6 +2510,71 @@ namespace QZCHY.API.Controllers
             response.CopyProperty.LogoUrl = string.IsNullOrEmpty(logoUrl) ? null : logoUrl;
             #endregion
 
+            if(edit.State== PropertyApproveState.Finish && edit.OriginCopyProperty_Id!=0)
+            {
+                var originCopyProperty = _copyPropertyService.GetCopyPropertyById(edit.OriginCopyProperty_Id);
+                var originGovermentName = _governmentService.GetGovernmentUnitById(originCopyProperty.Government_Id).Name;
+
+                response.Property = originCopyProperty.ToModel();
+                response.Property.GovernmentName = originGovermentName;
+
+                #region 备份的原数据库对象
+                #region 获取图片
+                response.Property.Pictures = new List<PropertyPictureModel>();
+                foreach (var pid in originCopyProperty.PrictureIds.Split('_'))
+                {
+                    if (string.IsNullOrWhiteSpace(pid)) continue;
+                    var picture = _pictureService.GetPictureById(Convert.ToInt32(pid));
+                    if (picture == null) continue;
+
+                    var propertyPictureModel = new PropertyPictureModel
+                    {
+                        PictureId = picture.Id,
+                        PropertyId = originCopyProperty.Id,
+                        Href = _pictureService.GetPictureUrl(picture.Id),
+                        Title = picture.TitleAttribute
+                    };
+
+                    response.Property.Pictures.Add(propertyPictureModel);
+                }
+                #endregion
+
+                #region 文件更新
+                response.Property.Files = new List<PropertyFileModel>();
+                foreach (var fid in originCopyProperty.FileIds.Split('_'))
+                {
+                    if (string.IsNullOrWhiteSpace(fid)) continue;
+                    var file = _fileService.GetFileById(Convert.ToInt32(fid));
+                    if (file == null) continue;
+
+                    var propertyFileModel = new PropertyFileModel
+                    {
+                        FileId = file.Id,
+                        PropertyId = originCopyProperty.Id,
+                        Src = _fileService.GetFileUrl(file),
+                        Title = file.Name
+                    };
+
+                    response.Property.Files.Add(propertyFileModel);
+                }
+
+                #endregion
+                var originLogoUrl = _pictureService.GetPictureUrl(originCopyProperty.LogoPicture_Id);
+                response.Property.LogoUrl = string.IsNullOrEmpty(originLogoUrl) ? null : originLogoUrl;
+                #endregion
+            }
+            else
+            {
+                response.Property = edit.Property.ToModel();
+
+                #region 原数据库对象
+                response.Property.LogoUrl = GetLogoUrl(edit.Property);
+                //获取图片
+                PreparePropertyPictures(response.Property);
+                //获取文件
+                PreparePropertyFiles(response.Property);
+                #endregion
+            }
 
             return Ok(response);
         }
@@ -2474,6 +2588,8 @@ namespace QZCHY.API.Controllers
 
             var lend = _propertyLendService.GetPropertyLendById(id);
             if (lend == null || lend.Deleted) return BadRequest("无法找到资源");
+
+            //if (!PropertyBelongCurrentUser(lend.Property, false)) return BadRequest("没有操作权限");
 
             var response = new PropertyLendApproveModel
             {
@@ -2499,6 +2615,8 @@ namespace QZCHY.API.Controllers
 
             var rent = _propertyRentService.GetPropertyRentById(id);
             if (rent == null || rent.Deleted) return BadRequest("无法找到资源");
+
+            //if (!PropertyBelongCurrentUser(rent.Property, false)) return BadRequest("没有操作权限");
 
             var response = new PropertyRentApproveModel
             {
@@ -2526,6 +2644,8 @@ namespace QZCHY.API.Controllers
             var allot = _propertyAllotService.GetPropertyAllotById(id);
             if (allot == null || allot.Deleted) return BadRequest("无法找到资源");
 
+            //if (!PropertyBelongCurrentUser(allot.Property, false)) return BadRequest("没有操作权限");
+
             var response = new PropertyAllotApproveModel
             {
                 Property = allot.Property.ToBasicModel(),
@@ -2548,6 +2668,7 @@ namespace QZCHY.API.Controllers
 
             var off = _propertyOffService.GetPropertyOffById(id);
             if (off == null || off.Deleted) return BadRequest("无法找到资源");
+            //if (!PropertyBelongCurrentUser(off.Property, false)) return BadRequest("没有操作权限");
 
             var response = new PropertyOffApproveModel
             {
@@ -2581,7 +2702,9 @@ namespace QZCHY.API.Controllers
                     {
                         var edit = _propertyEditService.GetPropertyEditById(id);
                         if (edit == null) return NotFound();
+                        
                         if (!PropertyApproveCanEditDeleteAndSubmit(edit.State, edit.SuggestGovernmentId)) return BadRequest("无法删除");
+
                         _propertyEditService.DeletePropertyEdit(edit);
 
                         var copyProperty = _copyPropertyService.GetCopyPropertyByPropertyId(edit.Property.Id);
@@ -2675,6 +2798,176 @@ namespace QZCHY.API.Controllers
         }
 
         /// <summary>
+        /// 提交审批申请
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="approveApplyModel"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("SubmitApprove/{id}")]
+        public IHttpActionResult SumbitApprove(int id,string approveType="")
+        {
+          
+            var currentUser = _workContext.CurrentAccountUser;
+
+            switch (approveType)
+            {
+                case "newCreate":
+                    #region 新增审批
+                    {
+                        var newCreate = _propertyNewCreateService.GetPropertyNewCreateById(id);
+                        if (newCreate == null || newCreate.Deleted) return BadRequest("找不到资源");
+
+                        if (PropertyApproveCanEditDeleteAndSubmit(newCreate.State, newCreate.SuggestGovernmentId))
+                        {
+                            newCreate.State = PropertyApproveState.DepartmentApprove;
+
+                            if (currentUser.IsParentGovernmentorAuditor())  //当前用户既是主管部门又是报送部门   // if (currentUser.Government.ParentGovernmentId == 0)
+                            {
+                                newCreate.State = PropertyApproveState.AdminApprove;
+                                newCreate.DApproveDate = DateTime.Now;
+                                newCreate.DSuggestion = "同意";
+                            }
+
+                            _propertyNewCreateService.UpdatePropertyNewCreate(newCreate);
+
+                            //活动日志
+                            _accountUserActivityService.InsertActivity("submitNewCreateApprove", string.Format("提交id为 {0} 的新增资产的处置申请", id));
+
+                            SwitchPropertyLockState(true, newCreate.Property);
+                        }
+
+                        break;
+                    }
+                #endregion
+                case "edit":
+                    #region 编辑审批
+                    {
+                        var edit = _propertyEditService.GetPropertyEditById(id);
+                        if (edit == null || edit.Deleted) return BadRequest("找不到资源");
+
+                        if (PropertyApproveCanEditDeleteAndSubmit(edit.State, edit.SuggestGovernmentId))
+                        {
+                            edit.State = PropertyApproveState.DepartmentApprove;
+
+                            if (currentUser.IsParentGovernmentorAuditor())
+                            {
+                                edit.State = PropertyApproveState.AdminApprove;
+                                edit.DApproveDate = DateTime.Now;
+                                edit.DSuggestion = "同意";
+                            }
+
+                            _propertyEditService.UpdatePropertyEdit(edit);
+
+                            //活动日志
+                            _accountUserActivityService.InsertActivity("submitNewCreateApprove", string.Format("提交id为 {0} 的新增资产的处置申请", id));
+                        }
+
+                        break;
+                    }
+                #endregion
+                case "lend":
+                    #region 出借审批
+                    {
+                        var lend = _propertyLendService.GetPropertyLendById(id);
+                        if (lend == null || lend.Deleted) return BadRequest("找不到资源");
+
+                        if (PropertyApproveCanEditDeleteAndSubmit(lend.State, lend.SuggestGovernmentId))
+                        {
+                            lend.State = PropertyApproveState.DepartmentApprove;
+                            if (currentUser.IsParentGovernmentorAuditor())
+                            {
+                                lend.State = PropertyApproveState.AdminApprove;
+                                lend.DApproveDate = DateTime.Now;
+                                lend.DSuggestion = "同意";
+                            }
+
+                            _propertyLendService.UpdatePropertyLend(lend);
+                            //活动日志
+                            _accountUserActivityService.InsertActivity("submitLendApprove", string.Format("提交id为 {0} 的资产出借的处置申请", id));
+                        }
+
+                        break;
+                    }
+                #endregion
+                case "rent":
+                    #region 出租审批
+                    {
+                        var rent = _propertyRentService.GetPropertyRentById(id);
+                        if (rent == null || rent.Deleted) return BadRequest("找不到资源");
+
+                        if (PropertyApproveCanEditDeleteAndSubmit(rent.State, rent.SuggestGovernmentId))
+                        {
+                            rent.State = PropertyApproveState.DepartmentApprove;
+                            if (currentUser.IsParentGovernmentorAuditor())
+                            {
+                                rent.State = PropertyApproveState.AdminApprove;
+                                rent.DApproveDate = DateTime.Now;
+                                rent.DSuggestion = "同意";
+                            }
+
+                            _propertyRentService.UpdatePropertyRent(rent);
+
+                            //活动日志
+                            _accountUserActivityService.InsertActivity("submitRentApprove", string.Format("提交id为 {0} 的新增资产的处置申请", id));
+                        }
+
+                        break;
+                    }
+                #endregion
+                case "allot":
+                    #region 划拨审批
+                    {
+                        var allot = _propertyAllotService.GetPropertyAllotById(id);
+                        if (allot == null || allot.Deleted) return BadRequest("找不到资源");
+
+                        if (PropertyApproveCanEditDeleteAndSubmit(allot.State, allot.SuggestGovernmentId))
+                        {
+                            allot.State = PropertyApproveState.DepartmentApprove;
+                            if (currentUser.IsParentGovernmentorAuditor())
+                            {
+                                allot.State = PropertyApproveState.AdminApprove;
+                                allot.DApproveDate = DateTime.Now;
+                                allot.DSuggestion = "同意";
+                            }
+                            _propertyAllotService.UpdatePropertyAllot(allot);
+
+                            //活动日志
+                            _accountUserActivityService.InsertActivity("submitAllotApprove", string.Format("提交id为 {0} 的资产划拨的处置申请", id));
+                        }
+
+                        break;
+                    }
+                #endregion
+                case "off":
+                    #region 核销审批
+                    {
+                        var off = _propertyOffService.GetPropertyOffById(id);
+                        if (off == null || off.Deleted) return BadRequest("找不到资源");
+
+                        if (PropertyApproveCanEditDeleteAndSubmit(off.State, off.SuggestGovernmentId))
+                        {
+                            off.State = PropertyApproveState.DepartmentApprove;
+                            if (currentUser.IsParentGovernmentorAuditor())
+                            {
+                                off.State = PropertyApproveState.AdminApprove;
+                                off.DApproveDate = DateTime.Now;
+                                off.DSuggestion = "同意";
+                            }
+                            _propertyOffService.UpdatePropertyOff(off);
+
+                            //活动日志
+                            _accountUserActivityService.InsertActivity("submitOffApprove", string.Format("提交id为 {0} 的资产核销的处置申请", id));
+                        }
+
+                        break;
+                    }
+                    #endregion
+            }
+            return Ok();
+        }
+
+        /// <summary>
         /// 审批处置申请
         /// </summary>
         /// <param name="id"></param>
@@ -2712,7 +3005,7 @@ namespace QZCHY.API.Controllers
 
                         if (agree)
                         {
-                            
+
                             if (newCreate.State == PropertyApproveState.Start)
                             {
                                 newCreate.State = PropertyApproveState.DepartmentApprove;
@@ -2727,7 +3020,7 @@ namespace QZCHY.API.Controllers
                                 newCreate.Property.Published = true;
                                 SwitchPropertyLockState(false, newCreate.Property);
 
-                            //    SwitchPropertyLockState(false, newCreate.Property);
+                                //    SwitchPropertyLockState(false, newCreate.Property);
                             }
                         }
                         else
@@ -2773,10 +3066,48 @@ namespace QZCHY.API.Controllers
                             }
                             else if (edit.State == PropertyApproveState.AdminApprove)
                             {
+                                var property = _propertyService.GetPropertyById(edit.Property.Id);
                                 var copyproperty = _copyPropertyService.GetCopyPropertyById(edit.CopyProperty_Id);
 
-                                #region 资产赋值
-                                var property = _propertyService.GetPropertyById(edit.Property.Id);
+                                #region 资产原值存储
+                                var originCopyProperty = new CopyProperty();
+                                originCopyProperty.Name = property.Name;
+                                originCopyProperty.PropertyType = property.PropertyType;
+                                originCopyProperty.Region = property.Region;
+                                originCopyProperty.Address = property.Address;
+                                originCopyProperty.ConstructArea = property.ConstructArea;
+                                originCopyProperty.LandArea = property.LandArea;
+                                originCopyProperty.PropertyID = property.PropertyID;
+                                originCopyProperty.HasConstructID = property.HasConstructID;
+                                originCopyProperty.HasLandID = property.HasLandID;
+                                originCopyProperty.PropertyNature = property.PropertyNature;
+                                originCopyProperty.LandNature = property.LandNature;
+                                originCopyProperty.Price = property.Price;
+                                originCopyProperty.GetedDate = property.GetedDate;
+                                originCopyProperty.LifeTime = property.LifeTime;
+                                originCopyProperty.UsedPeople = property.UsedPeople;
+                                originCopyProperty.CurrentUse_Self = property.CurrentUse_Self;
+                                originCopyProperty.CurrentUse_Rent = property.CurrentUse_Rent;
+                                originCopyProperty.CurrentUse_Lend = property.CurrentUse_Lend;
+                                originCopyProperty.CurrentUse_Idle = property.CurrentUse_Idle;
+                                originCopyProperty.NextStepUsage = property.NextStepUsage;
+                                originCopyProperty.Location = property.Location.AsText();
+                                originCopyProperty.Extent = property.Extent.AsText();
+                                originCopyProperty.Description = property.Description;
+                                originCopyProperty.EstateId = property.EstateId;
+                                originCopyProperty.ConstructId = property.ConstructId;
+                                originCopyProperty.LandId = property.LandId;
+                                originCopyProperty.Government_Id = property.Government.Id;
+
+                                originCopyProperty.PrictureIds = string.Join("_", property.Pictures.Select(p => p.PictureId).ToArray());
+                                originCopyProperty.FileIds = string.Join("_", property.Files.Select(p => p.FileId).ToArray());
+                                var originPropertyLogoPicture = property.Pictures.Where(pp => pp.IsLogo).FirstOrDefault();
+                                if (originPropertyLogoPicture != null) originCopyProperty.LogoPicture_Id = originPropertyLogoPicture.PictureId;
+
+                                _copyPropertyService.InsertCopyProperty(originCopyProperty);
+                                #endregion
+
+                                #region 资产赋新值                           
                                 property.Name = copyproperty.Name;
                                 property.PropertyType = copyproperty.PropertyType;
                                 property.Region = copyproperty.Region;
@@ -2800,8 +3131,8 @@ namespace QZCHY.API.Controllers
                                 if (!string.IsNullOrEmpty(copyproperty.Location))
                                     property.Location = DbGeography.FromText(copyproperty.Location);
                                 else return BadRequest("空间位置未赋值");
-                                if(!string.IsNullOrEmpty(copyproperty.Extent))
-                                property.Extent = DbGeography.FromText(copyproperty.Extent);
+                                if (!string.IsNullOrEmpty(copyproperty.Extent))
+                                    property.Extent = DbGeography.FromText(copyproperty.Extent);
                                 property.Description = copyproperty.Description;
                                 property.EstateId = copyproperty.EstateId;
                                 property.ConstructId = copyproperty.ConstructId;
@@ -2815,8 +3146,8 @@ namespace QZCHY.API.Controllers
                                 foreach (var pid in copyproperty.PrictureIds.Split('_'))
                                 {
                                     if (string.IsNullOrWhiteSpace(pid)) continue;
-                                    var picture = _pictureService.GetPictureById(Convert.ToInt32(pid));                                    
-     
+                                    var picture = _pictureService.GetPictureById(Convert.ToInt32(pid));
+
                                     if (picture == null) continue;
 
                                     var propertyPictureModel = new PropertyPictureModel
@@ -2830,7 +3161,7 @@ namespace QZCHY.API.Controllers
                                 //图片更新
                                 SavePropertyPictures(property, propertyPictureModels);
                                 #endregion
-                                
+
                                 #region logo更新
                                 var logoPicture = _pictureService.GetPictureById(copyproperty.LogoPicture_Id);
                                 if (logoPicture != null)
@@ -2876,12 +3207,13 @@ namespace QZCHY.API.Controllers
                                     propertyFileModels.Add(propertyFileModel);
                                 }
 
-                                SavePropertyFiles(property, propertyFileModels); 
+                                SavePropertyFiles(property, propertyFileModels);
                                 #endregion
 
                                 #endregion
 
                                 edit.State = PropertyApproveState.Finish;
+                                edit.OriginCopyProperty_Id = originCopyProperty.Id;  //历史Property记录
                                 property.Published = true;
                                 copyproperty.Published = true;
 
@@ -2973,7 +3305,7 @@ namespace QZCHY.API.Controllers
                             {
                                 rent.State = PropertyApproveState.DepartmentApprove;
                             }
-                            else if(rent.State == PropertyApproveState.DepartmentApprove)
+                            else if (rent.State == PropertyApproveState.DepartmentApprove)
                             {
                                 rent.State = PropertyApproveState.AdminApprove;
                             }
@@ -3099,177 +3431,6 @@ namespace QZCHY.API.Controllers
             return Ok();
         }
 
-
-        /// <summary>
-        /// 提交审批申请
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="approveApplyModel"></param>
-        /// <returns></returns>
-        [HttpPost]
-        [Route("SubmitApprove/{id}")]
-        public IHttpActionResult SumbitApprove(int id,string approveType="")
-        {
-          
-            var currentUser = _workContext.CurrentAccountUser;
-
-            switch (approveType)
-            {
-                case "newCreate":
-                    #region 新增审批
-                    {
-                        var newCreate = _propertyNewCreateService.GetPropertyNewCreateById(id);
-                        if (newCreate == null || newCreate.Deleted) return BadRequest("找不到资源");
-
-                        if (PropertyApproveCanEditDeleteAndSubmit(newCreate.State, newCreate.SuggestGovernmentId))
-                        {
-                            newCreate.State = PropertyApproveState.DepartmentApprove;
-
-                            if (currentUser.Government.ParentGovernmentId == 0)
-                            {
-                                newCreate.State = PropertyApproveState.AdminApprove;
-                                newCreate.DApproveDate = DateTime.Now;
-                                newCreate.DSuggestion = "同意";
-                            }
-
-                            _propertyNewCreateService.UpdatePropertyNewCreate(newCreate);
-
-                            //活动日志
-                            _accountUserActivityService.InsertActivity("submitNewCreateApprove", string.Format("提交id为 {0} 的新增资产的处置申请", id));
-
-                            SwitchPropertyLockState(true, newCreate.Property);
-                        }
-
-                        break;
-                    }
-                #endregion
-                case "edit":
-                    #region 编辑审批
-                    {
-                        var edit = _propertyEditService.GetPropertyEditById(id);
-                        if (edit == null || edit.Deleted) return BadRequest("找不到资源");
-
-                        if (PropertyApproveCanEditDeleteAndSubmit(edit.State, edit.SuggestGovernmentId))
-                        {
-                            edit.State = PropertyApproveState.DepartmentApprove;
-
-                            if (currentUser.Government.ParentGovernmentId == 0)
-                            {
-                                edit.State = PropertyApproveState.AdminApprove;
-                                edit.DApproveDate = DateTime.Now;
-                                edit.DSuggestion = "同意";
-                            }
-
-                            _propertyEditService.UpdatePropertyEdit(edit);
-
-                            //活动日志
-                            _accountUserActivityService.InsertActivity("submitNewCreateApprove", string.Format("提交id为 {0} 的新增资产的处置申请", id));
-                        }
-
-                        break;
-                    }
-                #endregion
-                case "lend":
-                    #region 出借审批
-                    {
-                        var lend = _propertyLendService.GetPropertyLendById(id);
-                        if (lend == null || lend.Deleted) return BadRequest("找不到资源");
-
-                        if (PropertyApproveCanEditDeleteAndSubmit(lend.State, lend.SuggestGovernmentId))
-                        {
-                            lend.State = PropertyApproveState.DepartmentApprove;
-                            if (currentUser.Government.ParentGovernmentId == 0)
-                            {
-                                lend.State = PropertyApproveState.AdminApprove;
-                                lend.DApproveDate = DateTime.Now;
-                                lend.DSuggestion = "同意";
-                            }
-
-                            _propertyLendService.UpdatePropertyLend(lend);
-                            //活动日志
-                            _accountUserActivityService.InsertActivity("submitLendApprove", string.Format("提交id为 {0} 的资产出借的处置申请", id));
-                        }
-
-                        break;
-                    }
-                #endregion
-                case "rent":
-                    #region 出租审批
-                    {
-                        var rent = _propertyRentService.GetPropertyRentById(id);
-                        if (rent == null || rent.Deleted) return BadRequest("找不到资源");
-
-                        if (PropertyApproveCanEditDeleteAndSubmit(rent.State, rent.SuggestGovernmentId))
-                        {
-                            rent.State = PropertyApproveState.DepartmentApprove;
-                            if (currentUser.Government.ParentGovernmentId == 0)
-                            {
-                                rent.State = PropertyApproveState.AdminApprove;
-                                rent.DApproveDate = DateTime.Now;
-                                rent.DSuggestion = "同意";
-                            }
-
-                            _propertyRentService.UpdatePropertyRent(rent);
-
-                            //活动日志
-                            _accountUserActivityService.InsertActivity("submitRentApprove", string.Format("提交id为 {0} 的新增资产的处置申请", id));
-                        }
-
-                        break;
-                    }
-                #endregion
-                case "allot":
-                    #region 划拨审批
-                    {
-                        var allot = _propertyAllotService.GetPropertyAllotById(id);
-                        if (allot == null || allot.Deleted) return BadRequest("找不到资源");
-
-                        if (PropertyApproveCanEditDeleteAndSubmit(allot.State, allot.SuggestGovernmentId))
-                        {
-                            allot.State = PropertyApproveState.DepartmentApprove;
-                            if (currentUser.Government.ParentGovernmentId == 0)
-                            {
-                                allot.State = PropertyApproveState.AdminApprove;
-                                allot.DApproveDate = DateTime.Now;
-                                allot.DSuggestion = "同意";
-                            }
-                            _propertyAllotService.UpdatePropertyAllot(allot);
-
-                            //活动日志
-                            _accountUserActivityService.InsertActivity("submitAllotApprove", string.Format("提交id为 {0} 的资产划拨的处置申请", id));
-                        }
-
-                        break;
-                    }
-                #endregion
-                case "off":
-                    #region 核销审批
-                    {
-                        var off = _propertyOffService.GetPropertyOffById(id);
-                        if (off == null || off.Deleted) return BadRequest("找不到资源");
-
-                        if (PropertyApproveCanEditDeleteAndSubmit(off.State, off.SuggestGovernmentId))
-                        {
-                            off.State = PropertyApproveState.DepartmentApprove;
-                            if (currentUser.Government.ParentGovernmentId == 0)
-                            {
-                                off.State = PropertyApproveState.AdminApprove;
-                                off.DApproveDate = DateTime.Now;
-                                off.DSuggestion = "同意";
-                            }
-                            _propertyOffService.UpdatePropertyOff(off);
-
-                            //活动日志
-                            _accountUserActivityService.InsertActivity("submitOffApprove", string.Format("提交id为 {0} 的资产核销的处置申请", id));
-                        }
-
-                        break;
-                    }
-                    #endregion
-            }
-            return Ok();
-        }
-
         [HttpGet]
         [Route("Approve/Statistics")]
         public IHttpActionResult ApproveStatistics()
@@ -3317,8 +3478,7 @@ namespace QZCHY.API.Controllers
           )
         {
             var currentUser = _workContext.CurrentAccountUser;
-            var governmentId = currentUser.Government.Id;
-            var govermentIds = _governmentService.GetChildrenGovernmentIds(governmentId);
+            
 
             //初始化排序条件
             var sortConditions = PropertySortCondition.Instance(sort);
@@ -3341,8 +3501,9 @@ namespace QZCHY.API.Controllers
             //高级搜索参数设置
             PropertyAdvanceConditionRequest request = PrepareAdvanceCondition(advance);
 
-            var properties = _propertyService.GetAllProcessProperties(govermentIds,query, currentUser.IsAdmin() ? 0 : currentUser.Government.Id, true, 
-                true, request, sortConditions).Select(sp=>
+            var governmentIds = _governmentService.GetGovernmentIdsByCurrentUser(true);  //不包含已有账号的下级单位
+            var properties = _propertyService.GetAllProcessProperties(governmentIds, query, 
+                request, sortConditions).Select(sp=>
                 {
                     
                     return new

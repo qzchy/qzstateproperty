@@ -55,6 +55,21 @@ namespace QZCHY.Services.Property
         List<int> GetChildrenGovernmentIds(int governmentId, bool containSelf=true);
 
         /// <summary>
+        /// 迭代获取所有下属部门Id
+        /// </summary>
+        /// <param name="parentId"></param>
+        /// <param name="exceptGovernmentHasUsers"></param>
+        /// <returns></returns>
+        IList<int> GetGovernmentIdsByParentId(int parentId, bool exceptGovernmentHasUsers = false);
+
+        /// <summary>
+        /// 获取当前用户对应的部门
+        /// </summary>
+        /// <param name="exceptGovernmentHasUsers"></param>
+        /// <returns></returns>
+        IList<int> GetGovernmentIdsByCurrentUser(bool exceptGovernmentHasUsers = false);
+
+        /// <summary>
         /// 是否需要主管部门审批
         /// </summary>
         /// <returns></returns>

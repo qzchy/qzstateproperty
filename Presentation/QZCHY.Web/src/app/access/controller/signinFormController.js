@@ -35,7 +35,7 @@ angular.module("app").controller('signinFormController', ['$scope', '$rootScope'
         };
 
         authService.login(loginData).then(function (data) {
-            $scope.$emit('to-parent', { account: data.userName, isAdmin: authService.authentication.isAdmin });
+            $scope.$emit('to-parent', { account: data.userName, isAdmin: authService.authentication.isAdmin ,nickName:data.nickName});
 
             toaster.pop('success', '', '登录成功');
             $scope.authError = "";

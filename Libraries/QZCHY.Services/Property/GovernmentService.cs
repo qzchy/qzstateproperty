@@ -3,6 +3,7 @@ using QZCHY.Core.Caching;
 using QZCHY.Core.Data;
 using QZCHY.Core.Domain.Properties;
 using QZCHY.Data;
+using QZCHY.Services.AccountUsers;
 using QZCHY.Services.Events;
 using System;
 using System.Collections.Generic;
@@ -35,14 +36,15 @@ namespace QZCHY.Services.Property
         private readonly IRepository<GovernmentUnit> _governmentUnitRepository;       
         private readonly IEventPublisher _eventPublisher;
         private readonly ICacheManager _cacheManager;
+        private readonly IWorkContext _workContext;
 
-        public GovernmentService(ICacheManager cacheManager, IRepository<GovernmentUnit> governmentUnitRepository,
+        public GovernmentService(ICacheManager cacheManager, IRepository<GovernmentUnit> governmentUnitRepository,IWorkContext workContext,
              IEventPublisher eventPublisher)
         {
 
             this._cacheManager = cacheManager;             
             _governmentUnitRepository = governmentUnitRepository;
-
+            _workContext = workContext;
             this._eventPublisher = eventPublisher;
         }
 
@@ -291,6 +293,60 @@ namespace QZCHY.Services.Property
             idList.AddRange(query.Select(p => p.Id).ToList());
 
             return idList;
+        }
+
+
+        /// <summary>
+        /// 迭代获取所有下属部门Id
+        /// </summary>
+        /// <param name="parentId"></param>
+        /// <param name="exceptGovernmentHasUsers">是否排除有用户的部门</param>
+        /// <returns></returns>
+        public virtual IList<int> GetGovernmentIdsByParentId(int parentId, bool exceptGovernmentHasUsers = false)
+        {
+            var result = new List<int>();
+            var ids = GetAllGovernmentsByParentGovernmentId(parentId, exceptGovernmentHasUsers).Select(g => g.Id).ToList();
+            result.AddRange(ids);
+            foreach (var id in ids)
+            {
+                result.AddRange(GetGovernmentIdsByParentId(id, exceptGovernmentHasUsers));
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 获取当前用户对应的部门
+        /// </summary>
+        /// <param name="exceptGovernmentHasUsers"></param>
+        /// <returns></returns>
+        public virtual IList<int> GetGovernmentIdsByCurrentUser(bool exceptGovernmentHasUsers = false)
+        {
+            var currentUser = _workContext.CurrentAccountUser;
+            //根据不同的角色，设置相应的数据权限
+
+            IList<int> governmentIds = new List<int>();
+
+            if (currentUser.IsAdmin() || currentUser.IsDataReviewer()) governmentIds.Clear();
+            else if (currentUser.IsGovAuditor())
+            {
+                //行政事业审批员
+                governmentIds = GetAllGovernmentUnitsByType(GovernmentType.Government, GovernmentType.Institution).Select(g => g.Id).ToList();
+            }
+            else if (currentUser.IsStateOwnerAuditor())
+            {
+                //国企审批员
+                governmentIds = GetAllGovernmentUnitsByType(GovernmentType.Company).Select(g => g.Id).ToList();
+                governmentIds.Add(currentUser.Government.Id);  //包括自身的
+            }
+            else
+            {
+
+                governmentIds = GetGovernmentIdsByParentId(currentUser.Government.Id, exceptGovernmentHasUsers);
+                //其他角色则获取本身以及下属单位的资产
+                governmentIds.Add(currentUser.Government.Id);
+            }
+
+            return governmentIds;
         }
 
         /// <summary>
