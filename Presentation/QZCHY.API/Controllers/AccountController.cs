@@ -13,6 +13,7 @@ using QZCHY.API.Models.AccountUsers;
 using QZCHY.Web.Api.Extensions;
 using System.Linq;
 using QZCHY.Services.Property;
+using QZCHY.Services.Security;
 
 namespace QZCHY.API.Controllers
 {
@@ -26,6 +27,7 @@ namespace QZCHY.API.Controllers
         private readonly IWorkflowMessageService _workflowMessageService;
         private readonly IAccountUserActivityService _accountUserActivityService;
         private readonly IGovernmentService _governmentService;
+        private readonly IEncryptionService _encryptionService;
 
         private readonly IWebHelper _webHelper;
         private readonly IWorkContext _workContext;
@@ -40,7 +42,7 @@ namespace QZCHY.API.Controllers
             IAccountUserActivityService accountUserActivityService,
             IGovernmentService governmentService,
              IWebHelper webHelper,
-            IWorkContext workContext,
+            IWorkContext workContext, IEncryptionService encryptionService,
             AccountUserSettings customerSettings)
         {
             _authenticationService = authenticationService;
@@ -50,7 +52,7 @@ namespace QZCHY.API.Controllers
             _workflowMessageService = workflowMessageService;
             _accountUserActivityService = accountUserActivityService;
             _governmentService = governmentService;
-
+            _encryptionService = encryptionService;
             _webHelper = webHelper;
             _workContext = workContext;
             _accountUserSettings = customerSettings;
@@ -219,11 +221,11 @@ namespace QZCHY.API.Controllers
 
             var account = _accountService.GetAccountUserByUsername(accountResetPwdModel.UserName);
 
-            if (account.Password != accountResetPwdModel.Password) return BadRequest("原密码输入不正确！");
+            if (account.Password != _encryptionService.EncryptText(accountResetPwdModel.Password)) return BadRequest("原密码输入不正确！");
 
             if (accountResetPwdModel.Newpassword != accountResetPwdModel.Againpassword) return BadRequest("两次输入的密码不一致！");
 
-            account.Password = accountResetPwdModel.Newpassword;
+            account.Password = _encryptionService.EncryptText(accountResetPwdModel.Newpassword); 
 
             //保存用户
             _accountService.UpdateAccountUser(account);
