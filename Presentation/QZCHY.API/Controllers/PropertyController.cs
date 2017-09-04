@@ -427,6 +427,9 @@ namespace QZCHY.API.Controllers
         [NonAction]
         protected virtual bool PropertyCanEditDelete(Property property)
         {
+            var currentUser = _workContext.CurrentAccountUser;
+            if (currentUser.IsAdmin() || currentUser.IsGovAuditor() || currentUser.IsStateOwnerAuditor() || currentUser.IsDataReviewer()) return false;  //超管等角色不能进行资产处置
+
             if (PropertyBelongCurrentUser(property, true))
             {
                 return !property.Published;
@@ -443,6 +446,9 @@ namespace QZCHY.API.Controllers
         [NonAction]
         protected virtual bool PropertyCanChange(Property property)
         {
+            var currentUser = _workContext.CurrentAccountUser;
+            if (currentUser.IsAdmin() || currentUser.IsGovAuditor() || currentUser.IsStateOwnerAuditor() || currentUser.IsDataReviewer()) return false;  //超管等角色不能进行资产处置
+
             if (PropertyBelongCurrentUser(property, true))
             {
                 var edits = _propertyEditService.GetPropertyEditByPropertyId(property.Id);
