@@ -20,7 +20,9 @@ app.controller("InforEditCtrl", ['$scope', '$rootScope', '$uibModal', '$state', 
             $scope.address = response.address;
             $scope.person = response.person;
             $scope.tel = response.tel;
-            
+            $scope.creditCode = response.creditCode;
+            $scope.personNumber = response.personNumber;
+            $scope.description = response.remark;
         })
 
 

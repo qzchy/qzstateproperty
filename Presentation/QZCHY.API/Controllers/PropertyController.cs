@@ -2147,7 +2147,7 @@ namespace QZCHY.API.Controllers
 
                     if (!PropertyBelongCurrentUser(property, true)) return BadRequest("没有操作权限");
 
-                    var nowGovernmentOwner = _governmentService.GetGovernmentUnitByName(propertyAllotModel.NowPropertyOwner);
+                    var nowGovernmentOwner = _governmentService.GetGovernmentUnitByName(propertyAllotModel.NowPropertyOwner).Name;
                     if (nowGovernmentOwner == null) return BadRequest("目标产权单位无效");
 
                     PropertyAllot allot = new PropertyAllot();
@@ -2353,7 +2353,7 @@ namespace QZCHY.API.Controllers
             var allot = _propertyAllotService.GetPropertyAllotById(id);
             if (!PropertyApproveCanEditDeleteAndSubmit(allot.State, allot.SuggestGovernmentId)) return BadRequest("该项目已无法编辑");
             allot = propertyAllotModel.ToEntity(allot);
-
+            allot.NowGovernmentId = _governmentService.GetGovernmentUnitByName(propertyAllotModel.NowPropertyOwner).Id;
             SavePropertyAllotPictures(allot, propertyAllotModel.AllotPictures);
             SavePropertyAllotFiles(allot, propertyAllotModel.AllotFiles);
 
@@ -3247,7 +3247,7 @@ namespace QZCHY.API.Controllers
                                 copyproperty.Published = true;
 
                                 SwitchPropertyLockState(false, property);
-
+                                _propertyService.UpdateProperty(property);
                                 _copyPropertyService.UpdateCopyProperty(copyproperty);
                             }
                         }
@@ -3393,6 +3393,7 @@ namespace QZCHY.API.Controllers
                                 allot.Property.Government = newGovernment;
 
                                 SwitchPropertyLockState(false, allot.Property);
+                                
                             }
                         }
                         else
