@@ -256,6 +256,7 @@ app.controller('PropertyProcessCtrl', ['$window', '$rootScope', '$uibModal', '$s
         $scope.showProperties = [];
         $scope.processlist = _processlist;
         $scope.listlength = 0;
+        $scope.government = {};
         $scope.processing = true;
 
         $scope.ajax = function () {
@@ -403,6 +404,8 @@ app.controller('PropertyProcessCtrl', ['$window', '$rootScope', '$uibModal', '$s
                 case "allot":
                     $scope.process.allot.submit = submit;
                     $scope.process.allot.ids = ids;
+                    $scope.process.allot.nowPropertyOwner = $scope.government.selected.name;
+
                     propertyService.createAllot($scope.process.allot).then(function () {
                         successCallback();
                     }), function (message) {
@@ -451,7 +454,7 @@ app.controller('PropertyProcessCtrl', ['$window', '$rootScope', '$uibModal', '$s
         };
     }]);
 
-app.controller('propertyDetailModalDialogCtrl', function ($scope,$uibModalInstance, dialogHeight, property) {
+app.controller('propertyDetailModalDialogCtrl', function ($scope, $uibModalInstance, dialogHeight, property) {
     $scope.okText = "确定";
     $scope.dialogHeight = dialogHeight;
     $scope.property = property;
@@ -461,7 +464,7 @@ app.controller('propertyDetailModalDialogCtrl', function ($scope,$uibModalInstan
 
     }
 
-})
+});
 
 
 

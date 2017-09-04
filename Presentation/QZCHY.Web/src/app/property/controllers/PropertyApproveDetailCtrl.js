@@ -23,13 +23,15 @@ app.controller('PropertyApproveDetailCtrl', ['$window', '$rootScope', '$uibModal
             var approve = $scope.approve;
 
             if (approveType == "rent") {
-                var renttime = approve.propertyRent.rentTime.split("-");
-                var backtime = approve.propertyRent.backTime.split("-");
+ 
                 var prices = approve.propertyRent.priceString.split(";");
+                var backtime = moment(approve.propertyRent.backTime);
+                var renttime = moment(approve.propertyRent.rentTime);
 
+                var diff = backtime.diff(renttime, "year", true);
+                var num = Math.ceil(diff);
                 $scope.yearNumber = [];
-                var num = backtime[0] - renttime[0];
-                if (num <= 0) num = 1;
+              
                 for (var i = 1; i <= num; i++) {
                     var d = {
                         index: i,
