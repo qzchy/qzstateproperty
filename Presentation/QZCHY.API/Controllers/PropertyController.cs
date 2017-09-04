@@ -3126,8 +3126,8 @@ namespace QZCHY.API.Controllers
                                 originCopyProperty.CurrentUse_Lend = property.CurrentUse_Lend;
                                 originCopyProperty.CurrentUse_Idle = property.CurrentUse_Idle;
                                 originCopyProperty.NextStepUsage = property.NextStepUsage;
-                                originCopyProperty.Location = property.Location.AsText();
-                                originCopyProperty.Extent = property.Extent.AsText();
+                                originCopyProperty.Location = property.Location == null ? "" : property.Location.AsText();
+                                originCopyProperty.Extent = property.Extent == null ? "" : property.Extent.AsText();
                                 originCopyProperty.Description = property.Description;
                                 originCopyProperty.EstateId = property.EstateId;
                                 originCopyProperty.ConstructId = property.ConstructId;
