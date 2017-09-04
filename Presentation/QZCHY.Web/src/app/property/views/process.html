@@ -236,9 +236,12 @@
                         </div>
 
                         <div ng-if="process.type=='allot'">
+                            123:{{government}}
                             <div class="form-group">
+                             
                                 <label class="col-lg-2 control-label">目标单位</label>
                                 <div class="col-lg-10">
+
                                     <div class="input-group">
                                         <ui-select ng-model="government.selected">
                                             <ui-select-match placeholder="输入单位名称...">{{$select.selected.name}}</ui-select-match>

@@ -180,6 +180,8 @@ namespace QZCHY.API.Models.Properties
 
         public virtual ICollection<PropertyFileModel> Files { get; set; }
 
+        public bool Off { get; set; }
+
 
     }
 }

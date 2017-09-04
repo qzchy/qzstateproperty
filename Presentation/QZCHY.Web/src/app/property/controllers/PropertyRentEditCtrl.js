@@ -28,13 +28,19 @@ app.controller('PropertyRentEditCtrl', ['$window', '$rootScope', '$uibModal', '$
 
             $scope.rent = response.propertyRent;
 
-            var renttime =$scope.rent.rentTime.split("-");
-            var backtime =$scope.rent.backTime.split("-");
+            var renttime = $scope.rent.rentTime;
+            var backtime = $scope.rent.backTime;
+
+            var backtime = moment(backtime);
+            var renttime = moment(renttime);
+
+            var diff = backtime.diff(renttime, "year", true);
+            var num = Math.ceil(diff);
+
             var prices =$scope.rent.priceString.split(";");
 
             $scope.yearNumber = [];
-            var num = backtime[0] - renttime[0];
-            if (num <= 0) num = 1;
+       
             for (var i = 1; i <= num; i++) {
                 var d = {
                     index: i,
@@ -61,6 +67,7 @@ app.controller('PropertyRentEditCtrl', ['$window', '$rootScope', '$uibModal', '$
             var time = timestring.split("-");
             var backtime = moment(time[1]);
             var renttime = moment(time[0]);
+            var prices = $scope.rent.priceString.split(";");
 
             var diff = backtime.diff(renttime, "year", true);
             var num = Math.ceil(diff);
