@@ -479,6 +479,35 @@ namespace QZCHY.API.Controllers
             copy.PropertyID = property.PropertyID;
             copy.Government_Id = property.Government.Id;
 
+            var DBLocaltion = DbGeography.FromText(propertyCreateModel.Location);
+            var xq = DbGeography.FromText(xqregion);
+            var kc = DbGeography.FromText(kcegion);
+            var qj = DbGeography.FromText(qjregion);
+            var lcq = DbGeography.FromText(lcqregion);
+            var jjq = DbGeography.FromText(jjqregion);
+
+            if (xq.Intersects(DBLocaltion))
+            {
+                copy.Region = Region.West;
+            }
+            else if (kc.Intersects(DBLocaltion))
+            {
+                copy.Region = Region.KC;
+            }
+
+            else if (qj.Intersects(DBLocaltion))
+            {
+                copy.Region = Region.QJ;
+            }
+            else if (jjq.Intersects(DBLocaltion))
+            {
+                copy.Region = Region.Clusters;
+            }
+            else if (lcq.Intersects(DBLocaltion))
+            {
+                copy.Region = Region.OldCity;
+            }
+
             //  copy.Region = propertyCreateModel.re
             copy.Property_Id = property.Id;
 
@@ -1111,7 +1140,7 @@ namespace QZCHY.API.Controllers
         {
             var currentUser = _workContext.CurrentAccountUser;
 
-            showHidden = currentUser.IsRegistered() && currentUser.AccountUserRoles.Count == 1;  //只是注册单位可以获取未发布的
+            showHidden = currentUser.IsRegistered() && !(currentUser.IsAdmin() || currentUser.IsGovAuditor() || currentUser.IsStateOwnerAuditor() || currentUser.IsDataReviewer());   //只是注册单位可以获取未发布的
 
             //初始化排序条件
             var sortConditions = PropertySortCondition.Instance(sort);
