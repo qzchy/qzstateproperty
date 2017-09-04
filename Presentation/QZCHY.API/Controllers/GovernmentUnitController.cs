@@ -174,7 +174,13 @@ namespace QZCHY.API.Controllers
 
             return Ok(result);
         }
-
+        [HttpGet]
+        [Route("CurrentUser")]
+        public IHttpActionResult GetCurrentGoverment()
+        {
+            var currentGoverment = _workContext.CurrentAccountUser.Government.ToModel();
+            return Ok(currentGoverment);
+        }
         [HttpGet]
         [Route("{governmentId}")]
         public IHttpActionResult Get(int governmentId)
@@ -208,15 +214,7 @@ namespace QZCHY.API.Controllers
             return Ok(model);
         }
 
-        [HttpGet]
-        [Route("")]
-        public IHttpActionResult GetCurrentGoverment()
-        {
 
-            var currentGoverment= _workContext.CurrentAccountUser.Government.ToModel();
-
-            return Ok(currentGoverment);
-        }
 
         [HttpGet]
         [Route("children/{governmentId}")]

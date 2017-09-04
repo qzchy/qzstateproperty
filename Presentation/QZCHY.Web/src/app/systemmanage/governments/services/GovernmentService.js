@@ -75,7 +75,7 @@ app.service("GovernmentService", ['$rootScope', '$http', '$q', function ($rootSc
     this.getCurrentGovernment = function () {
         var deferred = $q.defer();
 
-        $http.get(baseUrl ).success(function (data, status) {
+        $http.get(baseUrl + 'CurrentUser').success(function (data, status) {
             deferred.resolve(data, status);
         }).error(function (data, status) {
             deferred.reject("error");

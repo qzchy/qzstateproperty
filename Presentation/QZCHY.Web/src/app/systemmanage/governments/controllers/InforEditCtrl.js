@@ -7,6 +7,7 @@ app.controller("InforEditCtrl", ['$scope', '$rootScope', '$uibModal', '$state', 
             id:0,
             name: "",
             governmentType: "",
+            governmentTypeId: 0,
             address: "",
             person: "",
             tel: "",
@@ -17,12 +18,6 @@ app.controller("InforEditCtrl", ['$scope', '$rootScope', '$uibModal', '$state', 
 
         governmentService.getCurrentGovernment().then(function (response) {
             $scope.government = response;
-            $scope.address = response.address;
-            $scope.person = response.person;
-            $scope.tel = response.tel;
-            $scope.creditCode = response.creditCode;
-            $scope.personNumber = response.personNumber;
-            $scope.description = response.remark;
         })
 
 
@@ -54,17 +49,9 @@ app.controller("InforEditCtrl", ['$scope', '$rootScope', '$uibModal', '$state', 
         //提交编辑
         validation.saveEntity = function ($event) {
 
-            goverment.name = $scope.government.name;
-            goverment.governmentType = $scope.government.governmentType;
-            goverment.address = $scope.address;
-            goverment.person = $scope.person;
-            goverment.tel = $scope.tel;
-            goverment.remark = $scope.description;
-            goverment.id = $scope.government.id;
-            goverment.creditCode = $scope.creditCode;
-            goverment.personNumber = $scope.personNumber;
+ 
 
-            governmentService.updateGovernment(goverment).then(function () {
+            governmentService.updateGovernment($scope.government).then(function () {
                 toaster.pop("sucess", "修改成功", "", 500);
                 $timeout(function () {
                  // $state.go("access.signin");
