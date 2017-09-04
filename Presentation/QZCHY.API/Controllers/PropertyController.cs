@@ -432,7 +432,7 @@ namespace QZCHY.API.Controllers
 
             if (PropertyBelongCurrentUser(property, true))
             {
-                return !property.Published;
+                return !property.Published && !property.Off;
             }
 
             return false;
@@ -3446,6 +3446,7 @@ namespace QZCHY.API.Controllers
                             else if (off.State == PropertyApproveState.AdminApprove)
                             {
                                 off.State = PropertyApproveState.Finish;
+                                off.Property.Off = true;
                                 off.Property.Published = false;
                                 SwitchPropertyLockState(false, off.Property);
                             }
