@@ -1211,7 +1211,7 @@ namespace QZCHY.API.Controllers
         {
             var currentUser = _workContext.CurrentAccountUser;
 
-          var  showHidden = currentUser.IsRegistered() && currentUser.AccountUserRoles.Count == 1;  //只是注册单位可以获取未发布的
+      var      showHidden = currentUser.IsRegistered() && !(currentUser.IsAdmin() || currentUser.IsGovAuditor() || currentUser.IsStateOwnerAuditor() || currentUser.IsDataReviewer());   //只是注册单位可以获取未发布的
 
             //初始化排序条件
             var sortConditions = PropertySortCondition.Instance(advance.Sort);
@@ -1229,7 +1229,7 @@ namespace QZCHY.API.Controllers
 
             var response = new ListResponse<PropertyModel>
             {
-                Time=advance.Time,
+                Time = advance.Time,
                 Paging = new Paging
                 {
                     PageIndex = advance.PageIndex,
@@ -1240,6 +1240,8 @@ namespace QZCHY.API.Controllers
                 Data = properties.Select(s =>
                 {
                     var propertyModel = s.ToModel();
+                    if (!propertyModel.Published) propertyModel.Name += "（未发布）";
+                    else if (!s.Off) propertyModel.Name += "（已核销）";
                     return propertyModel;
                 })
             };
@@ -1291,6 +1293,8 @@ namespace QZCHY.API.Controllers
                 Data = properties.Select(s =>
                 {
                     var geoPropertyModel = s.ToGeoModel();
+                    if (!s.Published) geoPropertyModel.Name += "（未发布）";
+                    else if (!s.Off) geoPropertyModel.Name += "（已核销）";
                     return geoPropertyModel;
                 })
             };
