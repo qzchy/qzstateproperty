@@ -1005,6 +1005,21 @@ namespace QZCHY.API.Controllers
 
             if (!(currentUser.IsAdmin()|| currentUser.IsDataReviewer() || PropertyCanView(property))) 
                 return NotFound();
+            //var index = 1;
+            //foreach (var rent in property.Rents) {
+            //    if (rent != null)
+            //    {
+            //        var priceList = rent.PriceString.Split(';');
+            //        rent.PriceString = "";
+            //        foreach (var price in priceList)
+            //        {
+            //            if (!string.IsNullOrEmpty(price)) {
+            //                rent.PriceString += string.Format("第{0}年租金{1}元;", index, price);
+            //                index++;
+            //            }                       
+            //        }
+            //    }
+            //}
 
             var model = property.ToModel();
             model.LogoUrl = GetLogoUrl(property);
@@ -1464,7 +1479,7 @@ namespace QZCHY.API.Controllers
         {
             var property = _propertyService.GetPropertyById(propertyId);
 
-            if ((propertyCreateModel.CurrentUse_Lend + propertyCreateModel.CurrentUse_Rent + propertyCreateModel.CurrentUse_Self + propertyCreateModel.CurrentUse_Idle > property.ConstructArea) && ( propertyCreateModel.CurrentUse_Lend + propertyCreateModel.CurrentUse_Rent + propertyCreateModel.CurrentUse_Self + propertyCreateModel.CurrentUse_Idle > property.LandArea)) return BadRequest("建筑面积应大于自用、出租、出借、闲置之和！");
+            if ((propertyCreateModel.CurrentUse_Lend + propertyCreateModel.CurrentUse_Rent + propertyCreateModel.CurrentUse_Self + propertyCreateModel.CurrentUse_Idle > propertyCreateModel.ConstructArea)) return BadRequest("建筑面积应大于自用、出租、出借、闲置之和！");
 
             if (property == null || property.Deleted) return NotFound();
 
