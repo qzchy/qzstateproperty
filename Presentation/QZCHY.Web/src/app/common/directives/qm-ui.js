@@ -285,8 +285,8 @@ angular.module("qm.ui.webupload", []).controller('WebUploaderController', ['$htt
                             mimeTypes: 'image/*'
                         },
                         fileNumLimit: 100,//上传数量限制
-                        fileSizeLimit: 100 * 2 * 1024 * 1024,//限制上传所有文件大小
-                        fileSingleSizeLimit: 2 * 1024 * 1024,//限制上传单个文件大小
+                        fileSizeLimit: 100 * 4 * 1024 * 1024,//限制上传所有文件大小
+                        fileSingleSizeLimit: 4 * 1024 * 1024,//限制上传单个文件大小
                     });
 
                     imgUploader.on("error", function (type) {

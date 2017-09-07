@@ -330,8 +330,8 @@ function ($scope, $rootScope, $state, $timeout, moment, toaster, w5cValidator, $
                         mimeTypes: 'image/*'
                     },
                     fileNumLimit: 100,//上传数量限制
-                    fileSizeLimit:100* 2*1024*1024,//限制上传所有文件大小
-                    fileSingleSizeLimit: 2*1024*1024,//限制上传单个文件大小
+                    fileSizeLimit:100* 4*1024*1024,//限制上传所有文件大小
+                    fileSingleSizeLimit: 4*1024*1024,//限制上传单个文件大小
                 });
 
                 imgUploader.on("error", function (type) {
@@ -692,8 +692,8 @@ function ($scope, $rootScope, $state, $timeout, moment, toaster, w5cValidator, $
             $scope.logo = null;
             $scope.tempLogo = null;
         }
-        else if (file.size > 2 * 1024 * 1024) {
-            alert("图片不能大于2M");
+        else if (file.size > 4 * 1024 * 1024) {
+            alert("图片不能大于4M");
             $scope.logo = null;
             $scope.tempLogo = null;
         }
