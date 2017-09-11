@@ -336,14 +336,16 @@ namespace QZCHY.Services.Properties
 
             query = query.Where(expression);
 
+            var defaultSort = new PropertySortCondition("CreatedOn", System.ComponentModel.ListSortDirection.Ascending);
             if (sortConditions != null && sortConditions.Length != 0)
             {
-                query = query.Sort(sortConditions);
+                query = query.Sort(sortConditions[0], defaultSort);
             }
             else
             {
-                query = query.Sort(new PropertySortCondition[1] {
-                    new PropertySortCondition("DisplayOrder", System.ComponentModel.ListSortDirection.Ascending)
+                query = query.Sort(new PropertySortCondition[2] {
+                    new PropertySortCondition("DisplayOrder", System.ComponentModel.ListSortDirection.Ascending),
+                    defaultSort
                 });
             }
 

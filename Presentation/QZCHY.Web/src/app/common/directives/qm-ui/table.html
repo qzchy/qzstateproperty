@@ -56,7 +56,7 @@
                                     <input type="checkbox" ng-checked="row.selected" ng-model="row.selected" ng-change="selectedRowChange(row)"><i></i>
                                 </label>
                             </td>
-                            <td class="text-center text-muted">{{$index +1 }}</td>
+                            <td class="text-center text-muted">{{tableConfig.page.index* tableConfig.page.length+$index +1 }}</td>
                             <td class="text-muted" ng-class="{'text-center':column.alignCenter}" ng-repeat="column in columns">
                                 <!--超链接的显示-->
                                 <a class="text-muted font-bold" ng-if="column.type=='link'" ng-click="column.click(row[column.linkField])">{{row[column.name]}}</a>

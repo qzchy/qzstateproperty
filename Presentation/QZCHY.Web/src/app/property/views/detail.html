@@ -48,7 +48,7 @@
                                                           <td>
                                                               {{property.name}}
                                                               <span class="badge">{{property.off?' 核销 ':''}}</span>
-                                                              <span class="badge"ng-if="{{!property.off}}">{{property.published?'':' 未发布 '}}</span>
+                                                              <span class="badge"ng-if="!property.off">{{property.published?'':' 未发布 '}}</span>
                                                              
                                                            </td>
                                                       </tr>
