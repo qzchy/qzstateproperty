@@ -41,12 +41,12 @@ namespace QZCHY.Core.Domain.Properties
         /// <summary>
         /// 建筑面积
         /// </summary>
-        public float ConstructArea { get; set; }
+        public double ConstructArea { get; set; }
 
         /// <summary>
         /// 土地面积
         /// </summary>
-        public float LandArea { get; set; }
+        public double LandArea { get; set; }
 
         /// <summary>
         /// 产权证号
@@ -76,7 +76,7 @@ namespace QZCHY.Core.Domain.Properties
         /// <summary>
         /// 账面价格，单位万元
         /// </summary>
-        public float Price { get; set; }
+        public double Price { get; set; }
 
         /// <summary>
         /// 取得时间
@@ -96,22 +96,22 @@ namespace QZCHY.Core.Domain.Properties
         /// <summary>
         /// 自用面积
         /// </summary>
-        public float CurrentUse_Self { get; set; }
+        public double CurrentUse_Self { get; set; }
 
         /// <summary>
         /// 出租面积
         /// </summary>
-        public float CurrentUse_Rent { get; set; }
+        public double CurrentUse_Rent { get; set; }
 
         /// <summary>
         /// 出借面积
         /// </summary>
-        public float CurrentUse_Lend { get; set; }
+        public double CurrentUse_Lend { get; set; }
 
         /// <summary>
         /// 闲置面积
         /// </summary>
-        public float CurrentUse_Idle { get; set; }
+        public double CurrentUse_Idle { get; set; }
 
         /// <summary>
         /// 下步使用或处置建议

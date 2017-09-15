@@ -14,8 +14,8 @@ namespace QZCHY.API.Validators.Properties
             RuleFor(s => s.Address).NotEmpty().WithMessage("坐落地址不能为空");
             //RuleFor(s => s.ConstructArea).GreaterThan(0).WithMessage("建筑面积必须大于0");
             //RuleFor(s => s.LandArea).GreaterThan(0).WithMessage("土地面积必须大于0");
-            RuleFor(s => s.Price).GreaterThan(0).WithMessage("账面价格必须大于0");
-            RuleFor(s => s.LifeTime).GreaterThan(0).WithMessage("使用年限必须大于0");
+            //RuleFor(s => s.Price).GreaterThan(0).WithMessage("账面价格必须大于0");
+            //RuleFor(s => s.LifeTime).GreaterThan(0).WithMessage("使用年限必须大于0");
             RuleFor(s => s.LandNature).NotEmpty().WithMessage("土地性质不能为空");
             RuleFor(s => s.UsedPeople).NotEmpty().WithMessage("使用方名称不能为空");
             //RuleFor(s => s.CurrentUse_Self).GreaterThan(0).WithMessage("自用面积必须大于0");

@@ -13,16 +13,16 @@ namespace QZCHY.API.Models.Statistics
 
         public int LandCount { get; set; }
 
-        public float TotalPrice { get; set; }
+        public double TotalPrice { get; set; }
 
-        public float ConstructPrice { get; set; }
+        public double ConstructPrice { get; set; }
 
-        public float LandPrice { get; set; }
+        public double LandPrice { get; set; }
 
-        public float ConstructArea { get; set; }
+        public double ConstructArea { get; set; }
 
-        public float ConstrcutLandArea { get; set; }
+        public double ConstrcutLandArea { get; set; }
 
-        public float LandArea { get; set; }
+        public double LandArea { get; set; }
     }
 }

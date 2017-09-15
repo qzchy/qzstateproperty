@@ -14,6 +14,6 @@ namespace QZCHY.API.Models.Statistics
     {
         public string Name { get; set; }
 
-        public float Value { get; set; }
+        public double Value { get; set; }
     }
 }
