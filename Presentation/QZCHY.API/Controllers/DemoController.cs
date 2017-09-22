@@ -828,178 +828,12 @@ namespace QZCHY.API.Controllers
         }
 
 
-
-
-
         [HttpGet]
-        [Route("insertgov")]
-        public IHttpActionResult insertgov()
+        [Route("InsertHSGS")]
+        public IHttpActionResult InsertHSGS()
         {
-            return BadRequest("导入关闭");
-
-            var filePath = System.Web.HttpContext.Current.Server.MapPath("~/App_Data/import.mdb");
-
-            var strConn = "Provider = Microsoft.Jet.OLEDB.4.0;Data Source = " + filePath;
-            System.Data.OleDb.OleDbConnection conn = new System.Data.OleDb.OleDbConnection(strConn);
-            conn.Open();
-            //string strExcel = "";
-            //System.Data.OleDb.OleDbDataAdapter myCommand = null;
-            //System.Data.DataSet ds = null;
-            //strExcel = "select * from t1";
-            //myCommand = new System.Data.OleDb.OleDbDataAdapter(strExcel, strConn);
-            //ds = new System.Data.DataSet(); myCommand.Fill(ds, "table1");
-
-            //建立SQL查询   
-            OleDbCommand odCommand = conn.CreateCommand();
-
-            //3、输入查询语句 C#操作Access之读取mdb  
-
-            odCommand.CommandText = "select * from sheet1";
-
-            //建立读取   
-            OleDbDataReader odrReader = odCommand.ExecuteReader();
-
-            //查询并显示数据   
-            int size = odrReader.FieldCount;
-
-
-            while (odrReader.Read())
-            {
-                #region 获取相关参数
-                var displayOrder = odrReader[1].ToString();
-                var parent = odrReader[2].ToString();
-                var name = odrReader[3].ToString();
-                var address = odrReader[4].ToString();
-                bool isGov = odrReader[5].ToString() == "1";
-                bool isIns = odrReader[6].ToString() == "1";
-                bool isGroup = odrReader[7].ToString() == "1";
-                bool ishb = odrReader[8].ToString() == "1";
-                bool iszr = odrReader[9].ToString() == "1";
-                bool iszy = odrReader[10].ToString() == "1";
-                var landArea = odrReader[11].ToString();
-                var oArea = odrReader[12].ToString();
-                var cArea = odrReader[13].ToString();
-                var floor = odrReader[14].ToString();
-                bool ccard = odrReader[15].ToString() == "1";
-                bool lcard = odrReader[16].ToString() == "1";
-                bool rentin = odrReader[17].ToString() == "1";
-                bool rent = odrReader[18].ToString() == "1";
-                bool lend = odrReader[19].ToString() == "1";
-                var remark = odrReader[20].ToString();
-                var x = odrReader[21].ToString();
-                var y = odrReader[22].ToString();
-                #endregion
-
-                try
-                {
-                    #region 遍历要素
-
-                    var id = odrReader[0].ToString();
-                    int result = 0;
-
-                    if (!int.TryParse(id, out result)) continue;
-
-                    var government = _governmentService.GetGovernmentUnitByName(name);
-
-                    if (government == null)
-                        government = new GovernmentUnit();
-
-                    if (!string.IsNullOrEmpty(displayOrder))
-                    {
-                        government.DisplayOrder = Convert.ToInt32(displayOrder);
-                    }
-                    else
-                    {
-                        var orders = parent.Split('.');
-                        //获取最后一个作为显示次序
-                        government.DisplayOrder = Convert.ToInt32(orders[orders.Length - 1]);
-
-                        if (government.ParentGovernmentId == 0)
-                        {
-                            //寻找父节点
-                            var all = _governmentService.GetAllGovernmentUnits();
-
-                            var f = all.Where(g => g.DisplayOrder.ToString() == orders[0] && g.ParentGovernmentId == 0).FirstOrDefault();
-
-                            if (f == null)
-                                throw new Exception(string.Format("名称为{0}的找不到父节点", name));
-
-                            if (orders.Length == 2)
-                                government.ParentGovernmentId = f.Id;
-                            else if (orders.Length == 3)
-                            {
-                                var s = all.Where(g => g.DisplayOrder.ToString() == orders[1] && g.ParentGovernmentId == f.Id).FirstOrDefault();
-                                if (s == null) throw new Exception(string.Format("名称为{0}的找不到父节点", name));
-                                government.ParentGovernmentId = s.Id;
-                            }
-                        }
-                    }
-                    government.Name = name;
-                    government.Address = address;
-                    if (isGov) government.GovernmentType = GovernmentType.Government;
-                    if (isIns) government.GovernmentType = GovernmentType.Institution;
-                    if (isGroup) government.GovernmentType = GovernmentType.Group;
-                    if (ishb) government.LandOrigin = "划拨";
-                    if (iszr) government.LandOrigin = "转让";
-                    if (iszy) government.LandOrigin = "租用";
-
-                    government.LandArea = string.IsNullOrEmpty(landArea) ? 0 : Convert.ToDouble(landArea);
-                    government.ConstructArea = string.IsNullOrEmpty(cArea) ? 0 : Convert.ToDouble(cArea);
-                    government.Floor = string.IsNullOrEmpty(floor) ? 0 : Convert.ToInt32(floor);
-
-                    government.HasConstructCard = ccard;
-                    government.HasLandCard = lcard;
-                    government.HasLendInCard = rentin;
-                    government.HasRentCard = rent;
-                    government.HasLendInCard = lend;
-
-                    government.Remark = remark;
-
-                    if (!string.IsNullOrEmpty(x) && !string.IsNullOrEmpty(y))
-                    {
-                        government.X = Convert.ToDouble(x);
-                        government.Y = Convert.ToDouble(y);
-                        government.Location = DbGeography.FromText("POINT(" + government.X + " " + government.Y + ")");
-                    }
-                    else
-                        DbGeography.FromText("POINT(0 0)");
-
-
-                    #endregion
-
-                    if (government.Id == 0) _governmentService.InsertGovernmentUnit(government);
-                    else _governmentService.UpdateGovernmentUnit(government);
-
-
-                }
-                catch (Exception e)
-                {
-
-                    throw new Exception(string.Format("序号为 {0} 的要素异常，错误为：{1}", name, e.Message));
-                }
-
-
-            }
-
-            //关闭连接 C#操作Access之读取mdb  
-            odrReader.Close();
-            conn.Close();
-
-
-
-            return Ok("导入结束\n");
-        }
-
-
-        public class Point
-        {
-            public double lng { get; set; }
-
-            public double lat { get; set; }
-
-            public void a()
-            {
-                var property = new List<Property>() {
+            #region MyRegion
+            var properties = new List<Property>() {
 new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢1单元101室",Address="维拉小镇维拉小镇1幢1单元101室",ConstructArea=70.73,LandArea=15.33,EstateId="衢市不动产权0020344号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/21"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
 new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢1单元102室",Address="维拉小镇维拉小镇1幢1单元102室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0019622号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/18"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
 new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢2单元101室",Address="维拉小镇维拉小镇1幢2单元101室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0019542号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/18"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
@@ -1241,8 +1075,256 @@ new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢3单元50
 new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢4单元501室",Address="维拉小镇6幢4单元501室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0019130号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
 new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢4单元502室",Address="维拉小镇6幢4单元502室",ConstructArea=70.73,LandArea=15.35,EstateId="衢市不动产权0019162号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
 new Property {PropertyType= PropertyType.House , Name="衢州市华枫路16号",Address="衢州市华枫路16号",ConstructArea=0.00,LandArea=87725.99,EstateId="浙（2017）衢州市不动产权第0037861号 ",PropertyNature="国有",LandNature="国有",GetedDate=Convert.ToDateTime("2017/8/10"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=  87725.99    }
-                };
+            };
+            #endregion
+
+            var g = _governmentService.GetGovernmentUnitByName("汇盛公司");
+
+            var geo1="[{ \"lat\":28.940045200288296,\"lng\":118.96144151687622},{ \"lat\":28.94018467515707,\"lng\":118.96187603473663},{ \"lat\":28.940077386796474,\"lng\":118.96191895008087},{ \"lat\":28.93993254750967,\"lng\":118.96150052547455}]";
+            var geo2 = "[{ \"lat\":28.939831210300326,\"lng\":118.96154344081879},{ \"lat\":28.93994922749698,\"lng\":118.96196186542511},{ \"lat\":28.939836574718356,\"lng\":118.96201550960541},{ \"lat\":28.93969709984958,\"lng\":118.96159172058105}]";
+            var geo3= "[{\"lat\":28.939562989398837,\"lng\":118.9616346359253},{\"lat\":28.93969709984958,\"lng\":118.96206378936768},{\"lat\":28.939595175907016,\"lng\":118.96211206912994},{\"lat\":28.93946106545627,\"lng\":118.9616721868515}]";
+            var geo4 = "[{\"lat\":28.94019599072635,\"lng\":118.96196186542511},{\"lat\":28.940324736759067,\"lng\":118.96239638328552},{\"lat\":28.94022817723453,\"lng\":118.96244466304779},{\"lat\":28.940094066783786,\"lng\":118.96201014518738}]";
+            var geo5= "[{\"lat\":28.939943863078952,\"lng\":118.96204769611359},{\"lat\":28.940094066783786,\"lng\":118.96249830722809},{\"lat\":28.93998141400516,\"lng\":118.96254122257233},{\"lat\":28.939852667972445,\"lng\":118.96209597587585}]";
+            var geo6 = "[{\"lat\":28.9397185575217,\"lng\":118.96214425563812},{\"lat\":28.939852667972445,\"lng\":118.96258413791656},{\"lat\":28.93975074402988,\"lng\":118.9626270532608},{\"lat\":28.939627362415195,\"lng\":118.96219789981842}]";
+            var geo7 = "[{\"lat\":28.908155243843794,\"lng\":118.84716063737869},{\"lat\":28.905809484422207,\"lng\":118.85152995586395},{\"lat\":28.904404006898403,\"lng\":118.85053217411041},{\"lat\":28.906796537339687,\"lng\":118.84623527526855}]";
+
+            try
+            {
+                foreach (var property in properties)
+                {
+                    property.Region = Region.Clusters;
+                    property.Government = g;
+                    property.HasConstructID = true;
+                    property.HasLandID = true;
+
+                    string geo = geo7;
+                    if (property.Name.Contains("维拉小镇1幢")) geo = geo1;
+                    else if (property.Name.Contains("维拉小镇2幢")) geo = geo2;
+                    else if (property.Name.Contains("维拉小镇3幢")) geo = geo3;
+                    else if (property.Name.Contains("维拉小镇4幢")) geo = geo4;
+                    else if (property.Name.Contains("维拉小镇5幢")) geo = geo5;
+                    else if (property.Name.Contains("维拉小镇6幢")) geo = geo6;
+
+                    var points = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Point>>(geo);
+                    var wkt = "";
+
+                    StringBuilder wktsb = new StringBuilder();
+
+                    //末尾加上起点闭合多边形
+                    if (points.Count > 1) points.Add(points[0]);
+
+                    foreach (var point in points)
+                    {
+                        if (point.lng < point.lat)
+                        {
+                            var t = point.lng;
+                            point.lng = point.lat;
+                            point.lat = t;
+                        }
+                        wktsb.Append(string.Format("{0} {1},", point.lng, point.lat));
+                    }
+
+                    wkt = string.Format("POLYGON(({0}))", wktsb.ToString().TrimEnd(','));
+                    property.WKT = wkt;
+                    SqlGeography sqlGeography = SqlGeography.Parse(wkt).MakeValid();
+                    var graphy = DbGeography.FromText(sqlGeography.ToString());
+                    property.Extent = graphy;
+
+                    DbGeometry geometry = DbGeometry.FromText(graphy.ToString().Replace("SRID=4326;", ""));
+                    if (geometry.Centroid != null)
+                        property.Location = DbGeography.FromText(string.Format("POINT({0} {1})", geometry.Centroid.XCoordinate, geometry.Centroid.YCoordinate));
+                    else
+                        property.Location = graphy.PointAt(1);
+                     
+                    _propertyService.InsertProperty(property);
+
+                    var propertyNewCreate = new PropertyNewCreate
+                    {
+                        Property_Id = property.Id,
+                        State = PropertyApproveState.Start,
+                        ProcessDate = DateTime.Now,
+                        SuggestGovernmentId = g.Id,
+                        Title = property.Name,
+                    };
+
+                    _propertyNewCreateService.InsertPropertyNewCreate(propertyNewCreate);
+                }
             }
+            catch(Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+
+
+            return Ok("success");
+        }
+
+
+        [HttpGet]
+        [Route("insertgov")]
+        public IHttpActionResult insertgov()
+        {
+            return BadRequest("导入关闭");
+
+            var filePath = System.Web.HttpContext.Current.Server.MapPath("~/App_Data/import.mdb");
+
+            var strConn = "Provider = Microsoft.Jet.OLEDB.4.0;Data Source = " + filePath;
+            System.Data.OleDb.OleDbConnection conn = new System.Data.OleDb.OleDbConnection(strConn);
+            conn.Open();
+            //string strExcel = "";
+            //System.Data.OleDb.OleDbDataAdapter myCommand = null;
+            //System.Data.DataSet ds = null;
+            //strExcel = "select * from t1";
+            //myCommand = new System.Data.OleDb.OleDbDataAdapter(strExcel, strConn);
+            //ds = new System.Data.DataSet(); myCommand.Fill(ds, "table1");
+
+            //建立SQL查询   
+            OleDbCommand odCommand = conn.CreateCommand();
+
+            //3、输入查询语句 C#操作Access之读取mdb  
+
+            odCommand.CommandText = "select * from sheet1";
+
+            //建立读取   
+            OleDbDataReader odrReader = odCommand.ExecuteReader();
+
+            //查询并显示数据   
+            int size = odrReader.FieldCount;
+
+
+            while (odrReader.Read())
+            {
+                #region 获取相关参数
+                var displayOrder = odrReader[1].ToString();
+                var parent = odrReader[2].ToString();
+                var name = odrReader[3].ToString();
+                var address = odrReader[4].ToString();
+                bool isGov = odrReader[5].ToString() == "1";
+                bool isIns = odrReader[6].ToString() == "1";
+                bool isGroup = odrReader[7].ToString() == "1";
+                bool ishb = odrReader[8].ToString() == "1";
+                bool iszr = odrReader[9].ToString() == "1";
+                bool iszy = odrReader[10].ToString() == "1";
+                var landArea = odrReader[11].ToString();
+                var oArea = odrReader[12].ToString();
+                var cArea = odrReader[13].ToString();
+                var floor = odrReader[14].ToString();
+                bool ccard = odrReader[15].ToString() == "1";
+                bool lcard = odrReader[16].ToString() == "1";
+                bool rentin = odrReader[17].ToString() == "1";
+                bool rent = odrReader[18].ToString() == "1";
+                bool lend = odrReader[19].ToString() == "1";
+                var remark = odrReader[20].ToString();
+                var x = odrReader[21].ToString();
+                var y = odrReader[22].ToString();
+                #endregion
+
+                try
+                {
+                    #region 遍历要素
+
+                    var id = odrReader[0].ToString();
+                    int result = 0;
+
+                    if (!int.TryParse(id, out result)) continue;
+
+                    var government = _governmentService.GetGovernmentUnitByName(name);
+
+                    if (government == null)
+                        government = new GovernmentUnit();
+
+                    if (!string.IsNullOrEmpty(displayOrder))
+                    {
+                        government.DisplayOrder = Convert.ToInt32(displayOrder);
+                    }
+                    else
+                    {
+                        var orders = parent.Split('.');
+                        //获取最后一个作为显示次序
+                        government.DisplayOrder = Convert.ToInt32(orders[orders.Length - 1]);
+
+                        if (government.ParentGovernmentId == 0)
+                        {
+                            //寻找父节点
+                            var all = _governmentService.GetAllGovernmentUnits();
+
+                            var f = all.Where(g => g.DisplayOrder.ToString() == orders[0] && g.ParentGovernmentId == 0).FirstOrDefault();
+
+                            if (f == null)
+                                throw new Exception(string.Format("名称为{0}的找不到父节点", name));
+
+                            if (orders.Length == 2)
+                                government.ParentGovernmentId = f.Id;
+                            else if (orders.Length == 3)
+                            {
+                                var s = all.Where(g => g.DisplayOrder.ToString() == orders[1] && g.ParentGovernmentId == f.Id).FirstOrDefault();
+                                if (s == null) throw new Exception(string.Format("名称为{0}的找不到父节点", name));
+                                government.ParentGovernmentId = s.Id;
+                            }
+                        }
+                    }
+                    government.Name = name;
+                    government.Address = address;
+                    if (isGov) government.GovernmentType = GovernmentType.Government;
+                    if (isIns) government.GovernmentType = GovernmentType.Institution;
+                    if (isGroup) government.GovernmentType = GovernmentType.Group;
+                    if (ishb) government.LandOrigin = "划拨";
+                    if (iszr) government.LandOrigin = "转让";
+                    if (iszy) government.LandOrigin = "租用";
+
+                    government.LandArea = string.IsNullOrEmpty(landArea) ? 0 : Convert.ToDouble(landArea);
+                    government.ConstructArea = string.IsNullOrEmpty(cArea) ? 0 : Convert.ToDouble(cArea);
+                    government.Floor = string.IsNullOrEmpty(floor) ? 0 : Convert.ToInt32(floor);
+
+                    government.HasConstructCard = ccard;
+                    government.HasLandCard = lcard;
+                    government.HasLendInCard = rentin;
+                    government.HasRentCard = rent;
+                    government.HasLendInCard = lend;
+
+                    government.Remark = remark;
+
+                    if (!string.IsNullOrEmpty(x) && !string.IsNullOrEmpty(y))
+                    {
+                        government.X = Convert.ToDouble(x);
+                        government.Y = Convert.ToDouble(y);
+                        government.Location = DbGeography.FromText("POINT(" + government.X + " " + government.Y + ")");
+                    }
+                    else
+                        DbGeography.FromText("POINT(0 0)");
+
+
+                    #endregion
+
+                    if (government.Id == 0) _governmentService.InsertGovernmentUnit(government);
+                    else _governmentService.UpdateGovernmentUnit(government);
+
+
+                }
+                catch (Exception e)
+                {
+
+                    throw new Exception(string.Format("序号为 {0} 的要素异常，错误为：{1}", name, e.Message));
+                }
+
+
+            }
+
+            //关闭连接 C#操作Access之读取mdb  
+            odrReader.Close();
+            conn.Close();
+
+
+
+            return Ok("导入结束\n");
+        }
+
+
+        public class Point
+        {
+            public double lng { get; set; }
+
+            public double lat { get; set; }
         }
     }
 }
