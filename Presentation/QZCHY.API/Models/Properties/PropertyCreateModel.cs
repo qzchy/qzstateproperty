@@ -23,13 +23,13 @@ namespace QZCHY.API.Models.Properties
      
         public string UsedPeople { get; set; }
     
-        public float CurrentUse_Self { get; set; }
+        public double CurrentUse_Self { get; set; }
    
-        public float CurrentUse_Rent { get; set; }
+        public double CurrentUse_Rent { get; set; }
     
-        public float CurrentUse_Lend { get; set; }
+        public double CurrentUse_Lend { get; set; }
     
-        public float CurrentUse_Idle { get; set; }
+        public double CurrentUse_Idle { get; set; }
    
         public bool Estate { get; set; }
  
@@ -39,9 +39,9 @@ namespace QZCHY.API.Models.Properties
     
         public string LandId { get; set; }
     
-        public float ConstructArea { get; set; }
+        public double ConstructArea { get; set; }
     
-        public float LandArea { get; set; }
+        public double LandArea { get; set; }
    
         public bool Owner_self { get; set; }
 
@@ -49,7 +49,7 @@ namespace QZCHY.API.Models.Properties
 
         public int GovernmentId { get; set; }
 
-        public float Price { get; set; }
+        public double Price { get; set; }
 
         public string Description { get; set; }
 

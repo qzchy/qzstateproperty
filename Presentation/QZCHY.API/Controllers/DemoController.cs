@@ -93,14 +93,14 @@ namespace QZCHY.API.Controllers
         public IHttpActionResult GetAll()
         {
             _accountUserSettings.DefaultPasswordFormat = PasswordFormat.Encrypted;
-       
+
             _settingService.SaveSetting<AccountUserSettings>(_accountUserSettings);
 
             _securitySettings.EncryptionKey = "qzczjwithqzghchy";
             _settingService.SaveSetting(_securitySettings);
 
             _commonSettings.TelAndMobliePartten = @"^(0[0-9]{2,3}\-)?([2-9][0-9]{6,7})+(\-[0-9]{1,4})?$|(^(13[0-9]|15[0|3|6|7|8|9]|18[0-9])\d{8}$)";
-            _commonSettings.Time24Partten = @"^((1|0?)[0-9]|2[0-4]):([0-5][0-9])";           
+            _commonSettings.Time24Partten = @"^((1|0?)[0-9]|2[0-4]):([0-5][0-9])";
 
             _settingService.SaveSetting<CommonSettings>(_commonSettings);
 
@@ -131,7 +131,7 @@ namespace QZCHY.API.Controllers
         public IHttpActionResult ResetPWD()
         {
             var users = _accountUserService.GetAllAccountUsers();
-            foreach(var user in users)
+            foreach (var user in users)
             {
                 user.PasswordFormat = PasswordFormat.Encrypted;
                 user.Password = _encryptionService.EncryptText(user.Password);
@@ -159,41 +159,41 @@ namespace QZCHY.API.Controllers
             //    _propertyService.UpdateProperty(property);
             //}
 
-           // var governments = _governmentService.GetAllGovernmentUnits();
-           //List<string> names = new List<string>() ;
-           // foreach (var gov in governments)
-           // {
-           //     names.Add(gov.Name);
-           // }
+            // var governments = _governmentService.GetAllGovernmentUnits();
+            //List<string> names = new List<string>() ;
+            // foreach (var gov in governments)
+            // {
+            //     names.Add(gov.Name);
+            // }
 
-           // var filePath = @"D:\企业.xls";
-           // string strConn = "Provider=Microsoft.Jet.OLEDB.4.0;" + "Data Source=" + filePath + ";" + "Extended Properties=Excel 8.0;";
-           // System.Data.OleDb.OleDbConnection conn = new System.Data.OleDb.OleDbConnection(strConn);
-           // conn.Open();
-           // string strExcel = "";
-           // System.Data.OleDb.OleDbDataAdapter myCommand = null;
-           // System.Data.DataSet ds = null;
-           // strExcel = "select * from [五级$]";
-           // myCommand = new System.Data.OleDb.OleDbDataAdapter(strExcel, strConn);
-           // ds = new System.Data.DataSet();
-           // myCommand.Fill(ds, "table1");
+            // var filePath = @"D:\企业.xls";
+            // string strConn = "Provider=Microsoft.Jet.OLEDB.4.0;" + "Data Source=" + filePath + ";" + "Extended Properties=Excel 8.0;";
+            // System.Data.OleDb.OleDbConnection conn = new System.Data.OleDb.OleDbConnection(strConn);
+            // conn.Open();
+            // string strExcel = "";
+            // System.Data.OleDb.OleDbDataAdapter myCommand = null;
+            // System.Data.DataSet ds = null;
+            // strExcel = "select * from [五级$]";
+            // myCommand = new System.Data.OleDb.OleDbDataAdapter(strExcel, strConn);
+            // ds = new System.Data.DataSet();
+            // myCommand.Fill(ds, "table1");
 
-           // var table = ds.Tables[0];
+            // var table = ds.Tables[0];
 
-           // for (var i = 0; i < table.Rows.Count; i++) {
+            // for (var i = 0; i < table.Rows.Count; i++) {
 
-           //     var row = table.Rows[i];
-           //     if (!names.Contains(row[0].ToString()))
-           //     {
-           //         GovernmentUnit goverment = new GovernmentUnit();
-           //         var g = governments.Where(m => m.Name == row[1].ToString()).FirstOrDefault();
-           //         goverment.Name = row[0].ToString();
-           //         goverment.ParentGovernmentId = g.Id;
+            //     var row = table.Rows[i];
+            //     if (!names.Contains(row[0].ToString()))
+            //     {
+            //         GovernmentUnit goverment = new GovernmentUnit();
+            //         var g = governments.Where(m => m.Name == row[1].ToString()).FirstOrDefault();
+            //         goverment.Name = row[0].ToString();
+            //         goverment.ParentGovernmentId = g.Id;
 
-           //         _governmentService.InsertGovernmentUnit(goverment);
-           //     }
+            //         _governmentService.InsertGovernmentUnit(goverment);
+            //     }
 
-           // }
+            // }
 
 
             return Ok("finish");
@@ -201,29 +201,32 @@ namespace QZCHY.API.Controllers
 
         [HttpGet]
         [Route("SetPropertyConut")]
-        public IHttpActionResult SetPropertyConut() {
+        public IHttpActionResult SetPropertyConut()
+        {
 
             var goverments = _governmentService.GetAllGovernmentUnits();
             var role = _accountUserService.GetAccountUserRoleBySystemName(SystemAccountUserRoleNames.ParentGovernmentorAuditor);
-            foreach (var g in goverments) {
+            foreach (var g in goverments)
+            {
                 g.PropertyConut = g.Properties.Count;
-                if (g.ParentGovernmentId != 0) { 
+                if (g.ParentGovernmentId != 0)
+                {
                     var parent = _governmentService.GetGovernmentUnitById(g.ParentGovernmentId);
 
                     g.ParentName = parent.Name;
 
-              
+
 
                 }
 
                 _governmentService.UpdateGovernmentUnit(g);
 
                 var users = g.Users;
-                foreach(var user in users)
+                foreach (var user in users)
                 {
-                    if(g.ParentGovernmentId==0)
+                    if (g.ParentGovernmentId == 0)
                     {
-                        if(user.AccountUserRoles.Where(ur=>ur.Name==SystemAccountUserRoleNames.ParentGovernmentorAuditor).Count()==0)
+                        if (user.AccountUserRoles.Where(ur => ur.Name == SystemAccountUserRoleNames.ParentGovernmentorAuditor).Count() == 0)
                         {
 
                             user.AccountUserRoles.Add(role);
@@ -288,7 +291,7 @@ namespace QZCHY.API.Controllers
             var result = ReadXlsFile(filePath);
 
             #region old code
-            //#region 用户角色创建
+            #region 用户角色创建
             //var crAdministrators = new AccountUserRole
             //{
             //    Name = SystemAccountUserRoleNames.Administrators,
@@ -315,9 +318,9 @@ namespace QZCHY.API.Controllers
             //_accountUserService.InsertAccountUserRole(crAdministrators);
             //_accountUserService.InsertAccountUserRole(crRegistered);
             //_accountUserService.InsertAccountUserRole(crGuests);
-            //#endregion
+            #endregion
 
-            //#region 测试组织机构
+            #region 测试组织机构
             //var csj = _governmentService.GetGovernmentUnitById(37);
 
             ////var cz = new GovernmentUnit
@@ -369,9 +372,9 @@ namespace QZCHY.API.Controllers
             ////};
 
             ////context.Set<GovernmentUnit>().AddOrUpdate(cz, ghj, kcgh, qjfj, jjq, xq);
-            ////#endregion
+            #endregion
 
-            ////#region 用户创建
+            #region 用户创建
             //var user = new AccountUser()
             //{               
             //    UserName = "财政局",
@@ -390,7 +393,7 @@ namespace QZCHY.API.Controllers
             //user.AccountUserRoles.Add(crRegistered);
             //_accountUserService.InsertAccountUser(user);
 
-            //#endregion
+            #endregion
             #endregion
 
             return Ok("导入结束\n");
@@ -442,8 +445,6 @@ namespace QZCHY.API.Controllers
                     var property = _propertyService.GetAllProperties().Where(p => p.DisplayOrder == result).FirstOrDefault();
                     if (property == null) continue;
 
-
-
                     #region 获取相关参数
                     var name = odrReader[2].ToString();
                     var address = odrReader[3].ToString();
@@ -462,7 +463,7 @@ namespace QZCHY.API.Controllers
                     //if (property.Name != name || property.Address != address)
                     //    throw new Exception("不匹配");
 
-                    if (isStoreup|| isDevelopment)
+                    if (isStoreup || isDevelopment)
                         property.NextStepUsage = NextStepType.Storeup;
                     if (isAdjust)
                         property.NextStepUsage = NextStepType.Adjust;
@@ -661,8 +662,8 @@ namespace QZCHY.API.Controllers
                     if (!string.IsNullOrWhiteSpace(landArea)) property.LandArea = Convert.ToSingle(landArea);
 
                     property.PropertyID = constructAndLand;
-                    property.HasConstructID = hasCID=="有";
-                    property.HasLandID = hasLID== "有";
+                    property.HasConstructID = hasCID == "有";
+                    property.HasLandID = hasLID == "有";
                     property.PropertyNature = constructType;
                     property.LandNature = landType;
 
@@ -703,7 +704,7 @@ namespace QZCHY.API.Controllers
                         //if (isInjection) property.NextStepUsage = NextStepType.InjectionJT;
                         //if (isGreenland) property.NextStepUsage = NextStepType.Greenland;
                         //if (isSelf) property.NextStepUsage = NextStepType.Self;
-                    } 
+                    }
                     #endregion
 
 
@@ -726,7 +727,7 @@ namespace QZCHY.API.Controllers
 
                         foreach (var point in points)
                         {
-                            if(point.lng<point.lat)
+                            if (point.lng < point.lat)
                             {
                                 var t = point.lng;
                                 point.lng = point.lat;
@@ -783,7 +784,7 @@ namespace QZCHY.API.Controllers
                             catch
                             {
                                 property.Location = DbGeography.FromText("POINT(118.52 28.88)");
-                            }                         
+                            }
                         }
 
                         property.X = property.Location.Longitude.Value;
@@ -821,11 +822,342 @@ namespace QZCHY.API.Controllers
             //关闭连接 C#操作Access之读取mdb  
             odrReader.Close();
             conn.Close();
-         
+
 
             return resultSb.ToString();
         }
 
+
+        [HttpGet]
+        [Route("InsertHSGS")]
+        public IHttpActionResult InsertHSGS()
+        {
+            #region MyRegion
+            var properties = new List<Property>() {
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢1单元101室",Address="维拉小镇维拉小镇1幢1单元101室",ConstructArea=70.73,LandArea=15.33,EstateId="衢市不动产权0020344号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/21"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢1单元102室",Address="维拉小镇维拉小镇1幢1单元102室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0019622号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/18"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢2单元101室",Address="维拉小镇维拉小镇1幢2单元101室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0019542号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/18"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢2单元102室",Address="维拉小镇维拉小镇1幢2单元102室",ConstructArea=69.96,LandArea=15.17,EstateId="衢市不动产权0020806号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢3单元101室",Address="维拉小镇维拉小镇1幢3单元101室",ConstructArea=69.96,LandArea=15.17,EstateId="衢市不动产权0019938号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/19"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢3单元102室",Address="维拉小镇维拉小镇1幢3单元102室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0020686号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢4单元101室",Address="维拉小镇维拉小镇1幢4单元101室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0020692号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢4单元102室",Address="维拉小镇维拉小镇1幢4单元102室",ConstructArea=70.73,LandArea=15.33,EstateId="衢市不动产权0020811号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢1单元201室",Address="维拉小镇维拉小镇1幢1单元201室",ConstructArea=70.73,LandArea=15.33,EstateId="衢市不动产权0020688号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢1单元202室",Address="维拉小镇维拉小镇1幢1单元202室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0019618号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/18"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢2单元201室",Address="维拉小镇维拉小镇1幢2单元201室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0020940号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢2单元202室",Address="维拉小镇维拉小镇1幢2单元202室",ConstructArea=69.96,LandArea=15.17,EstateId="衢市不动产权0020677号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢3单元201室",Address="维拉小镇维拉小镇1幢3单元201室",ConstructArea=69.96,LandArea=15.17,EstateId="衢市不动产权0019829号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/19"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢3单元202室",Address="维拉小镇维拉小镇1幢3单元202室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0019736号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/19"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢4单元201室",Address="维拉小镇维拉小镇1幢4单元201室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0020718号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢4单元202室",Address="维拉小镇维拉小镇1幢4单元202室",ConstructArea=70.73,LandArea=15.33,EstateId="衢市不动产权0020625号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢1单元301室",Address="维拉小镇维拉小镇1幢1单元301室",ConstructArea=70.73,LandArea=15.33,EstateId="衢市不动产权0020696号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢1单元302室",Address="维拉小镇维拉小镇1幢1单元302室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0019666号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/18"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢2单元301室",Address="维拉小镇维拉小镇1幢2单元301室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0020594号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢2单元302室",Address="维拉小镇维拉小镇1幢2单元302室",ConstructArea=69.96,LandArea=15.17,EstateId="衢市不动产权0020673号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢3单元301室",Address="维拉小镇维拉小镇1幢3单元301室",ConstructArea=69.96,LandArea=15.17,EstateId="衢市不动产权0019784号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/19"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢3单元302室",Address="维拉小镇维拉小镇1幢3单元302室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0019676号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/18"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢4单元301室",Address="维拉小镇维拉小镇1幢4单元301室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0020721号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢4单元302室",Address="维拉小镇维拉小镇1幢4单元302室",ConstructArea=70.73,LandArea=15.33,EstateId="衢市不动产权0020681号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢1单元401室",Address="维拉小镇维拉小镇1幢1单元401室",ConstructArea=70.73,LandArea=15.33,EstateId="衢市不动产权0019572号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/18"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢1单元402室",Address="维拉小镇维拉小镇1幢1单元402室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0019667号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/18"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢2单元401室",Address="维拉小镇维拉小镇1幢2单元401室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0020612号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇维拉小镇1幢2单元402室",Address="维拉小镇维拉小镇1幢2单元402室",ConstructArea=69.96,LandArea=15.17,EstateId="衢市不动产权0020693号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇1幢3单元401室",Address="维拉小镇1幢3单元401室",ConstructArea=69.96,LandArea=15.17,EstateId="衢市不动产权0019747号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/19"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇1幢3单元402室",Address="维拉小镇1幢3单元402室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0020331号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/21"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇1幢4单元401室",Address="维拉小镇1幢4单元401室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0020808号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇1幢4单元402室",Address="维拉小镇1幢4单元402室",ConstructArea=70.73,LandArea=15.33,EstateId="衢市不动产权0020603号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇1幢1单元501室",Address="维拉小镇1幢1单元501室",ConstructArea=70.73,LandArea=15.33,EstateId="衢市不动产权0019559号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/18"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇1幢1单元502室",Address="维拉小镇1幢1单元502室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0019557号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/18"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇1幢2单元501室",Address="维拉小镇1幢2单元501室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0020938号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇1幢2单元502室",Address="维拉小镇1幢2单元502室",ConstructArea=69.96,LandArea=15.17,EstateId="衢市不动产权0020690号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇1幢3单元501室",Address="维拉小镇1幢3单元501室",ConstructArea=69.96,LandArea=15.17,EstateId="衢市不动产权0019763号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/19"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇1幢3单元502室",Address="维拉小镇1幢3单元502室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0019928号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/19"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇1幢4单元501室",Address="维拉小镇1幢4单元501室",ConstructArea=54.15,LandArea=11.74,EstateId="衢市不动产权0020810号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇1幢4单元502室",Address="维拉小镇1幢4单元502室",ConstructArea=70.73,LandArea=15.33,EstateId="衢市不动产权0020602号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢1单元101室",Address="维拉小镇2幢1单元101室",ConstructArea=70.73,LandArea=15.33,EstateId="衢市不动产权0017616号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/10"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢1单元102室",Address="维拉小镇2幢1单元102室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018312号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢2单元101室",Address="维拉小镇2幢2单元101室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0017691号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/18"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢2单元102室",Address="维拉小镇2幢2单元102室",ConstructArea=69.96,LandArea=15.16,EstateId="衢市不动产权0017672号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/10"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢3单元101室",Address="维拉小镇2幢3单元101室",ConstructArea=69.96,LandArea=15.16,EstateId="衢市不动产权0018251号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/11"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢3单元102室",Address="维拉小镇2幢3单元102室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0017665号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/10"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢4单元101室",Address="维拉小镇2幢4单元101室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018306号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢4单元102室",Address="维拉小镇2幢4单元102室",ConstructArea=70.73,LandArea=15.33,EstateId="衢市不动产权0018179号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/11"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢1单元201室",Address="维拉小镇2幢1单元201室",ConstructArea=70.73,LandArea=15.33,EstateId="衢市不动产权0018174号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/11"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢1单元202室",Address="维拉小镇2幢1单元202室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018311号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢2单元201室",Address="维拉小镇2幢2单元201室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0017694号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/10"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢2单元202室",Address="维拉小镇2幢2单元202室",ConstructArea=69.96,LandArea=15.16,EstateId="衢市不动产权0018314号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢3单元201室",Address="维拉小镇2幢3单元201室",ConstructArea=69.96,LandArea=15.16,EstateId="衢市不动产权0018268号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/11"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢3单元202室",Address="维拉小镇2幢3单元202室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018271号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/11"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢4单元201室",Address="维拉小镇2幢4单元201室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018223号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/11"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢4单元202室",Address="维拉小镇2幢4单元202室",ConstructArea=70.73,LandArea=15.33,EstateId="衢市不动产权0018196号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/11"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢1单元301室",Address="维拉小镇2幢1单元301室",ConstructArea=70.73,LandArea=15.33,EstateId="衢市不动产权0017618号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/10"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢1单元302室",Address="维拉小镇2幢1单元302室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0017626号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/10"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢2单元301室",Address="维拉小镇2幢2单元301室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0017714号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/10"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢2单元302室",Address="维拉小镇2幢2单元302室",ConstructArea=69.96,LandArea=15.17,EstateId="衢市不动产权0017675号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/10"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢3单元301室",Address="维拉小镇2幢3单元301室",ConstructArea=69.96,LandArea=15.16,EstateId="衢市不动产权0017701号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/10"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢3单元302室",Address="维拉小镇2幢3单元302室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018272号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/11"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢4单元301室",Address="维拉小镇2幢4单元301室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018308号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢4单元302室",Address="维拉小镇2幢4单元302室",ConstructArea=70.73,LandArea=15.33,EstateId="衢市不动产权0018253号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/11"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢1单元401室",Address="维拉小镇2幢1单元401室",ConstructArea=70.73,LandArea=15.33,EstateId="衢市不动产权0017619号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/10"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢1单元402室",Address="维拉小镇2幢1单元402室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0017630号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/10"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢2单元401室",Address="维拉小镇2幢2单元401室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018172号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/11"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢2单元402室",Address="维拉小镇2幢2单元402室",ConstructArea=69.96,LandArea=15.16,EstateId="衢市不动产权0017669号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/10"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢3单元401室",Address="维拉小镇2幢3单元401室",ConstructArea=69.96,LandArea=15.16,EstateId="衢市不动产权0018269号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/11"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢3单元402室",Address="维拉小镇2幢3单元402室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018316号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢4单元401室",Address="维拉小镇2幢4单元401室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018307号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢4单元402室",Address="维拉小镇2幢4单元402室",ConstructArea=70.73,LandArea=15.33,EstateId="衢市不动产权0018303号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢1单元501室",Address="维拉小镇2幢1单元501室",ConstructArea=70.73,LandArea=15.33,EstateId="衢市不动产权0017624号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/10"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢1单元502室",Address="维拉小镇2幢1单元502室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0017697号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/10"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢2单元501室",Address="维拉小镇2幢2单元501室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018309号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢2单元502室",Address="维拉小镇2幢2单元502室",ConstructArea=69.96,LandArea=15.16,EstateId="衢市不动产权0017678号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/10"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢3单元501室",Address="维拉小镇2幢3单元501室",ConstructArea=69.96,LandArea=15.16,EstateId="衢市不动产权0017703号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/10"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢3单元502室",Address="维拉小镇2幢3单元502室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018273号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/11"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢4单元501室",Address="维拉小镇2幢4单元501室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018246号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/11"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇2幢4单元502室",Address="维拉小镇2幢4单元502室",ConstructArea=70.73,LandArea=15.33,EstateId="衢市不动产权0018305号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢1单元101室",Address="维拉小镇3幢1单元101室",ConstructArea=70.73,LandArea=15.32,EstateId="衢市不动产权0018810号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢1单元102室",Address="维拉小镇3幢1单元102室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018822号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢2单元101室",Address="维拉小镇3幢2单元101室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018758号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢2单元102室",Address="维拉小镇3幢2单元102室",ConstructArea=69.96,LandArea=15.15,EstateId="衢市不动产权0018649号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢3单元101室",Address="维拉小镇3幢3单元101室",ConstructArea=69.96,LandArea=15.15,EstateId="衢市不动产权0020626号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢3单元102室",Address="维拉小镇3幢3单元102室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0019769号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/19"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢4单元101室",Address="维拉小镇3幢4单元101室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0020609号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢4单元102室",Address="维拉小镇3幢4单元102室",ConstructArea=70.73,LandArea=15.32,EstateId="衢市不动产权0021008号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/25"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢1单元201室",Address="维拉小镇3幢1单元201室",ConstructArea=70.73,LandArea=15.32,EstateId="衢市不动产权0018816号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢1单元202室",Address="维拉小镇3幢1单元202室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018831号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢2单元201室",Address="维拉小镇3幢2单元201室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018760号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢2单元202室",Address="维拉小镇3幢2单元202室",ConstructArea=69.96,LandArea=15.15,EstateId="衢市不动产权0018650号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢3单元201室",Address="维拉小镇3幢3单元201室",ConstructArea=69.96,LandArea=15.15,EstateId="衢市不动产权0020674号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢3单元202室",Address="维拉小镇3幢3单元202室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0020621号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢4单元201室",Address="维拉小镇3幢4单元201室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0020604号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢4单元202室",Address="维拉小镇3幢4单元202室",ConstructArea=70.73,LandArea=15.32,EstateId="衢市不动产权0021003号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/25"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢1单元301室",Address="维拉小镇3幢1单元301室",ConstructArea=70.73,LandArea=15.32,EstateId="衢市不动产权0018808号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢1单元302室",Address="维拉小镇3幢1单元302室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018820号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢2单元301室",Address="维拉小镇3幢2单元301室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018778号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢2单元302室",Address="维拉小镇3幢2单元302室",ConstructArea=69.96,LandArea=15.15,EstateId="衢市不动产权0018672号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢3单元301室",Address="维拉小镇3幢3单元301室",ConstructArea=69.96,LandArea=15.15,EstateId="衢市不动产权0020671号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢3单元302室",Address="维拉小镇3幢3单元302室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0019122号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢4单元301室",Address="维拉小镇3幢4单元301室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0020165号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/20"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢4单元302室",Address="维拉小镇3幢4单元302室",ConstructArea=70.73,LandArea=15.32,EstateId="衢市不动产权0020597号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢1单元401室",Address="维拉小镇3幢1单元401室",ConstructArea=70.73,LandArea=15.32,EstateId="衢市不动产权0018755号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢1单元402室",Address="维拉小镇3幢1单元402室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018830号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢2单元401室",Address="维拉小镇3幢2单元401室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018763号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢2单元402室",Address="维拉小镇3幢2单元402室",ConstructArea=69.96,LandArea=15.15,EstateId="衢市不动产权0020815号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢3单元401室",Address="维拉小镇3幢3单元401室",ConstructArea=69.96,LandArea=15.15,EstateId="衢市不动产权0020670号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢3单元402室",Address="维拉小镇3幢3单元402室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0021023号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/25"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢4单元401室",Address="维拉小镇3幢4单元401室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0021014号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/25"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢4单元402室",Address="维拉小镇3幢4单元402室",ConstructArea=70.73,LandArea=15.32,EstateId="衢市不动产权0020598号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢1单元501室",Address="维拉小镇3幢1单元501室",ConstructArea=70.73,LandArea=15.32,EstateId="衢市不动产权0018757号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢1单元502室",Address="维拉小镇3幢1单元502室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018818号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢2单元501室",Address="维拉小镇3幢2单元501室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0018777号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢2单元502室",Address="维拉小镇3幢2单元502室",ConstructArea=69.96,LandArea=15.15,EstateId="衢市不动产权0021038号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/25"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢3单元501室",Address="维拉小镇3幢3单元501室",ConstructArea=69.96,LandArea=15.15,EstateId="衢市不动产权0021033号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/25"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢3单元502室",Address="维拉小镇3幢3单元502室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0021031号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/25"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢4单元501室",Address="维拉小镇3幢4单元501室",ConstructArea=54.15,LandArea=11.73,EstateId="衢市不动产权0021016号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/25"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇3幢4单元502室",Address="维拉小镇3幢4单元502室",ConstructArea=70.73,LandArea=15.32,EstateId="衢市不动产权0020668号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢1单元101室",Address="维拉小镇4幢1单元101室",ConstructArea=70.73,LandArea=15.36,EstateId="衢市不动产权0018905号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/14"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢1单元102室",Address="维拉小镇4幢1单元102室",ConstructArea=54.15,LandArea=11.76,EstateId="衢市不动产权0020611号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢2单元101室",Address="维拉小镇4幢2单元101室",ConstructArea=54.15,LandArea=11.76,EstateId="衢市不动产权0020702号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢2单元102室",Address="维拉小镇4幢2单元102室",ConstructArea=69.96,LandArea=15.19,EstateId="衢市不动产权0020942号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢3单元101室",Address="维拉小镇4幢3单元101室",ConstructArea=69.96,LandArea=15.19,EstateId="衢市不动产权002029号 ",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/19"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢3单元102室",Address="维拉小镇4幢3单元102室",ConstructArea=54.15,LandArea=11.76,EstateId="衢市不动产权0019715号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/18"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢4单元101室",Address="维拉小镇4幢4单元101室",ConstructArea=54.15,LandArea=11.76,EstateId="衢市不动产权0020680号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢4单元102室",Address="维拉小镇4幢4单元102室",ConstructArea=70.73,LandArea=15.36,EstateId="衢市不动产权0018919号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/14"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢1单元201室",Address="维拉小镇4幢1单元201室",ConstructArea=70.73,LandArea=15.36,EstateId="衢市不动产权0019121号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢1单元202室",Address="维拉小镇4幢1单元202室",ConstructArea=54.15,LandArea=11.76,EstateId="衢市不动产权0020610号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢2单元201室",Address="维拉小镇4幢2单元201室",ConstructArea=54.15,LandArea=11.76,EstateId="衢市不动产权0020698号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢2单元202室",Address="维拉小镇4幢2单元202室",ConstructArea=69.96,LandArea=15.19,EstateId="衢市不动产权0020346号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/21"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢3单元201室",Address="维拉小镇4幢3单元201室",ConstructArea=69.96,LandArea=15.19,EstateId="衢市不动产权0019949号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/19"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢3单元202室",Address="维拉小镇4幢3单元202室",ConstructArea=54.15,LandArea=11.76,EstateId="衢市不动产权0019809号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/19"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢4单元201室",Address="维拉小镇4幢4单元201室",ConstructArea=54.15,LandArea=11.76,EstateId="衢市不动产权0020675号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢4单元202室",Address="维拉小镇4幢4单元202室",ConstructArea=70.73,LandArea=15.36,EstateId="衢市不动产权0018920号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/14"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢1单元301室",Address="维拉小镇4幢1单元301室",ConstructArea=70.73,LandArea=15.36,EstateId="衢市不动产权0018971号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢1单元302室",Address="维拉小镇4幢1单元302室",ConstructArea=54.15,LandArea=11.76,EstateId="衢市不动产权0020608号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢2单元301室",Address="维拉小镇4幢2单元301室",ConstructArea=54.15,LandArea=11.76,EstateId="衢市不动产权0019673号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/18"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢2单元302室",Address="维拉小镇4幢2单元302室",ConstructArea=69.96,LandArea=15.19,EstateId="衢市不动产权0020347号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/21"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢3单元301室",Address="维拉小镇4幢3单元301室",ConstructArea=69.96,LandArea=15.19,EstateId="衢市不动产权0020340号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/21"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢3单元302室",Address="维拉小镇4幢3单元302室",ConstructArea=54.15,LandArea=11.76,EstateId="衢市不动产权0019961号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/19"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢4单元301室",Address="维拉小镇4幢4单元301室",ConstructArea=54.15,LandArea=11.76,EstateId="衢市不动产权0020672号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢4单元302室",Address="维拉小镇4幢4单元302室",ConstructArea=70.73,LandArea=15.36,EstateId="衢市不动产权0018915号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/14"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢1单元401室",Address="维拉小镇4幢1单元401室",ConstructArea=70.73,LandArea=15.36,EstateId="衢市不动产权0020717号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢1单元402室",Address="维拉小镇4幢1单元402室",ConstructArea=54.15,LandArea=11.76,EstateId="衢市不动产权0020683号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢2单元401室",Address="维拉小镇4幢2单元401室",ConstructArea=54.15,LandArea=11.76,EstateId="衢市不动产权0019722号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/18"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢2单元402室",Address="维拉小镇4幢2单元402室",ConstructArea=69.96,LandArea=15.19,EstateId="衢市不动产权0020694号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢3单元401室",Address="维拉小镇4幢3单元401室",ConstructArea=69.96,LandArea=15.19,EstateId="衢市不动产权0020606号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢3单元402室",Address="维拉小镇4幢3单元402室",ConstructArea=54.15,LandArea=11.76,EstateId="衢市不动产权0019959号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/19"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢4单元401室",Address="维拉小镇4幢4单元401室",ConstructArea=54.15,LandArea=11.76,EstateId="衢市不动产权0020338号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/21"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢4单元402室",Address="维拉小镇4幢4单元402室",ConstructArea=70.73,LandArea=15.36,EstateId="衢市不动产权0018916号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/14"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢1单元501室",Address="维拉小镇4幢1单元501室",ConstructArea=70.73,LandArea=15.36,EstateId="衢市不动产权0020716号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢1单元502室",Address="维拉小镇4幢1单元502室",ConstructArea=54.15,LandArea=11.76,EstateId="衢市不动产权0020685号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢2单元501室",Address="维拉小镇4幢2单元501室",ConstructArea=54.15,LandArea=11.76,EstateId="衢市不动产权0019702号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/18"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢2单元502室",Address="维拉小镇4幢2单元502室",ConstructArea=69.96,LandArea=15.19,EstateId="衢市不动产权0020713号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢3单元501室",Address="维拉小镇4幢3单元501室",ConstructArea=69.96,LandArea=15.19,EstateId="衢市不动产权0018928号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/14"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢3单元502室",Address="维拉小镇4幢3单元502室",ConstructArea=54.15,LandArea=11.76,EstateId="衢市不动产权0019950号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/19"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢4单元501室",Address="维拉小镇4幢4单元501室",ConstructArea=54.15,LandArea=11.76,EstateId="衢市不动产权0020820号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇4幢4单元502室",Address="维拉小镇4幢4单元502室",ConstructArea=70.73,LandArea=15.36,EstateId="衢市不动产权0018917号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/14"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢1单元101室",Address="维拉小镇5幢1单元101室",ConstructArea=70.73,LandArea=15.35,EstateId="衢市不动产权0018302号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢1单元102室",Address="维拉小镇5幢1单元102室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0018425号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢2单元101室",Address="维拉小镇5幢2单元101室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0018414号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢2单元102室",Address="维拉小镇5幢2单元102室",ConstructArea=69.96,LandArea=15.18,EstateId="衢市不动产权0018287号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/11"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢3单元101室",Address="维拉小镇5幢3单元101室",ConstructArea=69.96,LandArea=15.18,EstateId="衢市不动产权0018376号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢3单元102室",Address="维拉小镇5幢3单元102室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0018795号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢4单元101室",Address="维拉小镇5幢4单元101室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0018698号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢4单元102室",Address="维拉小镇5幢4单元102室",ConstructArea=70.73,LandArea=15.35,EstateId="衢市不动产权0018662号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢1单元201室",Address="维拉小镇5幢1单元201室",ConstructArea=70.73,LandArea=15.35,EstateId="衢市不动产权0018300号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢1单元202室",Address="维拉小镇5幢1单元202室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0018494号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢2单元201室",Address="维拉小镇5幢2单元201室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0018398号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢2单元202室",Address="维拉小镇5幢2单元202室",ConstructArea=69.96,LandArea=15.18,EstateId="衢市不动产权0018449号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢3单元201室",Address="维拉小镇5幢3单元201室",ConstructArea=69.96,LandArea=15.18,EstateId="衢市不动产权0018381号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢3单元202室",Address="维拉小镇5幢3单元202室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0018386号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢4单元201室",Address="维拉小镇5幢4单元201室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0018799号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢4单元202室",Address="维拉小镇5幢4单元202室",ConstructArea=70.73,LandArea=15.35,EstateId="衢市不动产权0018652号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢1单元301室",Address="维拉小镇5幢1单元301室",ConstructArea=70.73,LandArea=15.35,EstateId="衢市不动产权0016970号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/10"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢1单元302室",Address="维拉小镇5幢1单元302室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0018508号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢2单元301室",Address="维拉小镇5幢2单元301室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0018384号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢2单元302室",Address="维拉小镇5幢2单元302室",ConstructArea=69.96,LandArea=15.18,EstateId="衢市不动产权0018461号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢3单元301室",Address="维拉小镇5幢3单元301室",ConstructArea=69.96,LandArea=15.18,EstateId="衢市不动产权0018382号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢3单元302室",Address="维拉小镇5幢3单元302室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0018656号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢4单元301室",Address="维拉小镇5幢4单元301室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0018684号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢4单元302室",Address="维拉小镇5幢4单元302室",ConstructArea=70.73,LandArea=15.35,EstateId="衢市不动产权0018651号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢1单元401室",Address="维拉小镇5幢1单元401室",ConstructArea=70.73,LandArea=15.35,EstateId="衢市不动产权0018798号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢1单元402室",Address="维拉小镇5幢1单元402室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0018493号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢2单元401室",Address="维拉小镇5幢2单元401室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0018399号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢2单元402室",Address="维拉小镇5幢2单元402室",ConstructArea=69.96,LandArea=15.18,EstateId="衢市不动产权0018283号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/11"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢3单元401室",Address="维拉小镇5幢3单元401室",ConstructArea=69.96,LandArea=15.18,EstateId="衢市不动产权0018388号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢3单元402室",Address="维拉小镇5幢3单元402室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0018697号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢4单元401室",Address="维拉小镇5幢4单元401室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0018696号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢4单元402室",Address="维拉小镇5幢4单元402室",ConstructArea=70.73,LandArea=15.35,EstateId="衢市不动产权0018797号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢1单元501室",Address="维拉小镇5幢1单元501室",ConstructArea=70.73,LandArea=15.35,EstateId="衢市不动产权0018301号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢1单元502室",Address="维拉小镇5幢1单元502室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0018492号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢2单元501室",Address="维拉小镇5幢2单元501室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0018413号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢2单元502室",Address="维拉小镇5幢2单元502室",ConstructArea=69.96,LandArea=15.18,EstateId="衢市不动产权0018429号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢3单元501室",Address="维拉小镇5幢3单元501室",ConstructArea=69.96,LandArea=15.18,EstateId="衢市不动产权0018495号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢3单元502室",Address="维拉小镇5幢3单元502室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0018655号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢4单元501室",Address="维拉小镇5幢4单元501室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0018686号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇5幢4单元502室",Address="维拉小镇5幢4单元502室",ConstructArea=70.73,LandArea=15.35,EstateId="衢市不动产权0018692号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/13"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢1单元101室",Address="维拉小镇6幢1单元101室",ConstructArea=70.73,LandArea=15.35,EstateId="衢市不动产权0019194号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢1单元102室",Address="维拉小镇6幢1单元102室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0019124号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢2单元101室",Address="维拉小镇6幢2单元101室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0019261号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢2单元102室",Address="维拉小镇6幢2单元102室",ConstructArea=69.96,LandArea=15.18,EstateId="衢市不动产权0020617号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢3单元101室",Address="维拉小镇6幢3单元101室",ConstructArea=69.96,LandArea=15.18,EstateId="衢市不动产权0019151号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢3单元102室",Address="维拉小镇6幢3单元102室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0019178号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢4单元101室",Address="维拉小镇6幢4单元101室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0019188号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢4单元102室",Address="维拉小镇6幢4单元102室",ConstructArea=70.73,LandArea=15.35,EstateId="衢市不动产权0020333号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/21"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢1单元201室",Address="维拉小镇6幢1单元201室",ConstructArea=70.73,LandArea=15.35,EstateId="衢市不动产权0019190号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢1单元202室",Address="维拉小镇6幢1单元202室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0019126号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢2单元201室",Address="维拉小镇6幢2单元201室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0018317号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/12"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢2单元202室",Address="维拉小镇6幢2单元202室",ConstructArea=69.96,LandArea=15.18,EstateId="衢市不动产权0021046号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/25"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢3单元201室",Address="维拉小镇6幢3单元201室",ConstructArea=69.96,LandArea=15.18,EstateId="衢市不动产权0019154号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢3单元202室",Address="维拉小镇6幢3单元202室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0019180号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢4单元201室",Address="维拉小镇6幢4单元201室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0019128号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢4单元202室",Address="维拉小镇6幢4单元202室",ConstructArea=70.73,LandArea=15.35,EstateId="衢市不动产权0020620号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢1单元301室",Address="维拉小镇6幢1单元301室",ConstructArea=70.73,LandArea=15.35,EstateId="衢市不动产权0019192号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢1单元302室",Address="维拉小镇6幢1单元302室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0020607号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢2单元301室",Address="维拉小镇6幢2单元301室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0020351号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/21"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢2单元302室",Address="维拉小镇6幢2单元302室",ConstructArea=69.96,LandArea=15.18,EstateId="衢市不动产权0021045号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/25"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢3单元301室",Address="维拉小镇6幢3单元301室",ConstructArea=69.96,LandArea=15.18,EstateId="衢市不动产权0019155号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢3单元302室",Address="维拉小镇6幢3单元302室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0019182号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢4单元301室",Address="维拉小镇6幢4单元301室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0019132号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢4单元302室",Address="维拉小镇6幢4单元302室",ConstructArea=70.73,LandArea=15.35,EstateId="衢市不动产权0020618号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢1单元401室",Address="维拉小镇6幢1单元401室",ConstructArea=70.73,LandArea=15.35,EstateId="衢市不动产权0020352号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/21"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢1单元402室",Address="维拉小镇6幢1单元402室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0020615号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢2单元401室",Address="维拉小镇6幢2单元401室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0021155号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/25"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢2单元402室",Address="维拉小镇6幢2单元402室",ConstructArea=69.96,LandArea=15.18,EstateId="衢市不动产权0020936号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢3单元401室",Address="维拉小镇6幢3单元401室",ConstructArea=69.96,LandArea=15.18,EstateId="衢市不动产权0020708号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢3单元402室",Address="维拉小镇6幢3单元402室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0020337号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/21"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢4单元401室",Address="维拉小镇6幢4单元401室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0019125号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢4单元402室",Address="维拉小镇6幢4单元402室",ConstructArea=70.73,LandArea=15.35,EstateId="衢市不动产权0019161号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢1单元501室",Address="维拉小镇6幢1单元501室",ConstructArea=70.73,LandArea=15.35,EstateId="衢市不动产权0019133号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢1单元502室",Address="维拉小镇6幢1单元502室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0020613号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/24"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢2单元501室",Address="维拉小镇6幢2单元501室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0019185号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢2单元502室",Address="维拉小镇6幢2单元502室",ConstructArea=69.96,LandArea=15.18,EstateId="衢市不动产权0021043号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/25"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢3单元501室",Address="维拉小镇6幢3单元501室",ConstructArea=69.96,LandArea=15.18,EstateId="衢市不动产权0019198号",PropertyNature="公共租赁",LandNature="出让",Price=12.59,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    69.96   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢3单元502室",Address="维拉小镇6幢3单元502室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0020349号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/21"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢4单元501室",Address="维拉小镇6幢4单元501室",ConstructArea=54.15,LandArea=11.75,EstateId="衢市不动产权0019130号",PropertyNature="公共租赁",LandNature="出让",Price=9.75,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self= 54.15   },
+new Property {PropertyType= PropertyType.House , Name="维拉小镇6幢4单元502室",Address="维拉小镇6幢4单元502室",ConstructArea=70.73,LandArea=15.35,EstateId="衢市不动产权0019162号",PropertyNature="公共租赁",LandNature="出让",Price=12.73,GetedDate=Convert.ToDateTime("2017/4/17"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=    70.73   },
+new Property {PropertyType= PropertyType.House , Name="衢州市华枫路16号",Address="衢州市华枫路16号",ConstructArea=0.00,LandArea=87725.99,EstateId="浙（2017）衢州市不动产权第0037861号 ",PropertyNature="国有",LandNature="国有",GetedDate=Convert.ToDateTime("2017/8/10"),LifeTime=70, UsedPeople="汇盛",CurrentUse_Self=  87725.99    }
+            };
+            #endregion
+
+            var g = _governmentService.GetGovernmentUnitByName("汇盛公司");
+
+            var geo1="[{ \"lat\":28.940045200288296,\"lng\":118.96144151687622},{ \"lat\":28.94018467515707,\"lng\":118.96187603473663},{ \"lat\":28.940077386796474,\"lng\":118.96191895008087},{ \"lat\":28.93993254750967,\"lng\":118.96150052547455}]";
+            var geo2 = "[{ \"lat\":28.939831210300326,\"lng\":118.96154344081879},{ \"lat\":28.93994922749698,\"lng\":118.96196186542511},{ \"lat\":28.939836574718356,\"lng\":118.96201550960541},{ \"lat\":28.93969709984958,\"lng\":118.96159172058105}]";
+            var geo3= "[{\"lat\":28.939562989398837,\"lng\":118.9616346359253},{\"lat\":28.93969709984958,\"lng\":118.96206378936768},{\"lat\":28.939595175907016,\"lng\":118.96211206912994},{\"lat\":28.93946106545627,\"lng\":118.9616721868515}]";
+            var geo4 = "[{\"lat\":28.94019599072635,\"lng\":118.96196186542511},{\"lat\":28.940324736759067,\"lng\":118.96239638328552},{\"lat\":28.94022817723453,\"lng\":118.96244466304779},{\"lat\":28.940094066783786,\"lng\":118.96201014518738}]";
+            var geo5= "[{\"lat\":28.939943863078952,\"lng\":118.96204769611359},{\"lat\":28.940094066783786,\"lng\":118.96249830722809},{\"lat\":28.93998141400516,\"lng\":118.96254122257233},{\"lat\":28.939852667972445,\"lng\":118.96209597587585}]";
+            var geo6 = "[{\"lat\":28.9397185575217,\"lng\":118.96214425563812},{\"lat\":28.939852667972445,\"lng\":118.96258413791656},{\"lat\":28.93975074402988,\"lng\":118.9626270532608},{\"lat\":28.939627362415195,\"lng\":118.96219789981842}]";
+            var geo7 = "[{\"lat\":28.908155243843794,\"lng\":118.84716063737869},{\"lat\":28.905809484422207,\"lng\":118.85152995586395},{\"lat\":28.904404006898403,\"lng\":118.85053217411041},{\"lat\":28.906796537339687,\"lng\":118.84623527526855}]";
+
+            try
+            {
+                foreach (var property in properties)
+                {
+                    property.Region = Region.Clusters;
+                    property.Government = g;
+                    property.HasConstructID = true;
+                    property.HasLandID = true;
+
+                    string geo = geo7;
+                    if (property.Name.Contains("维拉小镇1幢")) geo = geo1;
+                    else if (property.Name.Contains("维拉小镇2幢")) geo = geo2;
+                    else if (property.Name.Contains("维拉小镇3幢")) geo = geo3;
+                    else if (property.Name.Contains("维拉小镇4幢")) geo = geo4;
+                    else if (property.Name.Contains("维拉小镇5幢")) geo = geo5;
+                    else if (property.Name.Contains("维拉小镇6幢")) geo = geo6;
+
+                    var points = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Point>>(geo);
+                    var wkt = "";
+
+                    StringBuilder wktsb = new StringBuilder();
+
+                    //末尾加上起点闭合多边形
+                    if (points.Count > 1) points.Add(points[0]);
+
+                    foreach (var point in points)
+                    {
+                        if (point.lng < point.lat)
+                        {
+                            var t = point.lng;
+                            point.lng = point.lat;
+                            point.lat = t;
+                        }
+                        wktsb.Append(string.Format("{0} {1},", point.lng, point.lat));
+                    }
+
+                    wkt = string.Format("POLYGON(({0}))", wktsb.ToString().TrimEnd(','));
+                    property.WKT = wkt;
+                    SqlGeography sqlGeography = SqlGeography.Parse(wkt).MakeValid();
+                    var graphy = DbGeography.FromText(sqlGeography.ToString());
+                    property.Extent = graphy;
+
+                    DbGeometry geometry = DbGeometry.FromText(graphy.ToString().Replace("SRID=4326;", ""));
+                    if (geometry.Centroid != null)
+                        property.Location = DbGeography.FromText(string.Format("POINT({0} {1})", geometry.Centroid.XCoordinate, geometry.Centroid.YCoordinate));
+                    else
+                        property.Location = graphy.PointAt(1);
+                     
+                    _propertyService.InsertProperty(property);
+
+                    var propertyNewCreate = new PropertyNewCreate
+                    {
+                        Property_Id = property.Id,
+                        State = PropertyApproveState.Start,
+                        ProcessDate = DateTime.Now,
+                        SuggestGovernmentId = g.Id,
+                        Title = property.Name,
+                    };
+
+                    _propertyNewCreateService.InsertPropertyNewCreate(propertyNewCreate);
+                }
+            }
+            catch(Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+
+
+            return Ok("success");
+        }
 
 
         [HttpGet]
@@ -962,9 +1294,9 @@ namespace QZCHY.API.Controllers
                         DbGeography.FromText("POINT(0 0)");
 
 
-                        #endregion
+                    #endregion
 
-                        if (government.Id == 0) _governmentService.InsertGovernmentUnit(government);
+                    if (government.Id == 0) _governmentService.InsertGovernmentUnit(government);
                     else _governmentService.UpdateGovernmentUnit(government);
 
 
