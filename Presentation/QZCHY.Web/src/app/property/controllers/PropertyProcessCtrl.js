@@ -173,8 +173,9 @@ app.controller('PropertyProcessCtrl', ['$window', '$rootScope', '$uibModal', '$s
                 windowClass: "map-modal",
                 //appendTo: '#app',
                 resolve: {
-                    dialogHeight: function () { return $scope.dialogHeight; },
-                    property: function () { return property}
+                    dialogHeight: function () { return $scope.dialogHeight; },                  
+                    property: function () { return property },
+                    propertyService: function () { return propertyService }
                 }
             });
 
@@ -454,10 +455,16 @@ app.controller('PropertyProcessCtrl', ['$window', '$rootScope', '$uibModal', '$s
         };
     }]);
 
-app.controller('propertyDetailModalDialogCtrl', function ($scope, $uibModalInstance, dialogHeight, property) {
+app.controller('propertyDetailModalDialogCtrl', function ($scope, $uibModalInstance, dialogHeight, property, propertyService) {
     $scope.okText = "确定";
     $scope.dialogHeight = dialogHeight;
-    $scope.property = property;
+    $scope.propertyService = propertyService;
+
+    propertyService.getPropertyById(property.id).then(function (response) {
+        $scope.property = response;
+
+    })
+    
 
     $scope.ok = function () {
         $uibModalInstance.dismiss();
