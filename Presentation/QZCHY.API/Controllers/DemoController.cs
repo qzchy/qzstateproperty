@@ -9,6 +9,7 @@ using QZCHY.Services.AccountUsers;
 using QZCHY.Services.Authentication;
 using QZCHY.Services.Common;
 using QZCHY.Services.Configuration;
+using QZCHY.Services.Media;
 using QZCHY.Services.Messages;
 using QZCHY.Services.Property;
 using QZCHY.Services.Security;
@@ -16,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity.Spatial;
 using System.Data.OleDb;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -37,17 +39,18 @@ namespace QZCHY.API.Controllers
         private readonly IPropertyAllotService _propertyAllotService;
         private readonly IPropertyLendService _propertyLendService;
         private readonly IPropertyNewCreateService _propertyNewCreateService;
+        private readonly IPropertyEditService _propertyEditService;
         private readonly IPropertyOffService _propertyOffService;
         private readonly IPropertyRentService _propertyRentService;
+        private readonly ICopyPropertyService _copyPropertyService;
         private readonly IEncryptionService _encryptionService;
+        private readonly IPictureService _pictureService;
 
         private readonly IWebHelper _webHelper;
         private readonly IWorkContext _workContext;
         private readonly AccountUserSettings _accountUserSettings;
         private readonly CommonSettings _commonSettings;
         private readonly SecuritySettings _securitySettings;
-
-
         private readonly ISettingService _settingService;
 
         public DemoController()
@@ -60,7 +63,8 @@ namespace QZCHY.API.Controllers
         IGenericAttributeService genericAttributeService,
        IWorkflowMessageService workflowMessageService, IGovernmentService governmentService, IPropertyService propertyService,
        IPropertyAllotService propertyAllotService, IPropertyLendService propertyLendService, IPropertyNewCreateService propertyNewCreateService,
-       IPropertyOffService propertyOffService, IPropertyRentService propertyRentService, IEncryptionService encryptionService,
+       IPropertyOffService propertyOffService, IPropertyRentService propertyRentService, IEncryptionService encryptionService, IPictureService pictureService,
+        IPropertyEditService propertyEditService, ICopyPropertyService copyPropertyService,
         IWebHelper webHelper,
             IWorkContext workContext,
         AccountUserSettings customerSettings, CommonSettings commonSettings, SecuritySettings securitySettings, ISettingService settingService
@@ -76,9 +80,12 @@ namespace QZCHY.API.Controllers
             _propertyAllotService = propertyAllotService;
             _propertyLendService = propertyLendService;
             _propertyNewCreateService = propertyNewCreateService;
+            _propertyEditService = propertyEditService;
             _propertyOffService = propertyOffService;
             _propertyRentService = propertyRentService;
+            _copyPropertyService = copyPropertyService;
             _encryptionService = encryptionService;
+            _pictureService = pictureService;
 
             _webHelper = webHelper;
             _workContext = workContext;
@@ -88,6 +95,7 @@ namespace QZCHY.API.Controllers
             _securitySettings = securitySettings;
             _settingService = settingService;
         }
+
         [HttpGet]
         [Route("settings")]
         public IHttpActionResult GetAll()
@@ -241,8 +249,6 @@ namespace QZCHY.API.Controllers
             return Ok("赋值完成");
         }
 
-
-
         [HttpGet]
         [Route("SetRoles")]
         public IHttpActionResult SetRoles()
@@ -278,7 +284,6 @@ namespace QZCHY.API.Controllers
 
             return Ok("角色配置完成");
         }
-
 
         [HttpGet]
         [Route("Import")]
@@ -827,7 +832,6 @@ namespace QZCHY.API.Controllers
             return resultSb.ToString();
         }
 
-
         [HttpGet]
         [Route("InsertHSGS")]
         public IHttpActionResult InsertHSGS()
@@ -1319,12 +1323,154 @@ new Property {PropertyType= PropertyType.House , Name="衢州市华枫路16号",
             return Ok("导入结束\n");
         }
 
+        [HttpGet]
+        [Route("Temp3")]
+        public IHttpActionResult InsertLendAndRent()
+        {
+            //拷贝图片
+            var targetPath = System.Web.HttpContext.Current.Server.MapPath("~/Content/images/");
+            var directionName = @"C:\房产证图片\";
+
+
+            var records = new List<RentLendRecord>();
+
+
+            foreach (var record in records)
+            {
+                try
+                {
+                    var property = _propertyService.GetPropertyById(record.PropertyId);
+
+                    if (property == null) continue;
+                    if (property.Deleted || property.Off) throw new Exception("资产被删除或核销");
+
+                    var pictures = new List<Picture>();
+
+                    var files = System.IO.Directory.GetFiles(directionName + record.FileId);
+
+                    foreach (var file in files)
+                    {
+                        var fileName = System.IO.Path.GetFileName(file);
+                        var ext = System.IO.Path.GetExtension(file);
+
+                        var fileStream = new FileStream(file, FileMode.Open);
+                        var fileBinary = new byte[fileStream.Length];
+                        fileStream.Read(fileBinary, 0, fileBinary.Length);
+
+                        var picture = _pictureService.InsertPicture(fileBinary, "image/jpeg", "", "", fileName);
+                        var url = _pictureService.GetPictureUrl(picture);
+                        pictures.Add(picture);
+                    }
+
+                    if (record.Type == 0)
+                    {
+                        var lend = new PropertyLend
+                        {
+                            SuggestGovernmentId = record.GovernmentId,
+                            LendArea = record.Area,
+                            Property = property,
+                            Remark = record.Remark,
+                            LendTime = Convert.ToDateTime(record.StartDate),
+                            ProcessDate = DateTime.Now,
+                            State = PropertyApproveState.Start,
+                            Name = record.People,
+                            Title = property.Name
+                        };
+
+                        if (string.IsNullOrEmpty(record.EndDate)) lend.BackTime = Convert.ToDateTime(record.EndDate);
+
+                        _propertyLendService.InsertPropertyLend(lend);
+
+                        foreach (var picture in pictures)
+                        {
+                            var propertyLendPicture = new PropertyLendPicture
+                            {
+                                Picture = picture,
+                                PropertyLend = lend,
+                            };
+
+                            lend.LendPictures.Add(propertyLendPicture);
+                        }
+                        _propertyLendService.UpdatePropertyLend(lend);
+
+                    }
+                    else if (record.Type == 1)
+                    {
+                        var rent = new PropertyRent
+                        {
+                            SuggestGovernmentId = record.GovernmentId,
+                            RentArea = record.Area,
+                            Property = property,
+                            Remark = record.Remark,
+                            RentTime = Convert.ToDateTime(record.StartDate),
+                            BackTime = Convert.ToDateTime(record.EndDate),
+                            ProcessDate = DateTime.Now,
+                            State = PropertyApproveState.Start,
+                            Name = record.People,
+                            Title = property.Name,
+                            PriceString=record.Money
+                        };
+                         
+
+                        _propertyRentService.InsertPropertyRent(rent);
+
+                        foreach (var picture in pictures)
+                        {
+                            var propertyRentPicture = new PropertyRentPicture
+                            {
+                                Picture = picture,
+                                PropertyRent = rent,
+                            };
+
+                            rent.RentPictures.Add(propertyRentPicture);
+                        }
+                        _propertyRentService.UpdatePropertyRent(rent);
+                    }
+                }
+                catch(Exception e)
+                {
+
+                }
+
+            }
+
+            return Ok();
+        }
+
 
         public class Point
         {
             public double lng { get; set; }
 
             public double lat { get; set; }
+        }
+
+        protected class RentLendRecord
+        {
+            public int PropertyId { get; set; }
+
+            /// <summary>
+            /// 0为出借 1为出租
+            /// </summary>
+            public int Type { get; set; }
+
+            public string PropertyName { get; set; }
+
+            public string People { get; set; }
+
+            public double Area { get; set; }
+
+            public string StartDate { get; set; }
+
+            public string EndDate { get; set; }
+
+            public string Money { get; set; }
+
+            public string Remark { get; set; }
+
+            public int FileId { get; set; }
+
+            public int GovernmentId { get; set; }
         }
     }
 }
