@@ -21,27 +21,43 @@
         <div class="row">
             <div class="col-md-12">
 
-                <div class="btn-group">
-                    <label class="btn btn-success" ng-model="params.checkState" uib-btn-radio="'unchecked'">待审核</label>
-                    <label class="btn btn-success" ng-model="params.checkState" uib-btn-radio="'checked'">已审核</label>
-                    <label class="btn btn-success" ng-model="params.checkState" uib-btn-radio="'all'">全部</label>
+                <!-- Single button -->
+                <div class="btn-group" uib-dropdown>
+                    <button id="single-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="processing">
+                        操作类型：<strong>{{approveTypeText}}</strong> <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+                        <li role="menuitem"><a ui-sref="app.property.process_approve({checkState:checkState,approveType:'newCreate'})">新增审批</a></li>
+                        <li role="menuitem"><a ui-sref="app.property.process_approve({checkState:checkState,approveType:'edit'})">变更审批</a></li>
+                        <li role="menuitem"><a ui-sref="app.property.process_approve({checkState:checkState,approveType:'lend'})">出借审批</a></li>
+                        <li role="menuitem"><a ui-sref="app.property.process_approve({checkState:checkState,approveType:'rent'})">出租审批</a></li>
+                        <li role="menuitem"><a ui-sref="app.property.process_approve({checkState:checkState,approveType:'allot'})">划拨审批</a></li>
+                        <li role="menuitem"><a ui-sref="app.property.process_approve({checkState:checkState,approveType:'off'})">核销审批</a></li>
+                    </ul>
+                </div>
+
+                <div class="btn-group" uib-dropdown>
+                    <button id="single-button" type="button" class="btn btn-success" uib-dropdown-toggle ng-disabled="processing">
+                        处理状态：<strong>{{checkStateText}}</strong> <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+                        <li role="menuitem"><a ui-sref="app.property.process_approve({checkState:'unchecked',approveType:approveType})">待处理</a></li>
+                        <li role="menuitem"><a ui-sref="app.property.process_approve({checkState:'checked',approveType:approveType})">已处理</a></li>
+                        <li role="menuitem"><a ui-sref="app.property.process_approve({checkState:'all',approveType:approveType})">全部</a></li>
+                    </ul>
                 </div>
 
                 <div class="btn-group  pull-right">
-                    <div class="mask" style="width:100%;height:100%;position:absolute;opacity:0.2;z-index:20" ng-if="processing"></div>
-                    <label class="btn btn-default" ng-model="params.approveType" uib-btn-radio="'newCreate'">新增审批</label>
-                    <label class="btn btn-default" ng-model="params.approveType" uib-btn-radio="'edit'">变更审批</label>
-                    <label class="btn btn-default" ng-model="params.approveType" uib-btn-radio="'lend'">出借审批</label>
-                    <label class="btn btn-default" ng-model="params.approveType" uib-btn-radio="'rent'">出租审批</label>
-                    <label class="btn btn-default" ng-model="params.approveType" uib-btn-radio="'allot'">划拨审批</label>
-                    <label class="btn btn-default" ng-model="params.approveType" uib-btn-radio="'off'">核销审批</label>
+                    
+                    <button class="btn btn-info m-r-sm" ng-click="showApproveDialog()" ng-disabled="!canMultiApprove"><i class="fa fa-gavel"></i> 批量审批</button>
+                    <button class="btn btn-info" ng-click="submitApprove()"  ng-disabled="!canMultiSubmit"><i class="fa fa-upload"></i> 批量提交</button>
                 </div>
             </div>
 
             <div class="col-md-12 m-t-md">
                 <div class="panel panel-default" style="max-height :800px;" ng-nicescroll nice-option="{cursorcolor: '#e2edff'}">
                     <div class="panel-body">
-                        <qmtable processing="processing" params="params" response="response" columns="columns" reset="reset" ajax="ajax()"
+                        <qmtable processing="processing" params="params" response="response" columns="columns" reset="reset" ajax="ajax()"  selected-rows="selectedRows"
                                  ext-buttons="extButtons" table-eidt-and-delete="tableEidtAndDelete">
                         </qmtable>
                     </div>
@@ -51,7 +67,21 @@
     </div>
 </div>
 
-  <!--对话框-->
+    <!--对话框-->
 <script type="text/ng-template" id="dialog.html">
     <div ng-include="'app/views/blocks/dialog.html'"></div>
+</script>
+
+<!--审批 对话框-->
+<script type="text/ng-template" id="approveDialog.html">
+    <div class="modal-header">
+        <h3 class="modal-title">资产处置审批</h3>
+    </div>
+    <div class="modal-body">
+        <textarea placeholder="资产审批意见..." class="form-control" ng-model="suggestion"></textarea>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-success" ng-click="ok()"><i class="fa fa-check"></i> 同意</button>
+        <button class="btn btn-danger" ng-click="cancel()" ng-disabled="suggestion==''"><i class="fa fa-times"></i> 不同意</button>
+    </div>
 </script>
