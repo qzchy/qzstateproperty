@@ -1480,7 +1480,7 @@ string[] dirName = direction.Split('\\'); var id = dirName[dirName.Length - 1];
         [Route("Temp0")]
         public IHttpActionResult Temp0()
         {
-            return Ok("closed");
+            //return Ok("closed");
             int scucessCount = 0, errorCount = 0, allCcount = 0;
             StringBuilder sb = new StringBuilder();
             var g = _governmentService.GetGovernmentUnitByName("汇盛公司");
