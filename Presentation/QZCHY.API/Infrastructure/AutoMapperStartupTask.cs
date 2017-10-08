@@ -237,7 +237,7 @@ namespace QZCHY.Web.Api.Infrastructure
 
             Mapper.CreateMap<PropertyLend, PropertyLendModel>()
                    .ForMember(dest => dest.LendTime, mo => mo.MapFrom(src => src.LendTime.ToString("yyyy-MM-dd")))
-                   .ForMember(dest => dest.BackTime, mo => mo.MapFrom(src => src.BackTime.ToString("yyyy-MM-dd")))
+                   .ForMember(dest => dest.BackTime, mo => mo.MapFrom(src => src.BackTime.HasValue ? src.DApproveDate.Value.ToString("yyyy-MM-dd"):""))
                     .ForMember(dest => dest.ProcessDate, mo => mo.MapFrom(src => src.ProcessDate.ToString("yyyy-MM-dd HH:mm:ss")))
             .ForMember(dest => dest.State, mo => mo.MapFrom(src => src.State.ToDescription()))
             .ForMember(dest => dest.DApproveDate, mo => mo.MapFrom(src => src.DApproveDate.HasValue ? src.DApproveDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : ""))

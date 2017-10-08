@@ -268,10 +268,11 @@ angular.module('app').run(['$rootScope', '$state', '$stateParams',  'authService
             }
         })
         .state('app.property.process_approve', {
-            url: 'properties/approve?:approveType',
+            url: 'properties/approve?:approveType/:checkState',
             templateUrl: 'app/property/views/process_approve.html',
             controller: function ($scope, $stateParams) {
                 $scope.approveType = $stateParams.approveType;
+                $scope.checkState = $stateParams.checkState;
             },
             resolve: {
                 deps: ['$ocLazyLoad',
@@ -279,7 +280,8 @@ angular.module('app').run(['$rootScope', '$state', '$stateParams',  'authService
                       return $ocLazyLoad.load(['toaster','angular-nicescroll', 'ui.select',
                            'app/systemmanage/governments/Services/GovernmentService.js',
                           'app/property/Services/PropertyService.js',
-                          'app/property/Controllers/PropertyProcessApproveCtrl.js'])
+                          'app/property/Controllers/PropertyProcessApproveCtrl.js',
+                          'app/property/Controllers/ExcuteApproveDialogCtrl.js'])
                   }
                 ]
             }
@@ -308,6 +310,7 @@ angular.module('app').run(['$rootScope', '$state', '$stateParams',  'authService
                               return $ocLazyLoad.load(['toaster', 'fancyboxplus']).then(function () {
                                   return $ocLazyLoad.load(['app/property/Services/PropertyService.js',
                                       'app/property/Controllers/PropertyApproveDetailCtrl.js',
+                          'app/property/Controllers/ExcuteApproveDialogCtrl.js',
                                       'app/map/services/MapService.js']);
                               });
                           })
@@ -340,6 +343,7 @@ angular.module('app').run(['$rootScope', '$state', '$stateParams',  'authService
                                return $ocLazyLoad.load(['toaster', 'fancyboxplus', ]).then(function () {
                                    return $ocLazyLoad.load(['app/property/Services/PropertyService.js',
                                        'app/property/Controllers/PropertyApproveDetailCtrl.js',
+                          'app/property/Controllers/ExcuteApproveDialogCtrl.js',
                                        'app/map/services/MapService.js']);
                                });
                            })
@@ -372,6 +376,7 @@ angular.module('app').run(['$rootScope', '$state', '$stateParams',  'authService
                               return $ocLazyLoad.load(['toaster', 'fancyboxplus' ]).then(function () {
                                   return $ocLazyLoad.load(['app/property/Services/PropertyService.js',
                                       'app/property/Controllers/PropertyApproveDetailCtrl.js',
+                          'app/property/Controllers/ExcuteApproveDialogCtrl.js',
                                       'app/map/services/MapService.js']);
                               });
                           })
@@ -404,6 +409,7 @@ angular.module('app').run(['$rootScope', '$state', '$stateParams',  'authService
                               return $ocLazyLoad.load(['toaster', 'fancyboxplus', ]).then(function () {
                                   return $ocLazyLoad.load(['app/property/Services/PropertyService.js',
                                       'app/property/Controllers/PropertyApproveDetailCtrl.js',
+                          'app/property/Controllers/ExcuteApproveDialogCtrl.js',
                                       'app/map/services/MapService.js']);
                               });
                           })
@@ -436,6 +442,7 @@ angular.module('app').run(['$rootScope', '$state', '$stateParams',  'authService
                               return $ocLazyLoad.load(['toaster', 'fancyboxplus', ]).then(function () {
                                   return $ocLazyLoad.load(['app/property/Services/PropertyService.js',
                                       'app/property/Controllers/PropertyApproveDetailCtrl.js',
+                          'app/property/Controllers/ExcuteApproveDialogCtrl.js',
                                       'app/map/services/MapService.js']);
                               });
                           })
@@ -468,6 +475,7 @@ angular.module('app').run(['$rootScope', '$state', '$stateParams',  'authService
                               return $ocLazyLoad.load(['toaster', 'fancyboxplus', ]).then(function () {
                                   return $ocLazyLoad.load(['app/property/Services/PropertyService.js',
                                       'app/property/Controllers/PropertyApproveDetailCtrl.js',
+                          'app/property/Controllers/ExcuteApproveDialogCtrl.js',
                                       'app/map/services/MapService.js']);
                               });
                           })
