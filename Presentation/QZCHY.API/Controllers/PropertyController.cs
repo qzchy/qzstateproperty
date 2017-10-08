@@ -430,7 +430,11 @@ namespace QZCHY.API.Controllers
 
             if (PropertyBelongCurrentUser(property, true))
             {
-                return !property.Published && !property.Off;
+                var newCreate = _propertyNewCreateService.GetPropertyNewCreateByPropertyId(property.Id);
+                if (newCreate == null)
+                    return !property.Published && !property.Off;
+                else
+                    return newCreate.State == PropertyApproveState.Start && !property.Published && !property.Off;
             }
 
             return false;
