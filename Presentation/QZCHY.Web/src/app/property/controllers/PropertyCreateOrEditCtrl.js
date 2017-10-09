@@ -83,7 +83,10 @@ function ($scope, $rootScope, $state, $timeout, moment, toaster, w5cValidator, $
             },
             propertyOwner: {
                 required: "产权单位不能为空"
-            },          
+            },
+            getedDate: {
+                required: "取得时间不能为空"
+            },
             price: {
                 required: "账面价值不能为空"
             },        
@@ -617,6 +620,10 @@ function ($scope, $rootScope, $state, $timeout, moment, toaster, w5cValidator, $
                 $scope.property.logo = $scope.tempLogo;
 
             $scope.property.submit = submit;  //是否保存后提交
+            if ($scope.property.getedDate == "01/01/0001") {
+                $scope.errorMsg = "取得时间不能为空";
+                return false;
+            }
 
             if ($scope.property.id != undefined && $scope.property.id != null) {
 
