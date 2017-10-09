@@ -47,7 +47,7 @@ namespace QZCHY.Services.Property
         public CopyProperty GetCopyPropertyByPropertyId(int property_id)
         {
             var query = from c in _copyPropertyRepository.Table
-                        where c.Property_Id == property_id&&c.Published==false
+                        where c.Property_Id == property_id&&c.Published==true
                         select c;
             var p = query.FirstOrDefault();
             return p;

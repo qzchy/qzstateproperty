@@ -522,6 +522,19 @@ app.service("PropertyService", ['$rootScope', '$http', '$q', function ($rootScop
 
         return deferred.promise;
     };
+
+    //导出EXCEL
+    this.export = function (fields) {
+        var deferred = $q.defer();
+
+        $http.put($rootScope.apiUrl + 'Properties/Export/'+fields.isName,fields).success(function (data, status) {
+            deferred.resolve(data);
+        }).error(function (data, status) {
+            deferred.reject(data.message);
+        });
+
+        return deferred.promise;
+    };
     
 }]);
  

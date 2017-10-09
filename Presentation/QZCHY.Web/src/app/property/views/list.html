@@ -40,10 +40,10 @@
                 <i class="fa fa-support"></i> 处置查询
             </a>
         
-            <a ui-sref="app.property.process_approve({approveType:'newCreate'})" tooltip="" class="btn btn-sm btn-primary btn-addon pull-right">
+            <a tooltip="导出" class="btn btn-sm btn-primary btn-addon pull-right" ng-click="Export()">
                 <i class="fa fa-support"></i> 数据导出
             </a>
-            <a ui-sref="app.property.process_approve({approveType:'newCreate'})" tooltip="" class="btn btn-sm btn-primary btn-addon pull-right">
+            <a  tooltip="导出" class="btn btn-sm btn-primary btn-addon pull-right">
                 <i class="fa fa-support"></i> 数据导入
             </a>
         </div>
@@ -337,3 +337,134 @@
     </div>
 </script>
 
+<script type="text/ng-template" id="export.html">
+    <div class="modal-header">
+        <h3 class="modal-title">资产导出字段选择</h3>
+    </div>
+    <div class="modal-body" ng-style="dialogHeight">
+        <div ng-nicescroll nice-option="{cursorcolor: '#e2edff'}" style="overflow:hidden;height:100%">
+           
+            <div class="row">
+
+                <label class="col-sm-12 control-label m-t-xs">资产字段</label>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isName"><i></i> 资产名称
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isGovernment"><i></i> 所属单位
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isPropertyType"><i></i> 资产类别
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isRegion"><i></i> 所处区域
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isAddress"><i></i> 地址
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isConstructArea"><i></i> 建筑面积
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isLandArea"><i></i> 土地面积
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isPropertyID"><i></i> 产权证号
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isPropertyNature"><i></i> 房产性质
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isLandNature"><i></i> 土地性质
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isPrice"><i></i> 账面价格
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isGetedDate"><i></i> 取得时间
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isLifeTime"><i></i> 使用年限
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isNextStepUsage"><i></i> 下步使用
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isEstateId"><i></i> 不动产证
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isConstructId"><i></i> 房产证
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isLandId"><i></i> 土地证
+                    </label>
+                </div>
+            </div>
+
+            <div class="row">
+                <label class="col-sm-12 control-label m-t-xs">资产处置</label>
+                <div class="col-sm-12">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isRent"><i></i> 资产出租信息
+                    </label>
+                </div>
+                <div class="col-sm-12">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isLend"><i></i> 资产出借信息
+                    </label>
+                </div>
+                <div class="col-sm-12">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isAllot"><i></i> 资产划拨信息
+                    </label>
+                </div>
+                <div class="col-sm-12">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isOff"><i></i> 资产核销信息
+                    </label>
+                </div>
+            </div>
+
+     
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-warning pull-left" ng-click="selectAll()">全选</button>
+        <button class="btn btn-danger pull-left" ng-click="resetFields()">重置</button>
+        <button class="btn btn-default" ng-click="cancel()">取消</button>
+        <button class="btn btn-primary" ng-click="ok()">确定</button>
+    </div>
+</script>

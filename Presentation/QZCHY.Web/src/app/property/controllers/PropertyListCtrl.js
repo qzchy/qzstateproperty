@@ -56,6 +56,32 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
         };
         $scope.params = angular.copy(params);
 
+        //导出字段集合
+        var fields = {
+            isName: false,
+            isGovernment:false,
+            isPropertyType: false,
+            isRegion: false,
+            isAddress: false,
+            isConstructArea: false,
+            isLandArea: false,
+            isPropertyID: false,
+            isPropertyNature: false,
+            isLandNature: false,
+            isPrice: false,
+            isGetedDate: false,
+            isLifeTime: false,
+            isNextStepUsage: false,
+            isEstateId: false,
+            isConstructId: false,
+            isLandId: false,
+            isRent: false,
+            isLend: false,
+            isAllot: false,
+            isOff:false
+        };
+        $scope.fields = angular.copy(fields);
+
         //选中的行
         $scope.selectedItem = [];
 
@@ -195,6 +221,42 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
 
         //#endregion    
 
+
+        //region 资产导出
+        $scope.Export = function () {
+            var modalInstance = $uibModal.open({
+                templateUrl: 'export.html',
+                controller: 'exportCtrl',
+                size: 'lg',
+                windowClass: "map-modal",
+                //appendTo: '#app',
+                resolve: {
+                    dialogHeight: function () { return $scope.dialogHeight; },
+                    fields: function () { return $scope.fields },
+                    governmentService: function () { return governmentService; },
+                    governments: function () { return $scope.governments; },
+                    government: function () { return $scope.government },
+                    exportExcel: function () { return $scope.exportExcel; },
+                    resetParams: function () { return $scope.resetParams; }
+                }
+            });
+
+            modalInstance.result.then(function () {
+            }, function () {
+                $state.reload();
+            });
+        }
+
+        $scope.exportExcel = function () {
+            propertyService.export($scope.fields).then(function (response) {
+                alert(response);
+            })
+        }
+
+
+        //#endregion    
+
+
         //#region 设置对话框高度
         var windowHeight = $window.innerHeight; //获取窗口高度
         var headerHeight = 50;
@@ -279,6 +341,41 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
         };
 
     }]);
+
+app.controller('exportCtrl', function ($scope, $uibModalInstance, dialogHeight, fields, governmentService, governments, government, exportExcel, resetParams) {
+
+    $scope.dialogHeight = dialogHeight;
+    $scope.okText = "确定";
+    $scope.cancelText = "取消";
+    $scope.fields = fields;
+    $scope.exportExcel = exportExcel;
+
+    $scope.ok = function () {
+        $scope.exportExcel();
+    }
+
+    //全选
+    $scope.selectAll = function () {
+
+        for (var data in $scope.fields) {
+            $scope.fields[data] = true;
+        }
+
+    }
+    //重置
+    $scope.resetFields = function () {
+
+        for (var data in $scope.fields) {
+            $scope.fields[data] = false;
+        }
+
+    }
+    //取消
+    $scope.cancel = function () {
+        $uibModalInstance.dismiss();
+    };
+
+})
 
 app.controller('AdvanceModalDialogCtrl', function ($scope, $uibModalInstance, dialogHeight, params, governmentService, governments, government, ajax, resetParams) {
 

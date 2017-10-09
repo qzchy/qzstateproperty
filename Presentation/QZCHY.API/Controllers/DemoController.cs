@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity.Spatial;
 using System.Data.OleDb;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -46,7 +47,7 @@ namespace QZCHY.API.Controllers
         private readonly AccountUserSettings _accountUserSettings;
         private readonly CommonSettings _commonSettings;
         private readonly SecuritySettings _securitySettings;
-
+        private readonly ICopyPropertyService _copyPropertyService;
 
         private readonly ISettingService _settingService;
 
@@ -62,7 +63,7 @@ namespace QZCHY.API.Controllers
        IPropertyAllotService propertyAllotService, IPropertyLendService propertyLendService, IPropertyNewCreateService propertyNewCreateService,
        IPropertyOffService propertyOffService, IPropertyRentService propertyRentService, IEncryptionService encryptionService,
         IWebHelper webHelper,
-            IWorkContext workContext,
+            IWorkContext workContext, ICopyPropertyService copyPropertyService,
         AccountUserSettings customerSettings, CommonSettings commonSettings, SecuritySettings securitySettings, ISettingService settingService
             )
         {
@@ -79,6 +80,7 @@ namespace QZCHY.API.Controllers
             _propertyOffService = propertyOffService;
             _propertyRentService = propertyRentService;
             _encryptionService = encryptionService;
+            _copyPropertyService = copyPropertyService;
 
             _webHelper = webHelper;
             _workContext = workContext;
@@ -140,6 +142,44 @@ namespace QZCHY.API.Controllers
             }
 
             return Ok();
+        }
+
+        [HttpGet]
+        [Route("export")]
+        public IHttpActionResult Export()
+        {
+            FileStream fs = new FileStream(@"G:\导出文件.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite);
+            StreamWriter sw = new StreamWriter(fs, Encoding.Default);
+            var log = "";       
+            var properties = _propertyService.GetPropertiesByGId(155);
+            foreach (var property in properties)
+            {
+                //var logCount = 0; var picCount=0;
+                //var pictrues = property.Pictures;
+
+                //foreach (var pictrue in pictrues) {
+                //    if (pictrue.IsLogo == true) logCount++;
+                //    else { picCount++; }
+                //}
+                var copy = _copyPropertyService.GetCopyPropertyByPropertyId(property.Id);
+
+                if (copy == null)
+                {
+                    log = property.Id + "," + property.Name + "," + property.Address + "," + property.ConstructId + "," + property.EstateId + "," + property.LandId + "," + "0" + "," + "0" + "\r\n";
+                }
+                else
+                {
+                    if (copy.PrictureIds == null) copy.PrictureIds = "0";
+
+                    log = property.Id + "," + property.Name + "," + property.Address + "," + property.ConstructId + "," + property.EstateId + "," + property.LandId + "," + copy.PrictureIds + "," + copy.LogoPicture_Id + "\r\n";
+                }
+                sw.Write(log);
+
+            }   
+            sw.Flush();
+            sw.Close();
+
+            return Ok("导出成功");
         }
 
         [HttpGet]
