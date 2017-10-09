@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Data.Entity.Spatial;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Web;
 using System.Web.Http;
 
@@ -421,7 +422,7 @@ namespace QZCHY.API.Controllers
 
 
         /// <summary>
-        /// 资产是否可以编辑
+        /// 资产是否可以编辑，针对未入库的
         /// </summary>
         /// <param name="property"></param>
         /// <returns></returns>
@@ -433,14 +434,18 @@ namespace QZCHY.API.Controllers
 
             if (PropertyBelongCurrentUser(property, true))
             {
-                return !property.Published && !property.Off;
+                var newCreate = _propertyNewCreateService.GetPropertyNewCreateByPropertyId(property.Id);
+                if (newCreate == null)
+                    return !property.Published && !property.Off;
+                else
+                    return newCreate.State == PropertyApproveState.Start && !property.Published && !property.Off;
             }
 
             return false;
         }
 
         /// <summary>
-        /// 资产是否可以变更
+        /// 资产是否可以变更，针对已入库的
         /// </summary>
         /// <param name="property"></param>
         /// <returns></returns>
@@ -970,6 +975,7 @@ namespace QZCHY.API.Controllers
         /// </summary>
         /// <param name="locked"></param>
         /// <param name="property"></param>
+        [NonAction]
         protected virtual void SwitchPropertyLockState(bool locked, Property property)
         {
             if (property.Locked != locked)
@@ -3015,6 +3021,195 @@ namespace QZCHY.API.Controllers
             }
             return Ok();
         }
+         
+        /// <summary>
+        /// 批量提交申请
+        /// </summary>
+        /// <param name="idsString"></param>
+        /// <param name="approveType"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("SubmitApprove/Multi/{idsString}")]
+        public IHttpActionResult Multi_SumbitApprove(string idsString, string approveType = "")
+        {
+            var result = new StringBuilder();
+            var currentUser = _workContext.CurrentAccountUser;
+
+            var idArr = idsString.Split(';');
+
+            foreach(var idString in idArr)
+            {
+                int id = 0;
+                if (int.TryParse(idString, out id))
+                {
+                    try
+                    {
+                        #region 处理
+                        switch (approveType)
+                        {
+                            case "newCreate":
+                                #region 新增审批
+                                {
+                                    var newCreate = _propertyNewCreateService.GetPropertyNewCreateById(id);
+                                    if (newCreate == null || newCreate.Deleted) throw new Exception(string.Format("找不到id为 {0} 新增资产处置申请"));
+
+                                    if (PropertyApproveCanEditDeleteAndSubmit(newCreate.State, newCreate.SuggestGovernmentId))
+                                    {
+                                        newCreate.State = PropertyApproveState.DepartmentApprove;
+
+                                        if (currentUser.IsParentGovernmentorAuditor())  //当前用户既是主管部门又是报送部门   // if (currentUser.Government.ParentGovernmentId == 0)
+                                        {
+                                            newCreate.State = PropertyApproveState.AdminApprove;
+                                            newCreate.DApproveDate = DateTime.Now;
+                                            newCreate.DSuggestion = "同意";
+                                        }
+
+                                        _propertyNewCreateService.UpdatePropertyNewCreate(newCreate);
+
+                                        //活动日志
+                                        _accountUserActivityService.InsertActivity("submitNewCreateApprove", string.Format("提交id为 {0} 的新增资产的处置申请", id));
+
+                                        SwitchPropertyLockState(true, newCreate.Property);
+                                    }
+
+                                    break;
+                                }
+                            #endregion
+                            case "edit":
+                                #region 编辑审批
+                                {
+                                    var edit = _propertyEditService.GetPropertyEditById(id);
+                                    if (edit == null || edit.Deleted) throw new Exception(string.Format("找不到id为 {0} 资产变更处置申请"));
+
+                                    if (PropertyApproveCanEditDeleteAndSubmit(edit.State, edit.SuggestGovernmentId))
+                                    {
+                                        edit.State = PropertyApproveState.DepartmentApprove;
+
+                                        if (currentUser.IsParentGovernmentorAuditor())
+                                        {
+                                            edit.State = PropertyApproveState.AdminApprove;
+                                            edit.DApproveDate = DateTime.Now;
+                                            edit.DSuggestion = "同意";
+                                        }
+
+                                        _propertyEditService.UpdatePropertyEdit(edit);
+
+                                        //活动日志
+                                        _accountUserActivityService.InsertActivity("submitNewCreateApprove", string.Format("提交id为 {0} 的资产变更的处置申请", id));
+                                    }
+
+                                    break;
+                                }
+                            #endregion
+                            case "lend":
+                                #region 出借审批
+                                {
+                                    var lend = _propertyLendService.GetPropertyLendById(id);
+                                    if (lend == null || lend.Deleted) throw new Exception(string.Format("找不到id为 {0} 资产出借处置申请"));
+
+                                    if (PropertyApproveCanEditDeleteAndSubmit(lend.State, lend.SuggestGovernmentId))
+                                    {
+                                        lend.State = PropertyApproveState.DepartmentApprove;
+                                        if (currentUser.IsParentGovernmentorAuditor())
+                                        {
+                                            lend.State = PropertyApproveState.AdminApprove;
+                                            lend.DApproveDate = DateTime.Now;
+                                            lend.DSuggestion = "同意";
+                                        }
+
+                                        _propertyLendService.UpdatePropertyLend(lend);
+                                        //活动日志
+                                        _accountUserActivityService.InsertActivity("submitLendApprove", string.Format("提交id为 {0} 的资产出借的处置申请", id));
+                                    }
+
+                                    break;
+                                }
+                            #endregion
+                            case "rent":
+                                #region 出租审批
+                                {
+                                    var rent = _propertyRentService.GetPropertyRentById(id);
+                                    if (rent == null || rent.Deleted) throw new Exception(string.Format("找不到id为 {0} 资产出租处置申请"));
+
+                                    if (PropertyApproveCanEditDeleteAndSubmit(rent.State, rent.SuggestGovernmentId))
+                                    {
+                                        rent.State = PropertyApproveState.DepartmentApprove;
+                                        if (currentUser.IsParentGovernmentorAuditor())
+                                        {
+                                            rent.State = PropertyApproveState.AdminApprove;
+                                            rent.DApproveDate = DateTime.Now;
+                                            rent.DSuggestion = "同意";
+                                        }
+
+                                        _propertyRentService.UpdatePropertyRent(rent);
+
+                                        //活动日志
+                                        _accountUserActivityService.InsertActivity("submitRentApprove", string.Format("提交id为 {0} 的资产出租的处置申请", id));
+                                    }
+
+                                    break;
+                                }
+                            #endregion
+                            case "allot":
+                                #region 划拨审批
+                                {
+                                    var allot = _propertyAllotService.GetPropertyAllotById(id);
+                                    if (allot == null || allot.Deleted) throw new Exception(string.Format("找不到id为 {0} 资产划拨处置申请"));
+
+                                    if (PropertyApproveCanEditDeleteAndSubmit(allot.State, allot.SuggestGovernmentId))
+                                    {
+                                        allot.State = PropertyApproveState.DepartmentApprove;
+                                        if (currentUser.IsParentGovernmentorAuditor())
+                                        {
+                                            allot.State = PropertyApproveState.AdminApprove;
+                                            allot.DApproveDate = DateTime.Now;
+                                            allot.DSuggestion = "同意";
+                                        }
+                                        _propertyAllotService.UpdatePropertyAllot(allot);
+
+                                        //活动日志
+                                        _accountUserActivityService.InsertActivity("submitAllotApprove", string.Format("提交id为 {0} 的资产划拨的处置申请", id));
+                                    }
+
+                                    break;
+                                }
+                            #endregion
+                            case "off":
+                                #region 核销审批
+                                {
+                                    var off = _propertyOffService.GetPropertyOffById(id);
+                                    if (off == null || off.Deleted) throw new Exception(string.Format("找不到id为 {0} 资产核销处置申请"));
+
+                                    if (PropertyApproveCanEditDeleteAndSubmit(off.State, off.SuggestGovernmentId))
+                                    {
+                                        off.State = PropertyApproveState.DepartmentApprove;
+                                        if (currentUser.IsParentGovernmentorAuditor())
+                                        {
+                                            off.State = PropertyApproveState.AdminApprove;
+                                            off.DApproveDate = DateTime.Now;
+                                            off.DSuggestion = "同意";
+                                        }
+                                        _propertyOffService.UpdatePropertyOff(off);
+
+                                        //活动日志
+                                        _accountUserActivityService.InsertActivity("submitOffApprove", string.Format("提交id为 {0} 的资产核销的处置申请", id));
+                                    }
+
+                                    break;
+                                }
+                                #endregion
+                        }
+                        #endregion
+                    }
+                    catch (Exception e)
+                    {
+                        result.AppendLine(string.Format("id 为 {0} 的资产处置未提交成功，错误原因为：{1}", id, e.Message));
+                    }
+                }
+            }
+            
+            return Ok(result.ToString());
+        }
 
         /// <summary>
         /// 审批处置申请
@@ -3041,6 +3236,8 @@ namespace QZCHY.API.Controllers
                         var newCreate = _propertyNewCreateService.GetPropertyNewCreateById(id);
                         if (newCreate == null || newCreate.Deleted) return BadRequest("找不到资源");
 
+                        if (!PropertyCanApprove(newCreate.State,newCreate.SuggestGovernmentId)) return BadRequest("没有审批权限");
+
                         if (newCreate.State == PropertyApproveState.DepartmentApprove)
                         {
                             newCreate.DApproveDate = DateTime.Now;
@@ -3050,7 +3247,7 @@ namespace QZCHY.API.Controllers
                         {
                             newCreate.AApproveDate = DateTime.Now;
                             newCreate.ASuggestion = suggestion;
-                        }
+                        }                      
 
                         if (agree)
                         {
@@ -3090,7 +3287,7 @@ namespace QZCHY.API.Controllers
                     {
                         var edit = _propertyEditService.GetPropertyEditById(id);
                         if (edit == null || edit.Deleted) return BadRequest("找不到资源");
-
+                        if (!PropertyCanApprove(edit.State, edit.SuggestGovernmentId)) return BadRequest("没有审批权限");
                         if (edit.State == PropertyApproveState.DepartmentApprove)
                         {
                             edit.DApproveDate = DateTime.Now;
@@ -3289,7 +3486,7 @@ namespace QZCHY.API.Controllers
                     {
                         var lend = _propertyLendService.GetPropertyLendById(id);
                         if (lend == null || lend.Deleted) return BadRequest("找不到资源");
-
+                        if (!PropertyCanApprove(lend.State, lend.SuggestGovernmentId)) return BadRequest("没有审批权限");
                         if (lend.State == PropertyApproveState.DepartmentApprove)
                         {
                             lend.DApproveDate = DateTime.Now;
@@ -3335,7 +3532,7 @@ namespace QZCHY.API.Controllers
                     {
                         var rent = _propertyRentService.GetPropertyRentById(id);
                         if (rent == null || rent.Deleted) return BadRequest("找不到资源");
-
+                        if (!PropertyCanApprove(rent.State, rent.SuggestGovernmentId)) return BadRequest("没有审批权限");
                         if (rent.State == PropertyApproveState.DepartmentApprove)
                         {
                             rent.DApproveDate = DateTime.Now;
@@ -3382,7 +3579,7 @@ namespace QZCHY.API.Controllers
                     {
                         var allot = _propertyAllotService.GetPropertyAllotById(id);
                         if (allot == null || allot.Deleted) return BadRequest("找不到资源");
-
+                        if (!PropertyCanApprove(allot.State, allot.SuggestGovernmentId)) return BadRequest("没有审批权限");
                         if (allot.State == PropertyApproveState.DepartmentApprove)
                         {
                             allot.DApproveDate = DateTime.Now;
@@ -3434,7 +3631,7 @@ namespace QZCHY.API.Controllers
                     {
                         var off = _propertyOffService.GetPropertyOffById(id);
                         if (off == null || off.Deleted) return BadRequest("找不到资源");
-
+                        if (!PropertyCanApprove(off.State, off.SuggestGovernmentId)) return BadRequest("没有审批权限");
                         if (off.State == PropertyApproveState.Start)
                         {
                             off.State = PropertyApproveState.DepartmentApprove;
@@ -3481,6 +3678,497 @@ namespace QZCHY.API.Controllers
             }
             return Ok();
         }
+
+        /// <summary>
+        /// 批量审批
+        /// </summary>
+        /// <param name="idsString"></param>
+        /// <param name="approveApplyModel"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("ApplyApprove/Multi/{idsString}")]
+        public IHttpActionResult Multi_ApplyApprove(string idsString, ApproveApplyModel approveApplyModel)
+        {
+            var result = new StringBuilder();
+            var currentUser = _workContext.CurrentAccountUser;
+
+            var idArr = idsString.Split(';');
+
+            bool agree = approveApplyModel.Agree;
+            string suggestion = approveApplyModel.Suggestion;
+            string approveType = approveApplyModel.ApproveType;
+
+            if (agree && string.IsNullOrEmpty(suggestion))
+                suggestion = "同意";
+
+            foreach (var idString in idArr)
+            {
+                int id = 0;
+                if (int.TryParse(idString, out id))
+                {
+                    try
+                    {
+                        #region 处理
+                        switch (approveType)
+                        {
+                            case "newCreate":
+                                #region 新增审批
+                                {
+                                    var newCreate = _propertyNewCreateService.GetPropertyNewCreateById(id);
+                                    if (newCreate == null || newCreate.Deleted) return BadRequest("找不到资源");
+
+                                    if (!PropertyCanApprove(newCreate.State, newCreate.SuggestGovernmentId)) return BadRequest("没有审批权限");
+
+                                    if (newCreate.State == PropertyApproveState.DepartmentApprove)
+                                    {
+                                        newCreate.DApproveDate = DateTime.Now;
+                                        newCreate.DSuggestion = suggestion;
+                                    }
+                                    else if (newCreate.State == PropertyApproveState.AdminApprove)
+                                    {
+                                        newCreate.AApproveDate = DateTime.Now;
+                                        newCreate.ASuggestion = suggestion;
+                                    }
+
+                                    if (agree)
+                                    {
+
+                                        if (newCreate.State == PropertyApproveState.Start)
+                                        {
+                                            newCreate.State = PropertyApproveState.DepartmentApprove;
+                                        }
+                                        else if (newCreate.State == PropertyApproveState.DepartmentApprove) //主管部门审核阶段
+                                        {
+                                            newCreate.State = PropertyApproveState.AdminApprove;
+                                        }
+                                        else if (newCreate.State == PropertyApproveState.AdminApprove)
+                                        {
+                                            newCreate.State = PropertyApproveState.Finish;
+                                            newCreate.Property.Published = true;
+                                            SwitchPropertyLockState(false, newCreate.Property);
+
+                                            //    SwitchPropertyLockState(false, newCreate.Property);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        newCreate.State = PropertyApproveState.Start;  //直接退回到申请单位                                      
+                                    }
+
+                                    _propertyNewCreateService.UpdatePropertyNewCreate(newCreate);
+
+                                    //活动日志
+                                    _accountUserActivityService.InsertActivity("applyNewCreateApprove", string.Format("执行id为 {0} 的新增资产的处置", id));
+
+                                    break;
+                                }
+                            #endregion
+                            case "edit":
+                                #region 编辑审批
+                                {
+                                    var edit = _propertyEditService.GetPropertyEditById(id);
+                                    if (edit == null || edit.Deleted) return BadRequest("找不到资源");
+                                    if (!PropertyCanApprove(edit.State, edit.SuggestGovernmentId)) return BadRequest("没有审批权限");
+                                    if (edit.State == PropertyApproveState.DepartmentApprove)
+                                    {
+                                        edit.DApproveDate = DateTime.Now;
+                                        edit.DSuggestion = suggestion;
+                                    }
+                                    else if (edit.State == PropertyApproveState.AdminApprove)
+                                    {
+                                        edit.AApproveDate = DateTime.Now;
+                                        edit.ASuggestion = suggestion;
+                                    }
+
+                                    if (agree)
+                                    {
+
+                                        if (edit.State == PropertyApproveState.Start)
+                                        {
+                                            edit.State = PropertyApproveState.DepartmentApprove;
+                                        }
+                                        else if (edit.State == PropertyApproveState.DepartmentApprove) //主管部门审核阶段
+                                        {
+                                            edit.State = PropertyApproveState.AdminApprove;
+                                        }
+                                        else if (edit.State == PropertyApproveState.AdminApprove)
+                                        {
+                                            var property = _propertyService.GetPropertyById(edit.Property.Id);
+                                            var copyproperty = _copyPropertyService.GetCopyPropertyById(edit.CopyProperty_Id);
+
+                                            #region 资产原值存储
+                                            var originCopyProperty = new CopyProperty();
+                                            originCopyProperty.Name = property.Name;
+                                            originCopyProperty.PropertyType = property.PropertyType;
+                                            originCopyProperty.Region = property.Region;
+                                            originCopyProperty.Address = property.Address;
+                                            originCopyProperty.ConstructArea = property.ConstructArea;
+                                            originCopyProperty.LandArea = property.LandArea;
+                                            originCopyProperty.PropertyID = property.PropertyID;
+                                            originCopyProperty.HasConstructID = property.HasConstructID;
+                                            originCopyProperty.HasLandID = property.HasLandID;
+                                            originCopyProperty.PropertyNature = property.PropertyNature;
+                                            originCopyProperty.LandNature = property.LandNature;
+                                            originCopyProperty.Price = property.Price;
+                                            originCopyProperty.GetedDate = property.GetedDate;
+                                            originCopyProperty.LifeTime = property.LifeTime;
+                                            originCopyProperty.UsedPeople = property.UsedPeople;
+                                            originCopyProperty.CurrentUse_Self = property.CurrentUse_Self;
+                                            originCopyProperty.CurrentUse_Rent = property.CurrentUse_Rent;
+                                            originCopyProperty.CurrentUse_Lend = property.CurrentUse_Lend;
+                                            originCopyProperty.CurrentUse_Idle = property.CurrentUse_Idle;
+                                            originCopyProperty.NextStepUsage = property.NextStepUsage;
+                                            originCopyProperty.Location = property.Location == null ? "" : property.Location.AsText();
+                                            originCopyProperty.Extent = property.Extent == null ? "" : property.Extent.AsText();
+                                            originCopyProperty.Description = property.Description;
+                                            originCopyProperty.EstateId = property.EstateId;
+                                            originCopyProperty.ConstructId = property.ConstructId;
+                                            originCopyProperty.LandId = property.LandId;
+                                            originCopyProperty.Government_Id = property.Government.Id;
+
+                                            originCopyProperty.PrictureIds = string.Join("_", property.Pictures.Select(p => p.PictureId).ToArray());
+                                            originCopyProperty.FileIds = string.Join("_", property.Files.Select(p => p.FileId).ToArray());
+                                            var originPropertyLogoPicture = property.Pictures.Where(pp => pp.IsLogo).FirstOrDefault();
+                                            if (originPropertyLogoPicture != null) originCopyProperty.LogoPicture_Id = originPropertyLogoPicture.PictureId;
+
+                                            _copyPropertyService.InsertCopyProperty(originCopyProperty);
+                                            #endregion
+
+                                            #region 资产赋新值                           
+                                            property.Name = copyproperty.Name;
+                                            property.PropertyType = copyproperty.PropertyType;
+                                            property.Region = copyproperty.Region;
+                                            property.Address = copyproperty.Address;
+                                            property.ConstructArea = copyproperty.ConstructArea;
+                                            property.LandArea = copyproperty.LandArea;
+                                            property.PropertyID = copyproperty.PropertyID;
+                                            property.HasConstructID = copyproperty.HasConstructID;
+                                            property.HasLandID = copyproperty.HasLandID;
+                                            property.PropertyNature = copyproperty.PropertyNature;
+                                            property.LandNature = copyproperty.LandNature;
+                                            property.Price = copyproperty.Price;
+                                            property.GetedDate = copyproperty.GetedDate;
+                                            property.LifeTime = copyproperty.LifeTime;
+                                            property.UsedPeople = copyproperty.UsedPeople;
+                                            property.CurrentUse_Self = copyproperty.CurrentUse_Self;
+                                            property.CurrentUse_Rent = copyproperty.CurrentUse_Rent;
+                                            property.CurrentUse_Lend = copyproperty.CurrentUse_Lend;
+                                            property.CurrentUse_Idle = copyproperty.CurrentUse_Idle;
+                                            property.NextStepUsage = copyproperty.NextStepUsage;
+                                            if (!string.IsNullOrEmpty(copyproperty.Location))
+                                                property.Location = DbGeography.FromText(copyproperty.Location);
+                                            else return BadRequest("空间位置未赋值");
+                                            if (!string.IsNullOrEmpty(copyproperty.Extent))
+                                                property.Extent = DbGeography.FromText(copyproperty.Extent);
+                                            property.Description = copyproperty.Description;
+                                            property.EstateId = copyproperty.EstateId;
+                                            property.ConstructId = copyproperty.ConstructId;
+                                            property.LandId = copyproperty.LandId;
+                                            if (property.Government.Id != copyproperty.Government_Id)
+                                                property.Government = _governmentService.GetGovernmentUnitById(copyproperty.Government_Id);
+
+                                            #region 图片更新
+                                            var propertyPictureModels = new List<PropertyPictureModel>();
+
+                                            foreach (var pid in copyproperty.PrictureIds.Split('_'))
+                                            {
+                                                if (string.IsNullOrWhiteSpace(pid)) continue;
+                                                var picture = _pictureService.GetPictureById(Convert.ToInt32(pid));
+
+                                                if (picture == null) continue;
+
+                                                var propertyPictureModel = new PropertyPictureModel
+                                                {
+                                                    PictureId = picture.Id,
+                                                    PropertyId = copyproperty.Id
+                                                };
+
+                                                propertyPictureModels.Add(propertyPictureModel);
+                                            }
+                                            //图片更新
+                                            SavePropertyPictures(property, propertyPictureModels);
+                                            #endregion
+
+                                            #region logo更新
+                                            var logoPicture = _pictureService.GetPictureById(copyproperty.LogoPicture_Id);
+                                            if (logoPicture != null)
+                                            {
+                                                var propertyLogoPicture = property.Pictures.Where(p => p.IsLogo).SingleOrDefault();
+
+                                                if (propertyLogoPicture != null)
+                                                {
+                                                    if (propertyLogoPicture.PictureId != copyproperty.LogoPicture_Id)
+                                                    {
+                                                        propertyLogoPicture.Picture = logoPicture;
+                                                        _propertyService.UpdatePropertyPicture(propertyLogoPicture);
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    propertyLogoPicture = new PropertyPicture
+                                                    {
+                                                        Property = property,
+                                                        IsLogo = true,
+                                                        Picture = logoPicture
+                                                    };
+
+                                                    property.Pictures.Add(propertyLogoPicture);
+                                                }
+                                            }
+                                            #endregion
+
+                                            #region 文件更新
+                                            var propertyFileModels = new List<PropertyFileModel>();
+                                            foreach (var fid in copyproperty.FileIds.Split('_'))
+                                            {
+                                                if (string.IsNullOrWhiteSpace(fid)) continue;
+                                                var file = _pictureService.GetPictureById(Convert.ToInt32(fid));
+                                                if (file == null) continue;
+
+                                                var propertyFileModel = new PropertyFileModel
+                                                {
+                                                    FileId = file.Id,
+                                                    PropertyId = copyproperty.Id
+                                                };
+
+                                                propertyFileModels.Add(propertyFileModel);
+                                            }
+
+                                            SavePropertyFiles(property, propertyFileModels);
+                                            #endregion
+
+                                            #endregion
+
+                                            edit.State = PropertyApproveState.Finish;
+                                            edit.OriginCopyProperty_Id = originCopyProperty.Id;  //历史Property记录
+                                            property.Published = true;
+                                            copyproperty.Published = true;
+
+                                            SwitchPropertyLockState(false, property);
+                                            _propertyService.UpdateProperty(property);
+                                            _copyPropertyService.UpdateCopyProperty(copyproperty);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        edit.State = PropertyApproveState.Start;  //直接退回到申请单位                                      
+                                    }
+
+                                    _propertyEditService.UpdatePropertyEdit(edit);
+
+                                    //活动日志
+                                    _accountUserActivityService.InsertActivity("applyNewCreateApprove", string.Format("执行id为 {0} 的新增资产的处置", id));
+
+                                    break;
+                                }
+                            #endregion
+                            case "lend":
+                                #region 出借审批
+                                {
+                                    var lend = _propertyLendService.GetPropertyLendById(id);
+                                    if (lend == null || lend.Deleted) return BadRequest("找不到资源");
+                                    if (!PropertyCanApprove(lend.State, lend.SuggestGovernmentId)) return BadRequest("没有审批权限");
+                                    if (lend.State == PropertyApproveState.DepartmentApprove)
+                                    {
+                                        lend.DApproveDate = DateTime.Now;
+                                        lend.DSuggestion = suggestion;
+                                    }
+                                    else if (lend.State == PropertyApproveState.AdminApprove)
+                                    {
+                                        lend.AApproveDate = DateTime.Now;
+                                        lend.ASuggestion = suggestion;
+                                    }
+
+                                    if (agree)
+                                    {
+                                        if (lend.State == PropertyApproveState.Start)
+                                        {
+                                            lend.State = PropertyApproveState.DepartmentApprove;
+                                        }
+                                        else if (lend.State == PropertyApproveState.DepartmentApprove)                             //主管部门审核阶段
+                                        {
+                                            lend.State = PropertyApproveState.AdminApprove;
+                                        }
+                                        else if (lend.State == PropertyApproveState.AdminApprove)
+                                        {
+                                            lend.State = PropertyApproveState.Finish;
+                                            SwitchPropertyLockState(false, lend.Property);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        lend.State = PropertyApproveState.Start;  //直接退回到申请单位                                      
+                                    }
+
+                                    _propertyLendService.UpdatePropertyLend(lend);
+
+                                    //活动日志
+                                    _accountUserActivityService.InsertActivity("applyNewCreateApprove", string.Format("执行id为 {0} 的资产出借的处置", id));
+
+                                    break;
+                                }
+                            #endregion
+                            case "rent":
+                                #region 出租审批
+                                {
+                                    var rent = _propertyRentService.GetPropertyRentById(id);
+                                    if (rent == null || rent.Deleted) return BadRequest("找不到资源");
+                                    if (!PropertyCanApprove(rent.State, rent.SuggestGovernmentId)) return BadRequest("没有审批权限");
+                                    if (rent.State == PropertyApproveState.DepartmentApprove)
+                                    {
+                                        rent.DApproveDate = DateTime.Now;
+                                        rent.DSuggestion = suggestion;
+                                    }
+                                    else if (rent.State == PropertyApproveState.AdminApprove)
+                                    {
+                                        rent.AApproveDate = DateTime.Now;
+                                        rent.ASuggestion = suggestion;
+                                    }
+
+                                    if (agree)
+                                    {
+                                        //主管部门审核阶段
+                                        if (rent.State == PropertyApproveState.Start)
+                                        {
+                                            rent.State = PropertyApproveState.DepartmentApprove;
+                                        }
+                                        else if (rent.State == PropertyApproveState.DepartmentApprove)
+                                        {
+                                            rent.State = PropertyApproveState.AdminApprove;
+                                        }
+                                        else if (rent.State == PropertyApproveState.AdminApprove)
+                                        {
+                                            rent.State = PropertyApproveState.Finish;
+                                            SwitchPropertyLockState(false, rent.Property);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        rent.State = PropertyApproveState.Start;  //直接退回到申请单位                                      
+                                    }
+
+                                    _propertyRentService.UpdatePropertyRent(rent);
+
+                                    //活动日志
+                                    _accountUserActivityService.InsertActivity("applyNewCreateApprove", string.Format("执行id为 {0} 的资产出租的处置", id));
+
+                                    break;
+                                }
+                            #endregion
+                            case "allot":
+                                #region 划拨审批
+                                {
+                                    var allot = _propertyAllotService.GetPropertyAllotById(id);
+                                    if (allot == null || allot.Deleted) return BadRequest("找不到资源");
+                                    if (!PropertyCanApprove(allot.State, allot.SuggestGovernmentId)) return BadRequest("没有审批权限");
+                                    if (allot.State == PropertyApproveState.DepartmentApprove)
+                                    {
+                                        allot.DApproveDate = DateTime.Now;
+                                        allot.DSuggestion = suggestion;
+                                    }
+                                    else if (allot.State == PropertyApproveState.AdminApprove)
+                                    {
+                                        allot.AApproveDate = DateTime.Now;
+                                        allot.ASuggestion = suggestion;
+                                    }
+
+                                    if (agree)
+                                    {
+                                        //主管部门审核阶段
+                                        if (allot.State == PropertyApproveState.Start)
+                                        {
+                                            allot.State = PropertyApproveState.DepartmentApprove;
+                                        }
+                                        else if (allot.State == PropertyApproveState.DepartmentApprove)
+                                        {
+                                            allot.State = PropertyApproveState.AdminApprove;
+                                        }
+                                        else if (allot.State == PropertyApproveState.AdminApprove)
+                                        {
+                                            allot.State = PropertyApproveState.Finish;
+                                            var newGovernment = _governmentService.GetGovernmentUnitById(allot.NowGovernmentId);
+                                            if (newGovernment == null) return BadRequest("找不到新的权属单位");
+                                            allot.Property.Government = newGovernment;
+
+                                            SwitchPropertyLockState(false, allot.Property);
+
+                                        }
+                                    }
+                                    else
+                                    {
+                                        allot.State = PropertyApproveState.Start;  //直接退回到申请单位                                      
+                                    }
+
+                                    _propertyAllotService.UpdatePropertyAllot(allot);
+
+                                    //活动日志
+                                    _accountUserActivityService.InsertActivity("applyNewCreateApprove", string.Format("执行id为 {0} 的资产的划拨处置", id));
+
+                                    break;
+                                }
+                            #endregion
+                            case "off":
+                                #region 划拨审批
+                                {
+                                    var off = _propertyOffService.GetPropertyOffById(id);
+                                    if (off == null || off.Deleted) return BadRequest("找不到资源");
+                                    if (!PropertyCanApprove(off.State, off.SuggestGovernmentId)) return BadRequest("没有审批权限");
+                                    if (off.State == PropertyApproveState.Start)
+                                    {
+                                        off.State = PropertyApproveState.DepartmentApprove;
+                                    }
+                                    else if (off.State == PropertyApproveState.DepartmentApprove)
+                                    {
+                                        off.DApproveDate = DateTime.Now;
+                                        off.DSuggestion = suggestion;
+                                    }
+                                    else if (off.State == PropertyApproveState.AdminApprove)
+                                    {
+                                        off.AApproveDate = DateTime.Now;
+                                        off.ASuggestion = suggestion;
+                                    }
+
+                                    if (agree)
+                                    {
+                                        //主管部门审核阶段
+                                        if (off.State == PropertyApproveState.DepartmentApprove)
+                                        {
+                                            off.State = PropertyApproveState.AdminApprove;
+                                        }
+                                        else if (off.State == PropertyApproveState.AdminApprove)
+                                        {
+                                            off.State = PropertyApproveState.Finish;
+                                            off.Property.Off = true;
+                                            off.Property.Published = false;
+                                            SwitchPropertyLockState(false, off.Property);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        off.State = PropertyApproveState.Start;  //直接退回到申请单位                                      
+                                    }
+
+                                    _propertyOffService.UpdatePropertyOff(off);
+
+                                    //活动日志
+                                    _accountUserActivityService.InsertActivity("applyNewCreateApprove", string.Format("执行id为 {0} 的资产核销处置", id));
+
+                                    break;
+                                }
+                                #endregion
+                        } 
+                        #endregion
+                    }
+                    catch (Exception e)
+                    {
+                        result.AppendLine(string.Format("id 为 {0} 的资产处置未审批成功，错误原因为：{1}", id, e.Message));
+                    }
+                }
+            }
+
+            return Ok(result.ToString());
+        }
+
 
         [HttpGet]
         [Route("Approve/Statistics")]

@@ -34,11 +34,11 @@ namespace QZCHY.Core.Domain.Properties
         /// <summary>
         /// 出借面积
         /// </summary>
-        public float LendArea { get; set; }
+        public double LendArea { get; set; }
         /// <summary>
         /// 归还时间
         /// </summary>
-        public DateTime BackTime { get; set; }
+        public DateTime? BackTime { get; set; }
         /// <summary>
         /// 备注
         /// </summary>

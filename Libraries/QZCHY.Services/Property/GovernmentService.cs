@@ -27,7 +27,7 @@ namespace QZCHY.Services.Property
         /// {0} : parent category ID
         /// {1} : show hidden records?
         /// </remarks>
-        private const string GOVERNMENTUNITS_BY_PARENT_GOVERNMENTUNIT_ID_KEY = "QZCHY.government.byparent-{0}-{1}";
+        private const string GOVERNMENTUNITS_BY_PARENT_GOVERNMENTUNIT_ID_KEY_INCLUDECHILDREN = "QZCHY.government.byparent-{0}-{1}-{2}";
         /// <summary>
         /// Key pattern to clear cache
         /// </summary>
@@ -174,7 +174,7 @@ namespace QZCHY.Services.Property
         /// <returns>Categories</returns>
         public virtual IList<GovernmentUnit> GetAllGovernmentsByParentGovernmentId(int parentGovernmentUnitId,bool exceptGovernmentsWithUsers=false)
         {
-            string key = string.Format(GOVERNMENTUNITS_BY_PARENT_GOVERNMENTUNIT_ID_KEY, parentGovernmentUnitId, 0);
+            string key = string.Format(GOVERNMENTUNITS_BY_PARENT_GOVERNMENTUNIT_ID_KEY_INCLUDECHILDREN, parentGovernmentUnitId, 0,exceptGovernmentsWithUsers);
             return _cacheManager.Get(key, () =>
             {
                 var query = _governmentUnitRepository.Table;

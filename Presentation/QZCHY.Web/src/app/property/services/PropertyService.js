@@ -437,6 +437,18 @@ app.service("PropertyService", ['$rootScope', '$http', '$q', function ($rootScop
         return deferred.promise;
     }
 
+    this.multiSubmitApprove = function (idString, approveType) {
+        var deferred = $q.defer();
+        $http.post($rootScope.apiUrl + 'Properties/SubmitApprove/Multi/' + idString + "?approveType=" + approveType)
+            .success(function (data, status) {
+                deferred.resolve(data);
+            }).error(function (data, status) {
+                deferred.reject(data.message);
+            });
+
+        return deferred.promise;
+    }
+
     //审批申请
     this.applyApprove = function (id, agree, suggestion,approveType) {
 
@@ -454,6 +466,26 @@ app.service("PropertyService", ['$rootScope', '$http', '$q', function ($rootScop
         }).error(function (data, status) {
             deferred.reject(data.message);
         });
+
+        return deferred.promise;
+    };
+
+    this.multiApplyApprove = function (idString, agree, suggestion, approveType) {
+
+        var deferred = $q.defer();
+
+        var approve = {
+            agree: agree,
+            suggestion: suggestion,
+            approveType: approveType
+        };
+
+        $http.put($rootScope.apiUrl + 'Properties/ApplyApprove/Multi/' + idString, approve)
+            .success(function (data, status) {
+                deferred.resolve(data);
+            }).error(function (data, status) {
+                deferred.reject(data.message);
+            });
 
         return deferred.promise;
     };

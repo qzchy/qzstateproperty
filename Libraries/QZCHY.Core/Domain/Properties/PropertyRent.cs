@@ -38,7 +38,7 @@ namespace QZCHY.Core.Domain.Properties
         /// <summary>
         /// 出租面积
         /// </summary>
-        public float RentArea { get; set; }
+        public double RentArea { get; set; }
         /// <summary>
         /// 出租时间，单位月
         /// </summary>
@@ -50,7 +50,7 @@ namespace QZCHY.Core.Domain.Properties
         /// <summary>
         /// 备注
         /// </summary>
-        public string Ext { get; set; }
+        public string Remark { get; set; }
         /// <summary>
         /// 部门意见
         /// </summary>
