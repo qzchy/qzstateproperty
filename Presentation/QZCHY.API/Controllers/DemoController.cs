@@ -1331,6 +1331,7 @@ new Property {PropertyType= PropertyType.House , Name="衢州市华枫路16号",
         [Route("Temp3")]
         public IHttpActionResult InsertLendAndRent()
         {
+            return Ok("closed");
             StringBuilder sb = new StringBuilder();
             //拷贝图片
             var targetPath = System.Web.HttpContext.Current.Server.MapPath("~/Content/images/");

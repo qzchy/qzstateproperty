@@ -29,6 +29,7 @@ using QZCHY.Services.Common;
 using QZCHY.Services.Media;
 using QZCHY.Services.Properties;
 using QZCHY.Services.Property;
+using QZCHY.Services.ExportImport;
 
 namespace QZCHY.Web.Framework
 {
@@ -278,7 +279,7 @@ namespace QZCHY.Web.Framework
 
             builder.RegisterType<ScheduleTaskService>().As<IScheduleTaskService>().InstancePerLifetimeScope();
 
-            //builder.RegisterType<ExportManager>().As<IExportManager>().InstancePerLifetimeScope();
+            builder.RegisterType<ExportManager>().As<IExportManager>().InstancePerLifetimeScope();
             //builder.RegisterType<ImportManager>().As<IImportManager>().InstancePerLifetimeScope();
             //builder.RegisterType<PdfService>().As<IPdfService>().InstancePerLifetimeScope();
             //builder.RegisterType<ThemeProvider>().As<IThemeProvider>().InstancePerLifetimeScope();
