@@ -1,8 +1,8 @@
 ﻿//资产列表控制器
 'use strict';
  
-app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$state', '$scope', '$timeout', 'PropertyService', 'GovernmentService', 
-    function ($window, $rootScope, $uibModal, $state, $scope, $timeout, propertyService, governmentService) {
+app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$state', '$scope', '$timeout', 'PropertyService', 'GovernmentService', '$q',
+    function ($window, $rootScope, $uibModal, $state, $scope, $timeout, propertyService, governmentService,$q) {
         var error = $scope.error = "";
 
         $scope.processing = false;
@@ -228,10 +228,11 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
             $scope.ajax();
         };
 
-        $scope.reset = true;
+        $scope.reset = false;
 
         //#endregion    
 
+        $scope.exportBtn = false;
 
         //region 资产导出
         $scope.Export = function () {
@@ -248,7 +249,8 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
                     governments: function () { return $scope.governments; },
                     government: function () { return $scope.government },
                     exportExcel: function () { return $scope.exportExcel; },
-                    resetParams: function () { return $scope.resetParams; }
+                    resetParams: function () { return $scope.resetParams; },
+                    exportBtn: function () { return $scope.exportBtn; }
                 }
             });
 
@@ -271,6 +273,9 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
         };
 
         $scope.exportExcel = function () {
+
+            var deferred = $q.defer();
+
             var ids = buildIdsString();
             if (ids == "") ids = "all";
 
@@ -325,15 +330,17 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
             };
             $scope.params1 = angular.copy(params1);
 
-            propertyService.export(ids,$scope.params1).then(function (response) {
-                alert("导出成功！");
-            })
+            propertyService.export(ids, $scope.params1).then(function (response) {
+
+                deferred.resolve(response);
+
+            }, function (msg) {
+                deferred.reject(msg);
+            });
+            return deferred.promise;
         }
 
-
         //#endregion    
-
-
         //#region 设置对话框高度
         var windowHeight = $window.innerHeight; //获取窗口高度
         var headerHeight = 50;
@@ -419,17 +426,33 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
 
     }]);
 
-app.controller('exportCtrl', function ($scope, $uibModalInstance, dialogHeight, fields, governmentService, governments, government, exportExcel, resetParams) {
+app.controller('exportCtrl', function ($scope, $uibModalInstance, dialogHeight, fields, governmentService, governments, government, exportExcel, resetParams, exportBtn) {
 
     $scope.dialogHeight = dialogHeight;
     $scope.okText = "确定";
     $scope.cancelText = "取消";
     $scope.fields = fields;
     $scope.exportExcel = exportExcel;
+    $scope.exportBtn = exportBtn;
 
     $scope.ok = function () {
-        $scope.exportExcel();
-        $uibModalInstance.dismiss();
+        $scope.exportBtn = true;
+        $scope.exportExcel().then(function (response) {
+            alert("导出成功！");
+            var fileName = "资产导出.xls";
+            var blob = new Blob([response], { type: "application/vnd.ms-excel" });
+            var objectUrl = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            document.body.appendChild(a);
+            a.setAttribute('style', 'display:none');
+            a.setAttribute('href', objectUrl);
+            a.setAttribute('download', fileName);
+            a.click();
+            URL.revokeObjectURL(objectUrl);
+        }, function (msg) { }).finally(function () {
+            $scope.exportBtn = false;
+        });;
+       // $uibModalInstance.dismiss();
     }
 
     //全选

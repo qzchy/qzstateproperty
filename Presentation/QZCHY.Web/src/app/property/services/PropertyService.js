@@ -567,16 +567,7 @@ app.service("PropertyService", ['$rootScope', '$http', '$q', function ($rootScop
             data:  params1,
             responseType: "arraybuffer"
         }).success(function (data, status) {
-            var fileName = "资产导出.xls";
-            var blob = new Blob([data], { type: "application/vnd.ms-excel" });
-            var objectUrl = URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            document.body.appendChild(a);
-            a.setAttribute('style', 'display:none');
-            a.setAttribute('href', objectUrl);
-            a.setAttribute('download', fileName);
-            a.click();
-            URL.revokeObjectURL(objectUrl);
+            deferred.resolve(data);
         }).error(function (data, status) {
             deferred.reject(data.message);
         }); 
