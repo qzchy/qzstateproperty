@@ -2118,6 +2118,9 @@ namespace QZCHY.API.Controllers
                     rent.RentPrice = propertyRentModel.RentPrice;
                     rent.RentTime = Convert.ToDateTime(propertyRentModel.RentTime);
                     rent.BackTime = Convert.ToDateTime(propertyRentModel.BackTime);
+
+                    if (rent.BackTime <= rent.RentTime) return BadRequest("出租时间不能晚于或等于归还时间");
+
                     rent.Property = property;
                     rent.State = propertyRentModel.Submit ? PropertyApproveState.DepartmentApprove : PropertyApproveState.Start;
                     rent.ProcessDate = DateTime.Now;
@@ -2336,7 +2339,8 @@ namespace QZCHY.API.Controllers
             if (!PropertyApproveCanEditDeleteAndSubmit(rent.State, rent.SuggestGovernmentId)) return BadRequest("该项目已无法编辑");
 
               rent = propertyRentModel.ToEntity(rent);
-         
+
+            if (rent.BackTime <= rent.RentTime) return BadRequest("出租时间不能晚于或等于归还时间");
 
             #region 附件处理
 

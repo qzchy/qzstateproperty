@@ -166,7 +166,7 @@ angular.module('app')
               {
                   name: 'w5c.validator',
                   files: [
-                      'vendor/modules/w5c-validator/w5cValidator.js',
+                      'vendor/modules/w5c-validator/w5cValidator.min.js',
                       'vendor/modules/w5c-validator/style.css'
                   ]
               },

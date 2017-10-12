@@ -32,7 +32,8 @@ app.controller('PropertyProcessCtrl', ['$window', '$rootScope', '$uibModal', '$s
             dSuggestion: "",
             aSuggestion: "",
             submit: false,
-            priceString:""
+            priceString: "",
+            rentTimeRange:""
         };
         var _allot = {
             prePropertyOwner: "",
@@ -340,7 +341,7 @@ app.controller('PropertyProcessCtrl', ['$window', '$rootScope', '$uibModal', '$s
        //判断出租总年份
         $scope.rentTimeChange = function () {
           
-            var timestring = $scope.process.rent.rentTime;
+            var timestring = $scope.process.rent.rentTimeRange;
             var time = timestring.split("-");
 
             var backtime = moment(time[1]);
@@ -388,13 +389,28 @@ app.controller('PropertyProcessCtrl', ['$window', '$rootScope', '$uibModal', '$s
                 case "rent":
                     $scope.process.rent.submit = submit;
                     $scope.process.rent.ids = ids;
-                    var timestring = $scope.process.rent.rentTime;
+                    var timestring = $scope.process.rent.rentTimeRange;
                     var time = timestring.split("-");
                     $scope.process.rent.rentTime = time[0];
                     $scope.process.rent.backTime = time[1];
+
+                    if ($scope.process.rent.renttime == $scope.process.rent.backtime) {
+                        alert("归还时间不能早于或等于出租时间");
+                        toaster.pop('success', '', '出租金额不能为空');
+                        $scope.processing = false;
+                        return;
+                    }
+
                     angular.forEach($scope.yearNumber, function (data) {
-                        $scope.process.rent.priceString += data.model +";";
-                    })
+                        $scope.process.rent.priceString += data.model + ";";
+                    });
+
+                    if ($scope.process.rent.priceString == "" || $scope.process.rent.priceString == undefined || $scope.process.rent.priceString == null) {
+                        alert("出租金额不能为空");
+                        toaster.pop("error", "验证失败", "出租金额不能为空", 500);
+                        $scope.processing = false;
+                        return;
+                    }
                
                     propertyService.createRent($scope.process.rent).then(function () {
                         successCallback();
