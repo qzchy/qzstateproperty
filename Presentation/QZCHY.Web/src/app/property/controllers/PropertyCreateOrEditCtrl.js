@@ -613,6 +613,8 @@ function ($scope, $rootScope, $state, $timeout, moment, toaster, w5cValidator, $
 
         //保存实体，是否提交
         validation.saveEntity = function ($event, submit) {
+
+
             $scope.submitProcessing = true;
             _updateProcessingStatus();
 

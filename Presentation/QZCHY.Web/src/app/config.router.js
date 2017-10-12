@@ -525,10 +525,14 @@ angular.module('app').run(['$rootScope', '$state', '$stateParams',  'authService
 'vendor/libs/webuploader/webuploader.css'
                     ]).then(function () {
 
-                        return $ocLazyLoad.load(['toaster', 'ngImgCrop', 'w5c.validator', 'fancyboxplus', 'angular-nicescroll', 'ui.select',
+                        return $ocLazyLoad.load(['toaster', 'ngImgCrop', 'w5c.validator', 'fancyboxplus']).then(function () {
+
+                            return $ocLazyLoad.load([
 'app/systemmanage/governments/Services/GovernmentService.js',
 'app/property/Services/PropertyService.js',
 'app/property/Controllers/PropertyRentEditCtrl.js']);
+
+                        });
 
                     });
                 }

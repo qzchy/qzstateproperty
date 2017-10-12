@@ -109,12 +109,12 @@ namespace QZCHY.API.Controllers
         /// <param name="showHidden"></param>
         /// <returns></returns>
         [Route("SelectList")]
-        public IHttpActionResult GetGovernmentList()
+        public IHttpActionResult GetGovernmentList(bool except=true)
         {
             var response = new List<SelectListItem>();
 
             //获取根节点
-            var governments = _governmentService.GetAllGovernmentsByParentGovernmentId(0);
+            var governments = _governmentService.GetAllGovernmentsByParentGovernmentId(0,except);
             //GetFormattedBreadCrumbSelectListItems(response, rootCategories, ">>", string.Empty);
 
             foreach(var government in governments)
@@ -238,7 +238,7 @@ namespace QZCHY.API.Controllers
 
         [HttpGet]
         [Route("currentAccount/children/SelectList")]
-        public IHttpActionResult GetCurrentAccountChidlrenGovernemnts()
+        public IHttpActionResult GetCurrentAccountChidlrenGovernemnts(bool except=true)
         {
             var currentAccount = _workContext.CurrentAccountUser;
 
@@ -247,7 +247,7 @@ namespace QZCHY.API.Controllers
             //获取根节点
             var governmentId = currentAccount.Government.Id;
 
-            var governments = _governmentService.GetAllGovernmentsByParentGovernmentId(governmentId);
+            var governments = _governmentService.GetAllGovernmentsByParentGovernmentId(governmentId,except);
            
             foreach (var government in governments)
             {

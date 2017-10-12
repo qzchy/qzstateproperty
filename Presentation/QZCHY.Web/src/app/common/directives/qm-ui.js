@@ -139,8 +139,7 @@ angular.module("qm.ui.tables", []).constant('tableConfig', {
         }
         else {
             $scope.selectedRowCount--;
-            angular.forEach($scope.selectedRows, function (data,index,) {
-
+            angular.forEach($scope.selectedRows, function (data,index) {
                 if(data.id==row.id)
                     $scope.selectedRows.splice(index,1);
             });

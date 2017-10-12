@@ -1,12 +1,14 @@
 ﻿//资产列表控制器
 'use strict';
  
-app.controller('PropertyRentEditCtrl', ['$window', '$rootScope', '$uibModal', '$state', '$scope', '$timeout', 'PropertyService', 'GovernmentService', 'w5cValidator','toaster',
-    function ($window, $rootScope, $uibModal, $state, $scope, $timeout, propertyService, governmentService, w5cValidator, toaster) {
+app.controller('PropertyRentEditCtrl', ['$window', '$rootScope', '$uibModal', '$state', '$scope', '$timeout','toaster', 'PropertyService', 'GovernmentService', 'w5cValidator',
+    function ($window, $rootScope, $uibModal, $state, $scope, $timeout,toaster, propertyService, governmentService, w5cValidator) {
+         
         $scope.swfUrl = $rootScope.baseUrl + 'vender/libs/webimgUploader/Uploader.swf';
         $scope.pictureUploadUrl = $rootScope.apiUrl + 'Media/pictures/Upload?size=500';
         $scope.fileUploadUrl = $rootScope.apiUrl + 'Media/files/Upload';
         $scope.processing = true;
+        $scope.errorMsg = "";
         var id = $scope.approveId;
         $scope.rent = {
             name: "",
@@ -21,9 +23,9 @@ app.controller('PropertyRentEditCtrl', ['$window', '$rootScope', '$uibModal', '$
             aSuggestion: "",
             submit: false,
             backTime: "",
-            priceString: ""
-        };
-
+            priceString: "",
+            rentTimeRange:""
+        }; 
         propertyService.getRent(id).then(function (response) {
 
             $scope.rent = response.propertyRent;
@@ -49,8 +51,9 @@ app.controller('PropertyRentEditCtrl', ['$window', '$rootScope', '$uibModal', '$
                 $scope.yearNumber.push(d);
             }
 
-            $scope.rent.rentTime = moment($scope.rent.rentTime).format("YYYY/MM/DD") + " - " + moment($scope.rent.backTime).format("YYYY/MM/DD");
+            $scope.rent.rentTimeRange = moment($scope.rent.rentTime).format("YYYY/MM/DD") + " - " + moment($scope.rent.backTime).format("YYYY/MM/DD");
 
+            console.log($scope.rent);
 
         }, function (message) {
             toaster.pop("error", "错误：" + message);
@@ -103,19 +106,39 @@ app.controller('PropertyRentEditCtrl', ['$window', '$rootScope', '$uibModal', '$
                 blurTrig: true
             }
         };
+
         //提交编辑
         validation.saveEntity = function ($event, submit) {
+
+
+         
             $scope.processing = true;
             $scope.rent.submit = submit;
             $scope.rent.priceString = "";
-            var timestring = $scope.rent.rentTime;
+            var timestring = $scope.rent.rentTimeRange;
             var time = timestring.split("-");
             $scope.rent.rentTime = time[0];
             $scope.rent.backTime = time[1];
 
+            if ($scope.rent.renttime == $scope.rent.backtime)
+            {
+                alert("归还时间不能早于或等于出租时间");
+                toaster.pop('success', '', '出租金额不能为空');
+                $scope.processing = false;
+                return;
+            }
+
             angular.forEach($scope.yearNumber, function (data) {
                 $scope.rent.priceString += data.model + ";";
-            })
+            });
+
+            if ($scope.rent.priceString == "" || $scope.rent.priceString == undefined || $scope.rent.priceString == null)
+            {
+                alert("出租金额不能为空");
+                toaster.pop("error", "验证失败", "出租金额不能为空", 500);
+                $scope.processing = false;
+                return;
+            }
 
             propertyService.updateRent($scope.rent).then(function () {
                 toaster.pop("sucess", "保存成功", "", 500);
@@ -125,7 +148,7 @@ app.controller('PropertyRentEditCtrl', ['$window', '$rootScope', '$uibModal', '$
                 }, 550);
             }, function (message) {
                 $scope.errorMsg = message;
-                toaster.pop("error", "保存失败", "", 500);
+                toaster.pop("error", "保存失败", message, 500);
             }).finally(function () {
                 $scope.processing = false;
             });
