@@ -59,39 +59,37 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
 
        
         $scope.params = angular.copy(params);
-
-     
-
+  
         //导出字段集合
         var fields = {
-            isName: false,
-            isGovernment: false,
-            isPGovernment: false,
-            isPropertyType: false,
-            isGovernmentType: false,
-            isRegion: false,
-            isAddress: false,
-            isConstructArea: false,
-            isLandArea: false,
-            isPropertyID: false,
-            isPropertyNature: false,
-            isLandNature: false,
-            isPrice: false,
-            isGetedDate: false,
-            isLifeTime: false,
-            isUsedPeople: false,
-            isCurrentUse_Self: false,
-            isCurrentUse_Rent: false,
-            isCurrentUse_Lend: false,
-            isCurrentUse_Idle:false,
-            isNextStepUsage: false,
-            isEstateId: false,
-            isConstructId: false,
-            isLandId: false,
-            isHasConstructID: false,
-            isHasLandID: false,
-            isRent: false,
-            isLend: false      
+            isName: true,
+            isGovernment: true,
+            isPGovernment: true,
+            isPropertyType: true,
+            isGovernmentType: true,
+            isRegion: true,
+            isAddress: true,
+            isConstructArea: true,
+            isLandArea: true,
+            isPropertyID: true,
+            isPropertyNature: true,
+            isLandNature: true,
+            isPrice: true,
+            isGetedDate: true,
+            isLifeTime: true,
+            isUsedPeople: true,
+            isCurrentUse_Self: true,
+            isCurrentUse_Rent: true,
+            isCurrentUse_Lend: true,
+            isCurrentUse_Idle: true,
+            isNextStepUsage: true,
+            isEstateId: true,
+            isConstructId: true,
+            isLandId: true,
+            isHasConstructID: true,
+            isHasLandID: true,
+            isRent: true,
+            isLend: true
         };
         $scope.fields = angular.copy(fields);
 
@@ -219,7 +217,7 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
 
             modalInstance.result.then(function () {
             }, function () {
-                $state.reload();
+               // $state.reload();
             });
         };
 
@@ -256,7 +254,7 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
 
             modalInstance.result.then(function () {
             }, function () {
-                $state.reload();
+              //  $state.reload();
             });
         }
 
@@ -328,7 +326,7 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
             $scope.params1 = angular.copy(params1);
 
             propertyService.export(ids,$scope.params1).then(function (response) {
-               // alert("导出成功！");
+                alert("导出成功！");
             })
         }
 
@@ -431,6 +429,7 @@ app.controller('exportCtrl', function ($scope, $uibModalInstance, dialogHeight, 
 
     $scope.ok = function () {
         $scope.exportExcel();
+        $uibModalInstance.dismiss();
     }
 
     //全选

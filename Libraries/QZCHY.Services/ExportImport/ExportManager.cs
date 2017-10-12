@@ -121,7 +121,7 @@ namespace QZCHY.Services.ExportImport
                 }
 
                 var worksheet1 = xlPackage.Workbook.Worksheets.Add("出租表");
-                var headers1 = new string[] {"资产名称", "出租方", "出租日期", "归还日期", "出租面积(单位：平方米)", "出租总金额(单位：元)" };
+                var headers1 = new string[] {"资产名称", "出租方", "出租日期", "归还日期", "出租面积(平方米)", "出租总金额(元)","备注" };
                 for (int j = 0; j < headers1.Count(); j++)
                 {
                     worksheet1.Cells[1, j + 1].Value = headers1[j];
@@ -132,7 +132,7 @@ namespace QZCHY.Services.ExportImport
 
 
                 var worksheet2 = xlPackage.Workbook.Worksheets.Add("出借表");
-                var headers2 = new string[] { "资产名称","出借方", "出借日期", "出借面积(单位：平方米)" };
+                var headers2 = new string[] { "资产名称","出借方", "出借日期", "出借面积(平方米)","备注" };
                 for (int k = 0; k < headers2.Count(); k++)
                 {
                     worksheet2.Cells[1, k + 1].Value = headers2[k];
@@ -178,6 +178,9 @@ namespace QZCHY.Services.ExportImport
                             worksheet1.Cells[row1, col1].Value = rent.PriceString;
                             col1++;
 
+                            worksheet1.Cells[row1, col1].Value = rent.Remark;
+                            col1++;
+
                             row1++;
                         }
                         //  headers.Remove("Rent");
@@ -211,6 +214,9 @@ namespace QZCHY.Services.ExportImport
                             col2++;
 
                             worksheet2.Cells[row2, col2].Value = lend.LendArea;
+                            col2++;
+
+                            worksheet2.Cells[row2, col2].Value = lend.Remark;
                             col2++;
 
                             row2++;
