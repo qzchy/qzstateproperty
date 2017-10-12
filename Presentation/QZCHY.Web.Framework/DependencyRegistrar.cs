@@ -280,7 +280,7 @@ namespace QZCHY.Web.Framework
 
             builder.RegisterType<ScheduleTaskService>().As<IScheduleTaskService>().InstancePerLifetimeScope();
 
-            //builder.RegisterType<ExportManager>().As<IExportManager>().InstancePerLifetimeScope();
+            builder.RegisterType<ExportManager>().As<IExportManager>().InstancePerLifetimeScope();
             //builder.RegisterType<ImportManager>().As<IImportManager>().InstancePerLifetimeScope();
             //builder.RegisterType<PdfService>().As<IPdfService>().InstancePerLifetimeScope();
             //builder.RegisterType<ThemeProvider>().As<IThemeProvider>().InstancePerLifetimeScope();
