@@ -556,15 +556,31 @@ app.service("PropertyService", ['$rootScope', '$http', '$q', function ($rootScop
     };
 
     //导出EXCEL
-    this.export = function (fields) {
+    this.export = function (ids,params1) {
         var deferred = $q.defer();
-
-        $http.put($rootScope.apiUrl + 'Properties/Export/'+fields.isName,fields).success(function (data, status) {
-            deferred.resolve(data);
+        $http({  
+            method: "POST",
+            //headers: {
+            //    'Content-type': 'application/vnd.ms-excel'
+            //},
+            url:$rootScope.apiUrl + 'Properties/Export/' + ids,  
+            data:  params1,
+            responseType: "arraybuffer"
+        }).success(function (data, status) {
+            var fileName = "资产导出.xls";
+            var blob = new Blob([data], { type: "application/vnd.ms-excel" });
+            var objectUrl = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            document.body.appendChild(a);
+            a.setAttribute('style', 'display:none');
+            a.setAttribute('href', objectUrl);
+            a.setAttribute('download', fileName);
+            a.click();
+            URL.revokeObjectURL(objectUrl);
         }).error(function (data, status) {
             deferred.reject(data.message);
-        });
-
+        }); 
+        
         return deferred.promise;
     };
     

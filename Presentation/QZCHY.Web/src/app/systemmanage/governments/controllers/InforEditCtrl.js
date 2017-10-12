@@ -33,7 +33,7 @@ app.controller("InforEditCtrl", ['$scope', '$rootScope', '$uibModal', '$state', 
                 required: "联系方式不能为空"
             },
             ccname: {
-                required: "同一信用代码不能为空"
+                required: "统一信用代码不能为空"
             },
             pnname: {
                 required: "人员编制不能为空"

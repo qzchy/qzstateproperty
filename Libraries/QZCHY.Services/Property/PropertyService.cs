@@ -800,5 +800,14 @@ namespace QZCHY.Services.Properties
             var properties = quety.ToList();
             return properties;
         }
+
+        public IList<Core.Domain.Properties.Property> GetCurrentGovermentProperties(string name)
+        {
+            var query = from c in _propertyRepository.Table
+                        where c.Government.Name == name
+                        select c;
+            var properties = query.ToList();
+            return properties;
+        }
     }
 }

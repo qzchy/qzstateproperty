@@ -15,6 +15,10 @@ using System.Collections.Generic;
 using System.Data.Entity.Spatial;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text;
 using System.Web;
 using System.Web.Http;
@@ -4269,18 +4273,164 @@ namespace QZCHY.API.Controllers
         #endregion
 
         #region 资产导出
-        [HttpPut]
-        [Route("Export/{isName}")]
-        public IHttpActionResult ExportExcel(bool isName,ExportModel exportModel)
-        {
-            Stream stream = new MemoryStream();
-            IList<Property> properties = _propertyService.GetAllProperties();
+        //[HttpPost]
+        //[Route("Export/{ids}")]
+        //public IHttpActionResult ExportExcel(string  ids, PropertyAdvanceConditionModel advance)
+        //{
+        //    var exportModel = advance.Fields;
+        //    var browser = String.Empty;
+        //    string path = "D:\\资产导出\\"+ DateTime.Now.ToString("yyyyMMddhhmmss");
+        //    if (!Directory.Exists(path))
+        //    {
+        //        Directory.CreateDirectory(path);
+        //    }
+        //    string filePath = Path.Combine(path, "导出资产.xls");
+        //    HttpResponseMessage httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK);
 
-           _exportManager.ExportPropertyToXlsx(stream,properties);
+        //    #region 获取导出的资产集合
+        //    IList<Property> properties = new List<Property>();
+        //    if (ids != "all")
+        //    {
+        //        var pids = ids.Split(';');
+        //        foreach (var id in pids)
+        //        {
+        //            var property = _propertyService.GetPropertyById(Convert.ToInt32(id));
+        //            properties.Add(property);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        var currentUser = _workContext.CurrentAccountUser;
 
-            return Ok("导出成功");
-        }
+        //        var showHidden = currentUser.IsRegistered() && currentUser.AccountUserRoles.Count == 1;  //只是注册单位可以获取未发布的
+
+        //        //初始化排序条件
+        //        var sortConditions = PropertySortCondition.Instance(advance.Sort);
+
+        //        //特殊字段排序调整
+        //        if (advance.Sort.ToLower().StartsWith("governmentname")) sortConditions[0].PropertyName = "Government";
+
+        //        //高级搜索参数设置
+        //        PropertyAdvanceConditionRequest request = PrepareAdvanceCondition(advance);
+        //        var governmentIds = _governmentService.GetGovernmentIdsByCurrentUser();  //获取当前账户的可查询的资产
+        //        properties = _propertyService.GetAllProperties(governmentIds, advance.Query, 0, int.MaxValue, showHidden, request, sortConditions);
+
+        //    }
+        //    #endregion
+
+        //    FileStream stream = System.IO.File.Create(filePath);
+
+        //    Type t = exportModel.GetType();
+        //    PropertyInfo[] PropertyList = t.GetProperties();
+        //    IList<string> headers = new List<string>();
+
+        //    foreach (var item in PropertyList)
+        //    {
+        //        if (item.PropertyType.Name == "Boolean") {
+        //            var data = item.Name.Substring(2);
+        //            if (Convert.ToBoolean(item.GetValue(exportModel)) == true) headers.Add(data);
+        //        }            
+        //    }
+
+        //    _exportManager.ExportPropertyToXlsx(stream, properties,headers);
+
+        //    httpResponseMessage.Content = new StreamContent(stream);
+        //    httpResponseMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.ms-excel");
+        //    httpResponseMessage.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
+        //    {
+        //        FileName =
+        //            browser.Contains("Chrome")
+        //                ? Path.GetFileName(filePath)
+        //                : HttpUtility.UrlEncode(Path.GetFileName(filePath))
+        //        //FileName = HttpUtility.UrlEncode(Path.GetFileName(filePath))
+        //    };
+
+        //    return ResponseMessage(httpResponseMessage);
+        //}  
         #endregion
+      
 
+
+        [HttpPost]
+        [Route("Export/{ids}")]
+        public HttpResponseMessage ExportExcel(string ids, PropertyAdvanceConditionModel advance)
+        {
+            var exportModel = advance.Fields;
+            var browser = String.Empty;
+            //    string path = @"~/Content/资产导出" + DateTime.Now.ToString("yyyyMMddhhmmss");
+            string path = System.Web.Hosting.HostingEnvironment.MapPath(@"~/Content/资产导出/" + DateTime.Now.ToString("yyyyMMddhhmmss"));
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            string filePath = Path.Combine(path, "资产导出.xls");
+          
+
+            #region 获取导出的资产集合
+            IList<Property> properties = new List<Property>();
+            if (ids != "all")
+            {
+                var pids = ids.Split(';');
+                foreach (var id in pids)
+                {
+                    var property = _propertyService.GetPropertyById(Convert.ToInt32(id));
+                    properties.Add(property);
+                }
+            }
+            else
+            {
+                var currentUser = _workContext.CurrentAccountUser;
+
+                var showHidden = currentUser.IsRegistered() && currentUser.AccountUserRoles.Count == 1;  //只是注册单位可以获取未发布的
+
+                //初始化排序条件
+                var sortConditions = PropertySortCondition.Instance(advance.Sort);
+
+                //特殊字段排序调整
+                if (advance.Sort.ToLower().StartsWith("governmentname")) sortConditions[0].PropertyName = "Government";
+
+                //高级搜索参数设置
+                PropertyAdvanceConditionRequest request = PrepareAdvanceCondition(advance);
+                var governmentIds = _governmentService.GetGovernmentIdsByCurrentUser();  //获取当前账户的可查询的资产
+                properties = _propertyService.GetAllProperties(governmentIds, advance.Query, 0, int.MaxValue, showHidden, request, sortConditions);
+
+            }
+            #endregion
+
+            using (FileStream stream = System.IO.File.Create(filePath))
+            {
+                Type t = exportModel.GetType();
+                PropertyInfo[] PropertyList = t.GetProperties();
+                IList<string> headers = new List<string>();
+
+                foreach (var item in PropertyList)
+                {
+                    if (item.PropertyType.Name == "Boolean")
+                    {
+                        var data = item.Name.Substring(2);
+                        if (Convert.ToBoolean(item.GetValue(exportModel)) == true) headers.Add(data);
+                    }
+                }
+                _exportManager.ExportPropertyToXlsx(stream, properties, headers);
+            }
+
+            try {
+                    FileStream outstream = new FileStream(filePath, FileMode.Open);               
+                    HttpResponseMessage httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK);
+                    httpResponseMessage.Content = new StreamContent(outstream);
+                    httpResponseMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.ms-excel");
+                    httpResponseMessage.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
+                    {
+                        FileName = "资产导出.xls"                 
+                    };
+                
+
+                return httpResponseMessage;
+            }
+            catch {
+                return new HttpResponseMessage(HttpStatusCode.NoContent);
+            }
+
+        }
     }
 }

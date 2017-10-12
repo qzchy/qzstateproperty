@@ -9,12 +9,14 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
         //高级搜索的部门搜索 
         $scope.governments = [];
         $scope.government = {};
+        $scope.properties = [];
 
         //自定义参数集合
         var params = {
             showHidden: true,
             pageIndex:0,
             pageSize: 15,
+            query:"",
             sort: "getedDate,desc;",
             manage: "true",
             isGovernment: false,
@@ -54,13 +56,19 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
             priceRange: "",
             getDateRange: "",       
         };
+
+       
         $scope.params = angular.copy(params);
+
+     
 
         //导出字段集合
         var fields = {
             isName: false,
-            isGovernment:false,
+            isGovernment: false,
+            isPGovernment: false,
             isPropertyType: false,
+            isGovernmentType: false,
             isRegion: false,
             isAddress: false,
             isConstructArea: false,
@@ -71,14 +79,19 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
             isPrice: false,
             isGetedDate: false,
             isLifeTime: false,
+            isUsedPeople: false,
+            isCurrentUse_Self: false,
+            isCurrentUse_Rent: false,
+            isCurrentUse_Lend: false,
+            isCurrentUse_Idle:false,
             isNextStepUsage: false,
             isEstateId: false,
             isConstructId: false,
             isLandId: false,
+            isHasConstructID: false,
+            isHasLandID: false,
             isRent: false,
-            isLend: false,
-            isAllot: false,
-            isOff:false
+            isLend: false      
         };
         $scope.fields = angular.copy(fields);
 
@@ -247,9 +260,75 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
             });
         }
 
+
+        $scope.selectedRows = [];
+        //创建id字符串
+        var buildIdsString = function () {
+            var idsString = "";
+                angular.forEach($scope.selectedRows, function (data, index) {
+                    idsString += data.id + (index == $scope.selectedRows.length - 1 ? "" : ";");
+                });
+                    
+            return idsString;
+        };
+
         $scope.exportExcel = function () {
-            propertyService.export($scope.fields).then(function (response) {
-                alert(response);
+            var ids = buildIdsString();
+            if (ids == "") ids = "all";
+
+            var params1 = {
+                query:$scope.params.query,
+                sort: "name,asc;",
+                currentExtent: false,
+                bbox: "",
+                government: {
+                    manage: 'true',
+                    isGovernment: $scope.params.isGovernment,
+                    isInstitution: false,
+                    isCompany:$scope.params.isCompany,
+                    selectedId: 0
+                },
+                extent: {
+                    type: "",
+                    geo: ""
+                },
+                propertyType: {
+                    construct: $scope.params.construct,
+                    land: $scope.params.land,
+                    constructOnLand: $scope.params.constructOnLand
+                },
+                region: {
+                    old: $scope.params.old,
+                    west: $scope.params.west,
+                    jjq: $scope.params.jjq,
+                    kc: $scope.params.kc,
+                    qj: $scope.params.qj,
+                    other: $scope.params.other,
+                },
+                certificate: {
+                    both: false,
+                    land: false,
+                    construct: false,
+                    none: false
+                },
+                current: {
+                    self: $scope.params.current_self,
+                    rent: $scope.params.current_rent,
+                    lend: $scope.params.current_lend,
+                    idle: $scope.params.current_idle
+                },
+                nextStep: { mapType: 0, auction: false, injection: false, storeUp: false, adjust: false, ct: false, jt: false, jk: false },
+                constructArea: { ranges: [], l: false, m: false, h: false, t: false },
+                landArea: { ranges: [], l: false, m: false, h: false, t: false },
+                price: { ranges: [], l: false, m: false, h: false, t: false },
+                lifeTime: { min: 0, max: 70 },
+                getedDate: { min: 0, max: 0 },
+                fields:$scope.fields
+            };
+            $scope.params1 = angular.copy(params1);
+
+            propertyService.export(ids,$scope.params1).then(function (response) {
+               // alert("导出成功！");
             })
         }
 

@@ -29,6 +29,7 @@ using QZCHY.Services.Common;
 using QZCHY.Services.Media;
 using QZCHY.Services.Properties;
 using QZCHY.Services.Property;
+using QZCHY.Services.ExportImport;
 
 namespace QZCHY.Web.Framework
 {
@@ -112,6 +113,7 @@ namespace QZCHY.Web.Framework
             builder.RegisterType<PropertyAllotService>().As<IPropertyAllotService>().InstancePerLifetimeScope();
             builder.RegisterType<PropertyEditService>().As<IPropertyEditService>().InstancePerLifetimeScope();
             builder.RegisterType<CopyPropertyService>().As<ICopyPropertyService>().InstancePerLifetimeScope();
+            builder.RegisterType<ExportManager>().As<IExportManager>().InstancePerLifetimeScope();
             # endregion
 
             //builder.RegisterType<BackInStockSubscriptionService>().As<IBackInStockSubscriptionService>().InstancePerLifetimeScope();
