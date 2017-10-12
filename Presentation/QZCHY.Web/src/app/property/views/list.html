@@ -78,7 +78,7 @@
 
 
         <div class="panel panel-default">
-            <qmtable processing="processing" params="params" response="response" columns="columns" tools="{{tools}}" reset="reset" ajax="ajax()"
+            <qmtable processing="processing" params="params" response="response" columns="columns" tools="{{tools}}" reset="reset" ajax="ajax()" selected-rows="selectedRows"
                         ext-buttons="extButtons" table-eidt-and-delete="tableEidtAndDelete" advance-search="advanceSearch()" show-advance="true">
             </qmtable>
         </div>
@@ -354,7 +354,17 @@
                 </div>
                 <div class="col-sm-4">
                     <label class="checkbox i-checks">
-                        <input type="checkbox" ng-model="fields.isGovernment"><i></i> 所属单位
+                        <input type="checkbox" ng-model="fields.isGovernment"><i></i> 产权单位
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isPGovernment"><i></i> 上级单位
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isGovernmentType"><i></i> 单位性质
                     </label>
                 </div>
                 <div class="col-sm-4">
@@ -414,6 +424,31 @@
                 </div>
                 <div class="col-sm-4">
                     <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isUsedPeople"><i></i> 使用方
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isCurrentUse_Self"><i></i> 自用面积
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isCurrentUse_Rent"><i></i> 出租面积
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isCurrentUse_Lend"><i></i> 出借面积
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isCurrentUse_Idle"><i></i> 闲置面积
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
                         <input type="checkbox" ng-model="fields.isNextStepUsage"><i></i> 下步使用
                     </label>
                 </div>
@@ -432,6 +467,16 @@
                         <input type="checkbox" ng-model="fields.isLandId"><i></i> 土地证
                     </label>
                 </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isHasConstructID"><i></i> 有无房产证
+                    </label>
+                </div>
+                <div class="col-sm-4">
+                    <label class="checkbox i-checks">
+                        <input type="checkbox" ng-model="fields.isHasLandID"><i></i> 有无土地证
+                    </label>
+                </div>
             </div>
 
             <div class="row">
@@ -445,17 +490,7 @@
                     <label class="checkbox i-checks">
                         <input type="checkbox" ng-model="fields.isLend"><i></i> 资产出借信息
                     </label>
-                </div>
-                <div class="col-sm-12">
-                    <label class="checkbox i-checks">
-                        <input type="checkbox" ng-model="fields.isAllot"><i></i> 资产划拨信息
-                    </label>
-                </div>
-                <div class="col-sm-12">
-                    <label class="checkbox i-checks">
-                        <input type="checkbox" ng-model="fields.isOff"><i></i> 资产核销信息
-                    </label>
-                </div>
+                </div>       
             </div>
 
      
