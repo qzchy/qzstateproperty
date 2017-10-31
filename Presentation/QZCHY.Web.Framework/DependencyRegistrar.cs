@@ -114,6 +114,7 @@ namespace QZCHY.Web.Framework
             builder.RegisterType<PropertyEditService>().As<IPropertyEditService>().InstancePerLifetimeScope();
             builder.RegisterType<CopyPropertyService>().As<ICopyPropertyService>().InstancePerLifetimeScope();
             builder.RegisterType<ExportManager>().As<IExportManager>().InstancePerLifetimeScope();
+            builder.RegisterType<ImportManager>().As<IImportManager>().InstancePerLifetimeScope();
             # endregion
 
             //builder.RegisterType<BackInStockSubscriptionService>().As<IBackInStockSubscriptionService>().InstancePerLifetimeScope();

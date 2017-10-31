@@ -110,6 +110,7 @@
     <Compile Include="ExportImport\ExportManager.cs" />
     <Compile Include="ExportImport\IExportManager.cs" />
     <Compile Include="ExportImport\IImportManager.cs" />
+    <Compile Include="ExportImport\ImportManager.cs" />
     <Compile Include="Helpers\BrowscapXmlParser.cs" />
     <Compile Include="Helpers\IUserAgentHelper.cs" />
     <Compile Include="Helpers\UserAgentHelper.cs" />

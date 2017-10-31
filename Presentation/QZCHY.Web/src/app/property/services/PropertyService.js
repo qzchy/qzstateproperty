@@ -574,6 +574,20 @@ app.service("PropertyService", ['$rootScope', '$http', '$q', function ($rootScop
         
         return deferred.promise;
     };
+
+    //资产批量导入
+    this.Import = function () {
+        var deferred = $q.defer();
+
+        $http.post($rootScope.apiUrl + 'Properties/Import').success(function (data, status) {
+            deferred.resolve(data);
+        }).error(function (data, status) {
+            deferred.reject(data.message);
+        });
+
+        return deferred.promise;
+    };
+
     
 }]);
  

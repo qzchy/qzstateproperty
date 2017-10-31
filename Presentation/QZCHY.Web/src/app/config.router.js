@@ -94,7 +94,9 @@ angular.module('app').run(['$rootScope', '$state', '$stateParams',  'authService
             resolve: {
                 deps: ['$ocLazyLoad',
                   function ($ocLazyLoad) {
-                      return $ocLazyLoad.load(['angular-nicescroll', 'vr.directives.slider', 'ui.select',
+                      return $ocLazyLoad.load(['angular-nicescroll', 'vr.directives.slider', 'ui.select','toaster',
+                             'vendor/libs/webuploader/webuploader.js',
+                              'vendor/libs/webuploader/webuploader.css',
                            'app/systemmanage/governments/Services/GovernmentService.js',
                           'app/property/Services/PropertyService.js',
                          

@@ -120,7 +120,7 @@ app.controller('PropertyRentEditCtrl', ['$window', '$rootScope', '$uibModal', '$
             $scope.rent.rentTime = time[0];
             $scope.rent.backTime = time[1];
 
-            if ($scope.rent.renttime == $scope.rent.backtime)
+            if ($scope.rent.rentTime == $scope.rent.backTime)
             {
                 alert("归还时间不能早于或等于出租时间");
                 toaster.pop('success', '', '出租金额不能为空');

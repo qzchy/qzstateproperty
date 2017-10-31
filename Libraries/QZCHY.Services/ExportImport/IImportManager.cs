@@ -13,6 +13,6 @@ namespace QZCHY.Services.ExportImport
         /// Import products from XLSX file
         /// </summary>
         /// <param name="stream">Stream</param>
-        void ImportProductsFromXlsx(Stream stream);
+        string ImportProductsFromXlsx(Stream stream,string path);
     }
 }

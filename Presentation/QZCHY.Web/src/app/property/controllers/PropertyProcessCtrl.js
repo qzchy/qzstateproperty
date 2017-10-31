@@ -394,7 +394,7 @@ app.controller('PropertyProcessCtrl', ['$window', '$rootScope', '$uibModal', '$s
                     $scope.process.rent.rentTime = time[0];
                     $scope.process.rent.backTime = time[1];
 
-                    if ($scope.process.rent.renttime == $scope.process.rent.backtime) {
+                    if ($scope.process.rent.rentTime == $scope.process.rent.backTime) {
                         alert("归还时间不能早于或等于出租时间");
                         toaster.pop('success', '', '出租金额不能为空');
                         $scope.processing = false;
