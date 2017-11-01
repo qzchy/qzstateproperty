@@ -792,5 +792,22 @@ namespace QZCHY.Services.Properties
             _eventPublisher.EntityUpdated(propertyFile);
         }
 
+        public IList<Core.Domain.Properties.Property> GetPropertiesByGId(int id)
+        {
+            var quety = from c in _propertyRepository.Table
+                        where c.Government.Id == id
+                        select c;
+            var properties = quety.ToList();
+            return properties;
+        }
+
+        public IList<Core.Domain.Properties.Property> GetCurrentGovermentProperties(string name)
+        {
+            var query = from c in _propertyRepository.Table
+                        where c.Government.Name == name
+                        select c;
+            var properties = query.ToList();
+            return properties;
+        }
     }
 }

@@ -215,4 +215,5 @@ ModelManifest.xml
 *.rar
 *.doc
 *.docx
-*.pdf
+*.xls
+/Presentation/QZCHY.API/Content/资产导入

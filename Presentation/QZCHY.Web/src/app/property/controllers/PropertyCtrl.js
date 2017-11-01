@@ -219,4 +219,5 @@ app.controller("PropertyCtrl", ['$scope', '$rootScope', '$uibModal', '$timeout',
     };
      
 
+
     }]);

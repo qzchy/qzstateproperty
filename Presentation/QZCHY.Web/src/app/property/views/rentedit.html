@@ -9,6 +9,14 @@
         </div>
     </div>
 
+    <!--后台错误-->
+    <div class="form-group" ng-if="errorMsg">
+        <div class="col-lg-12 col-md-12">
+            <div class="alert alert-danger" ng-bind-html="errorMsg">
+            </div>
+        </div>
+    </div>
+
      <div class="wrapper-md">
 
 
@@ -35,7 +43,7 @@
                      <div class="form-group">
                          <label class="col-lg-2 control-label">出租起止时间</label>
                          <div class="col-sm-10">
-                             <input type="text" ui-jq="daterangepicker" class="form-control" name="daterange" ng-model="rent.rentTime"  ui-options="dateRangeOption" ng-required="true" ng-change="rentTimeChange()" />
+                             <input type="text" ui-jq="daterangepicker" class="form-control" name="daterange" ng-model="rent.rentTimeRange"  ui-options="dateRangeOption" ng-required="true" ng-change="rentTimeChange()" />
                          </div>
                      </div>
 

@@ -40,6 +40,8 @@ namespace QZCHY.Services.Property
 
         IQueryable<QZCHY.Core.Domain.Properties.Property> GetPropertiesByGovernmentId(IList<int> governmentIds);
 
+        IList<QZCHY.Core.Domain.Properties.Property> GetPropertiesByGId(int id);
+
         /// <summary>
         /// 更新
         /// </summary>
@@ -66,6 +68,9 @@ namespace QZCHY.Services.Property
         /// </summary>
         /// <returns></returns>
         IList<QZCHY.Core.Domain.Properties.Property> GetProcessProperties(IList<int> governmentIds);
+
+
+        IList<QZCHY.Core.Domain.Properties.Property> GetCurrentGovermentProperties(string name);
 
         #region Property pictures
 

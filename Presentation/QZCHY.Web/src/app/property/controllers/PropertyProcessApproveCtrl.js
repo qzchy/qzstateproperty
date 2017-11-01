@@ -218,68 +218,88 @@ app.controller('PropertyProcessApproveCtrl', ['$window', '$rootScope', '$uibModa
             showDropdowns: true
         };
 
-        var _approveType = $scope.approveType;
-        var _checkState = "unchecked";
-
-      //  $scope.params.approveType = $scope.approveType;
-
-    
         $scope.dateOption = _dateOption;
-        $scope.approveType = _approveType;
-        $scope.checkState = _checkState;
+        $scope.canMultiApprove = false;
+        $scope.canMultiSubmit = false;
 
         $scope.processing = false;
+        if ($scope.checkState == undefined || $scope.checkState == null || $scope.checkState == "")
+            $scope.checkState = "unchecked";
+
+
+        if ($scope.approveType == undefined || $scope.approveType == null || $scope.approveType == "")
+            $scope.approveType = "newCreate";
+
+        switch ($scope.approveType) {
+            case "newCreate":
+                $scope.columns = columns1;
+                $scope.approveTypeText = "新增审批";
+                break;
+            case "lend":
+                $scope.columns = columns2;
+                $scope.approveTypeText = "出借审批";
+                break;
+            case "rent":
+                $scope.columns = columns3;
+                $scope.approveTypeText = "出租审批";
+                break;
+            case "allot":
+                $scope.columns = columns4;
+                $scope.approveTypeText = "划拨审批";
+                break;
+            case "off":
+                $scope.columns = columns5;
+                $scope.approveTypeText = "核销审批";
+                break;
+            case "edit":
+                $scope.columns = columns6;
+                $scope.approveTypeText = "变更审批";
+                break;
+        };
+
+        switch ($scope.checkState) {
+            case "unchecked":
+                $scope.checkStateText = "待处理";
+                break;
+            case "checked":
+                $scope.checkStateText = "已处理";
+                break;
+            case "all":
+                $scope.checkStateText = "全部";
+                break;
+        };
 
         $scope.$watch('params', function (newvalue,oldvalue) {
-
-            switch (newvalue.approveType)
-            {
-                case "newCreate":
-                    $scope.columns = columns1;
-                    break;
-                case "lend":
-                    $scope.columns = columns2;
-                    break;
-                case "rent":
-                    $scope.columns = columns3;
-                    break;
-                case "allot":
-                    $scope.columns = columns4;
-                    break;
-                case "off":
-                    $scope.columns = columns5;
-                    break;
-                case "edit":
-                    $scope.columns = columns6;
-                    break;
-            }
-
             if (!first) $scope.ajax();
             else first = false;
-        },true);
 
-        //$scope.$watch('params.checkState', function (newvalue, oldvalue) {
+            $scope.canMultiApprove = false;
+            $scope.canMultiSubmit = false;
+        }, true);
 
-        //    switch (newvalue) {
-        //        case "unchecked":
-        //            $scope.params.checkState = "unchecked";
-        //            break;
-        //        case "checked":
-        //            $scope.params.checkState = "checked";
-        //            break;
-        //        case "all":
-        //            $scope.params.checkState = "all";
-        //            break;          
-        //    }
 
-        // $scope.ajax();        
-        //});
+        $scope.$watch('selectedRows', function () {
+            $scope.canMultiSubmit = $scope.selectedRows.length > 0;
+            $scope.canMultiApprove = $scope.selectedRows.length > 0;
 
-        //选中的行
-        //$scope.selectedItem = [];
+            angular.forEach($scope.selectedRows, function (data, index) {
 
-        //#region table config
-       
+                if (!data.canEditAndDelete) $scope.canMultiSubmit = false;
+                if (!data.canApprove) $scope.canMultiApprove = false;
+            });
+        }, true);
+
+        //创建id字符串
+        var buildIdsString = function () {
+            var idsString = "";
+            angular.forEach($scope.selectedRows, function (data, index) {
+                idsString += data.id + (index == $scope.selectedRows.length - 1 ? "" : ";");
+            });
+
+            return idsString;
+        };
+
+
         //#region 参数
 
         //自定义参数集合
@@ -288,15 +308,17 @@ app.controller('PropertyProcessApproveCtrl', ['$window', '$rootScope', '$uibModa
             pageSize: 15,
             query: "",
             sort: "processDate,desc;",
-            approveType: _approveType,
-            checkState: _checkState,
-            time: 0,
-            checkState: "unchecked"
+            approveType: $scope.approveType,
+            checkState: $scope.checkState,
+            time: 0
         };
 
         $scope.params = angular.copy(params);
 
         //#endregion
+
+
+        $scope.selectedRows = [];
 
         $scope.ajax = function () {
 
@@ -408,4 +430,53 @@ app.controller('PropertyProcessApproveCtrl', ['$window', '$rootScope', '$uibModa
             $scope.params = angular.copy(params);
             $scope.ajax();
         };
+
+        $scope.showApproveDialog = function () {
+
+            var modalInstance = $uibModal.open({
+                templateUrl: 'approveDialog.html',
+                controller: 'ExcuteApproveDialogCtrl',
+                size: 'lg',
+                resolve: {
+                    dialogHeight: function () { return $rootScope.dialogHeight; },
+                    excuteApprove: function () { return $scope.excuteApprove; }
+                }
+            });
+
+            modalInstance.result.then(function () {
+            }, function () {
+                $state.reload();
+            });
+        };
+
+        //资产审批提交
+        $scope.excuteApprove = function (agree, suggestion) {
+            propertyService.multiApplyApprove(buildIdsString(), agree, suggestion, $scope.approveType).then(function (response) {
+                toaster.pop("success", "审核成功", "", 500);
+            },
+            function (msg) {
+                toaster.pop("error", "审核失败，" + msg, "", 500);
+            }).finally(function () {
+                setTimeout(function () {
+                    $state.reload();
+                }, 600);
+            });
+        };
+
+        //提交申请
+        $scope.submitApprove = function () {
+
+            propertyService.multiSubmitApprove(buildIdsString(), $scope.approveType).then(function () {
+                toaster.pop('success', '', '提交成功');
+                setTimeout(function () {
+                    $state.reload();
+                }, 600);
+            }, function (msg, status) {
+                toaster.pop('error', '', '提交失败');
+                $scope.errorMsg = msg;
+            });
+
+        };
+
+ 
     }]);

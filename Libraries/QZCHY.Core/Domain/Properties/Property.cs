@@ -24,7 +24,7 @@ namespace QZCHY.Core.Domain.Properties
         public string Name { get; set; }
 
         /// <summary>
-        /// 
+        /// 资产类别
         /// </summary>
         public PropertyType PropertyType { get; set; }
 

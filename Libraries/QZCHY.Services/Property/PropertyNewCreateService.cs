@@ -57,7 +57,7 @@ namespace QZCHY.Services.Property
                     }
                     else if(currentUser.Government.ParentGovernmentId==0)
                     {
-                        expression = expression.And(p => p.State == PropertyApproveState.DepartmentApprove);
+                        expression = expression.And(p => p.State == PropertyApproveState.DepartmentApprove || (p.State == PropertyApproveState.Start & p.SuggestGovernmentId == currentUser.Government.Id));
                     }
                     else
                     {
@@ -71,11 +71,11 @@ namespace QZCHY.Services.Property
                     }
                     else if (currentUser.Government.ParentGovernmentId == 0)
                     {
-                        expression = expression.And(p => p.State == PropertyApproveState.Finish || p.State == PropertyApproveState.DepartmentApprove);
+                        expression = expression.And(p => p.State == PropertyApproveState.Finish || p.State == PropertyApproveState.AdminApprove);
                     }
                     else
                     {
-                        expression = expression.And(p => p.State == PropertyApproveState.Finish);
+                        expression = expression.And(p => p.State != PropertyApproveState.Start);
                     }
                     break;
                 case "all":

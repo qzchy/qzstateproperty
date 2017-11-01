@@ -58,6 +58,12 @@ angular.module("qm.ui.tables", []).constant('tableConfig', {
         $scope.params.sort = sortConditions;
         $scope.params.pageSize = $scope.tableConfig.page.length;
         $scope.params.pageIndex = $scope.tableConfig.page.index;
+        //选中行数目
+        $scope.selectedRowCount = 0;
+        //选中所有
+        $scope.selectAll = false;
+        //选中的记录
+        $scope.selectedRows = [];
 
         $scope.ajax();
     };
@@ -96,12 +102,18 @@ angular.module("qm.ui.tables", []).constant('tableConfig', {
     $scope.selectedRowCount = 0;
     //选中所有
     $scope.selectAll = false;
+    //选中的记录
+    $scope.selectedRows = [];
 
     //批量设置行选中
     $scope.setRowSelectiton = function (selected) {
         $scope.selectAll = selected;
+
+        $scope.selectedRows=[];  //清空原有选择集
+
         angular.forEach($scope.rows, function (item, value) {
             item.selected = selected;
+            if(selected) $scope.selectedRows.push(item);
         });
 
         $scope.selectedRowCount = selected ? $scope.rows.length : 0;
@@ -110,19 +122,28 @@ angular.module("qm.ui.tables", []).constant('tableConfig', {
     //选中切换
     $scope.switchSelection = function () {
         var count = 0;
+        $scope.selectedRows=[];  //清空原有选择集
+
         angular.forEach($scope.rows, function (item, value) {
             item.selected = !item.selected;
-            if (item.selected) count++;
+            if (item.selected) {$scope.selectedRows.push(item);count++;}
         });
         $scope.selectedRowCount = count;
     };
 
     //监测每行选中状态变化
     $scope.selectedRowChange = function (row) {
-        if (row.selected)
+        if (row.selected) {
             $scope.selectedRowCount++;
-        else
+            $scope.selectedRows.push(row);
+        }
+        else {
             $scope.selectedRowCount--;
+            angular.forEach($scope.selectedRows, function (data,index) {
+                if(data.id==row.id)
+                    $scope.selectedRows.splice(index,1);
+            });
+        }
     };
 
     //监测选中数目
@@ -172,6 +193,7 @@ angular.module("qm.ui.tables", []).constant('tableConfig', {
             columns: "=",
             ajax: "&",
             tableConfig: "=",
+            selectedRows:"=",
             extButtons: "=",
             tableEidtAndDelete: "=",
             showAdvance: "=",

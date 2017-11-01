@@ -14,6 +14,6 @@ namespace QZCHY.Services.ExportImport
         /// </summary>
         /// <param name="stream">Stream</param>
         /// <param name="properties">Properties</param>
-        void ExportPropertyToXlsx(Stream stream, IList<QZCHY.Core.Domain.Properties.Property> properties);
+        void ExportPropertyToXlsx(Stream stream, IList<QZCHY.Core.Domain.Properties.Property> properties, IList<string> headers);
     }
 }

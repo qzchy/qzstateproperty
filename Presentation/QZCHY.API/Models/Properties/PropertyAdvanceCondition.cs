@@ -37,6 +37,8 @@ namespace QZCHY.API.Models.Properties
 
         public Range GetedDate { get; set; }
 
+        public ExportModel Fields { get; set; }
+
         public string Query { get; set; }
 
         public string Sort { get; set; }

@@ -1,8 +1,11 @@
-﻿using QZCHY.API.Models.Properties;
+﻿using Microsoft.Win32;
+using QZCHY.API.Models.Media;
+using QZCHY.API.Models.Properties;
 using QZCHY.Core;
 using QZCHY.Core.Domain.Media;
 using QZCHY.Core.Domain.Properties;
 using QZCHY.Services.AccountUsers;
+using QZCHY.Services.ExportImport;
 using QZCHY.Services.Logging;
 using QZCHY.Services.Media;
 using QZCHY.Services.Property;
@@ -12,7 +15,14 @@ using QZCHY.Web.Framework.Response;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity.Spatial;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Reflection;
+using System.Text;
 using System.Web;
 using System.Web.Http;
 
@@ -37,6 +47,8 @@ namespace QZCHY.API.Controllers
         private readonly ICopyPropertyService _copyPropertyService;
         private readonly IPictureService _pictureService;
         private readonly IFileService _fileService;
+        private readonly IExportManager _exportManager;
+        private readonly IImportManager _importManager;
 
         private const string xqregion = "MULTIPOLYGON (((118.83061773800011 28.984037100000023, 118.83027875800008 28.97749847800003, 118.83019018700008 28.974613994000038, 118.8305129040001 28.972312430000045, 118.83115703500005 28.970457877000058, 118.83322749800004 28.966178772000035, 118.83465902600005 28.963238638000064, 118.83466298400003 28.963230511000063, 118.83583213100007 28.960829266000076, 118.83686879600009 28.958705528000053, 118.83732194300001 28.957777200000066, 118.83775487000003 28.956890297000029, 118.83803179300003 28.956322986000032, 118.83855440900004 28.955252340000072, 118.83884254200007 28.954662066000026, 118.84020364700007 28.951528287000031, 118.84060934700005 28.948819378000053, 118.84028735600009 28.945962245000032, 118.84021588600001 28.945591322000041, 118.84017773300002 28.945393320000051, 118.84001737400001 28.944561079000039, 118.8465220380001 28.944563016000075, 118.85055186600005 28.945061308000049, 118.85285442800011 28.946059412000068, 118.85467031100006 28.94780232200003, 118.85597205100009 28.950818167000079, 118.85607345800008 28.95135833300003, 118.85650909700007 28.95367883800003, 118.85669442000005 28.954665995000028, 118.85691678400008 28.955533511000056, 118.85699048400011 28.955821042000025, 118.85767353400001 28.958485857000028, 118.85814994500004 28.960344497000051, 118.85944800100003 28.964676319000034, 118.86021977400003 28.967979994000075, 118.86040178500002 28.969061312000065, 118.8606690360001 28.970019251000053, 118.86165747200005 28.971703474000037, 118.86217721200001 28.972589070000026, 118.8622569690001 28.972724968000023, 118.86229325900001 28.972786799000062, 118.86231377600006 28.97282175600003, 118.86233427800005 28.972856686000057, 118.86237058800009 28.972918555000035, 118.86546466900006 28.978391817000045, 118.86686591500006 28.980363157000056, 118.86924732900002 28.982537708000052, 118.87079458700009 28.983395469000072, 118.87090955700012 28.98343731500006, 118.8713690510001 28.983604557000035, 118.87058289800007 28.985239283000055, 118.86954085900004 28.987714383000025, 118.86940295200009 28.988812706000033, 118.87045117500008 28.992033157000037, 118.86934025900007 28.993799737000074, 118.86782612500008 28.995633482000073, 118.86706796600004 28.996669661000055, 118.8659381440001 28.996595283000033, 118.86269051200009 28.995498156000053, 118.86091137900007 28.994901580000032, 118.85981421800011 28.994533682000053, 118.85758987400004 28.993787819000033, 118.85758166700009 28.993785067000033, 118.85496771900011 28.992908563000071, 118.85288624200007 28.992210606000071, 118.84674147700002 28.99020600700004, 118.8438976000001 28.989421495000045, 118.83255582700008 28.987639510000065, 118.83230285500008 28.987556985000026, 118.83206241800008 28.987465254000028, 118.83130982700004 28.987073390000035, 118.83070544000009 28.986148014000037, 118.83061773800011 28.984037100000023)))";
         private const string jjqregion = "MULTIPOLYGON (((118.88477295200005 28.93451525100005, 118.88488604700001 28.934363443000052, 118.8849706530001 28.934249876000024, 118.89526449900006 28.920432414000061, 118.89964226400002 28.914173855000058, 118.89614908800002 28.914121941000076, 118.88459716000011 28.914763252000057, 118.87811260400008 28.915212586000052, 118.8689155080001 28.916345943000067, 118.86405046700008 28.916570947000025, 118.8603196470001 28.916596446000028, 118.85774818100003 28.916386991000024, 118.85646065900005 28.91583406500007, 118.8545084000001 28.91461408300006, 118.85247788900006 28.914179473000047, 118.84975451100001 28.914751369000044, 118.84643043700009 28.915550784000061, 118.83793597800002 28.918321083000023, 118.82918880700004 28.910440974000039, 118.82251836100011 28.902381993000063, 118.8166223720001 28.893678435000027, 118.83119228300006 28.885017819000041, 118.83264901900009 28.884642891000055, 118.83169354000006 28.883675702000062, 118.82972154000004 28.881192706000036, 118.82851156000004 28.879454544000055, 118.82613783000011 28.876350436000052, 118.82579559100009 28.875616738000076, 118.82261744200002 28.869601259000035, 118.82093782300001 28.866681554000024, 118.82006041000011 28.865578739000057, 118.81890619800004 28.864602149000063, 118.81644270800007 28.862711005000051, 118.81344750500011 28.86051481100003, 118.81488916400008 28.858007938000071, 118.81753764600001 28.853430360000061, 118.81936802100006 28.853287823000073, 118.82588779300011 28.853898445000027, 118.82574680100004 28.852549620000048, 118.8262279700001 28.852530349000062, 118.82701354900007 28.852590892000023, 118.82783572100004 28.852737406000074, 118.8284101480001 28.852839771000049, 118.82924157800005 28.852954405000048, 118.82998547800003 28.853042405000053, 118.83129895400009 28.853173449000053, 118.83236514400005 28.85317201600003, 118.83336401600002 28.853070862000038, 118.83409423000001 28.852991247000034, 118.83623250100004 28.852474516000029, 118.8385663470001 28.851825732000066, 118.83981456100003 28.85151223500003, 118.84206464300007 28.851288105000037, 118.84423855400007 28.851536003000035, 118.84654713300006 28.852271801000029, 118.84770273600009 28.852711391000071, 118.84992947000001 28.853606270000057, 118.85179551100009 28.854094255000064, 118.8536178170001 28.854108084000075, 118.85495069500007 28.854093052000053, 118.85829961100001 28.854053686000043, 118.85995537100007 28.854174478000061, 118.86101820600004 28.854509042000075, 118.86209465700006 28.85479852800006, 118.86350626600006 28.855343173000051, 118.86559327800001 28.85615642700003, 118.86697357900005 28.856686473000025, 118.86787435800011 28.857033839000053, 118.87233152900001 28.85840365200005, 118.87851828800001 28.859980889000042, 118.88579466500005 28.862091520000035, 118.88686066500009 28.862383313000066, 118.89060119600003 28.862611775000062, 118.89615602900005 28.862088038000024, 118.89898955300009 28.86170493700007, 118.90307622300008 28.860526374000074, 118.91125245700005 28.861311887000056, 118.92458414500004 28.862031715000057, 118.92574688600007 28.862041001000023, 118.93252711700006 28.862700177000079, 118.96360482500006 28.863183434000064, 118.97772070100007 28.864032264000059, 118.98602354000002 28.868179110000028, 118.99546799100006 28.873899941000047, 119.01293909100002 28.887597021000033, 119.02377511000009 28.89664450500004, 119.03076269900009 28.901107380000042, 119.03523771400012 28.90038620100006, 119.03603844700001 28.906670157000065, 119.03695906600001 28.915858118000074, 119.04022516600003 28.916755263000027, 119.04241171900003 28.917883046000043, 119.04613872200002 28.919855751000057, 119.04633555300006 28.920084664000058, 119.04771305100007 28.922191015000067, 119.04875691400002 28.922533181000063, 119.04856106700004 28.926977122000039, 119.04846185000008 28.929201267000053, 119.04850653700009 28.929700707000052, 119.04849886400007 28.930850627000041, 119.04846479200012 28.931445723000024, 119.04849565000006 28.932272233000049, 119.04851844600012 28.934410992000039, 119.04848005200006 28.934625046000065, 119.04824503600003 28.935153204000073, 119.04749338800002 28.936571750000041, 119.04674180900008 28.938042986000028, 119.04645245100005 28.938515296000048, 119.04527825900004 28.939623501000028, 119.04463265000004 28.940294299000072, 119.04454128400005 28.940586544000041, 119.04440196900009 28.94125563800003, 119.04391527600001 28.944016752000039, 119.04359113600003 28.947302991000072, 119.04343898500008 28.948008730000026, 119.04305500000009 28.94863618200003, 119.04201556500004 28.951196972000048, 119.03917935600009 28.957734113000072, 119.03405629500003 28.96967593100004, 119.03125893600009 28.976356517000056, 119.03019340700007 28.97877139600007, 119.02849820800009 28.979836869000053, 119.02739295900005 28.981701410000028, 119.02075232200002 28.984892539000043, 119.01914187200009 28.985560471000042, 119.01083607800001 28.987109169000064, 119.00155137900003 28.987691514000062, 118.99565164800003 28.992244729000049, 118.99263996800005 28.994073700000058, 118.99088931900008 28.994648210000037, 118.98714257600011 28.994902188000026, 118.98673299400002 28.992861515000072, 118.98098833400002 28.990968593000048, 118.97841923200008 28.987819628000068, 118.97687579000001 28.987052076000055, 118.97405571800005 28.985987238000064, 118.9767390400001 28.977687425000056, 118.95054975000005 28.971152914000072, 118.94313604200011 28.96721831900004, 118.93681254100011 28.962544109000078, 118.92142564700009 28.951580428000057, 118.9186565760001 28.950149152000051, 118.91662096800007 28.950042453000037, 118.90204695600005 28.95190875000003, 118.8963119340001 28.952802070000075, 118.88295347200005 28.954991454000037, 118.87718327100004 28.954345549000038, 118.87706656100011 28.954332484000076, 118.87633296400008 28.954250367000043, 118.87563339900009 28.95417205900003, 118.87549967000007 28.952233633000048, 118.87538319900011 28.950545378000072, 118.87532426200005 28.949550578000071, 118.87563525000007 28.948580363000076, 118.87598606000006 28.947485908000033, 118.87603547500009 28.947331746000032, 118.87651328000004 28.946162358000038, 118.87732865200007 28.944621430000041, 118.8776402530001 28.944032555000035, 118.87795462500003 28.943443307000052, 118.87842787400007 28.942556266000054, 118.87857413500001 28.942278411000075, 118.87870754700009 28.94202496500003, 118.87900794600012 28.94145429200006, 118.8791545790001 28.941225423000049, 118.87962474100004 28.940491579000025, 118.87976987700006 28.940342830000077, 118.88206792800008 28.937987584000041, 118.8823129110001 28.937685972000054, 118.88337610800011 28.936377008000079, 118.88477295200005 28.93451525100005)))";
@@ -56,7 +68,8 @@ namespace QZCHY.API.Controllers
              IPropertyRentService propertyRentService,
              IPropertyAllotService propertyAllotService, IPropertyOffService propertyOffService,
               IPropertyEditService propertyEditService, ICopyPropertyService copyPropertyService,
-              IPictureService pictureService, IFileService fileService,
+              IPictureService pictureService, IFileService fileService, IExportManager exportManager,
+              IImportManager importManager,
         IWorkContext workContext)
         {
             _propertyService = propertyService;
@@ -74,6 +87,8 @@ namespace QZCHY.API.Controllers
             _copyPropertyService = copyPropertyService;
             _pictureService = pictureService;
             _fileService = fileService;
+            _exportManager = exportManager;
+            _importManager = importManager;
         }
 
         #region utility     
@@ -417,7 +432,7 @@ namespace QZCHY.API.Controllers
 
 
         /// <summary>
-        /// 资产是否可以编辑
+        /// 资产是否可以编辑，针对未入库的
         /// </summary>
         /// <param name="property"></param>
         /// <returns></returns>
@@ -429,14 +444,18 @@ namespace QZCHY.API.Controllers
 
             if (PropertyBelongCurrentUser(property, true))
             {
-                return !property.Published && !property.Off;
+                var newCreate = _propertyNewCreateService.GetPropertyNewCreateByPropertyId(property.Id);
+                if (newCreate == null)
+                    return !property.Published && !property.Off;
+                else
+                    return newCreate.State == PropertyApproveState.Start && !property.Published && !property.Off;
             }
 
             return false;
         }
 
         /// <summary>
-        /// 资产是否可以变更
+        /// 资产是否可以变更，针对已入库的
         /// </summary>
         /// <param name="property"></param>
         /// <returns></returns>
@@ -966,6 +985,7 @@ namespace QZCHY.API.Controllers
         /// </summary>
         /// <param name="locked"></param>
         /// <param name="property"></param>
+        [NonAction]
         protected virtual void SwitchPropertyLockState(bool locked, Property property)
         {
             if (property.Locked != locked)
@@ -1470,8 +1490,8 @@ namespace QZCHY.API.Controllers
         {
             var property = _propertyService.GetPropertyById(propertyId);
 
-           // if ((propertyCreateModel.CurrentUse_Lend + propertyCreateModel.CurrentUse_Rent + propertyCreateModel.CurrentUse_Self + propertyCreateModel.CurrentUse_Idle > propertyCreateModel.ConstructArea)) return BadRequest("建筑面积应大于自用、出租、出借、闲置之和！");
-
+            // if ((propertyCreateModel.CurrentUse_Lend + propertyCreateModel.CurrentUse_Rent + propertyCreateModel.CurrentUse_Self + propertyCreateModel.CurrentUse_Idle > propertyCreateModel.ConstructArea)) return BadRequest("建筑面积应大于自用、出租、出借、闲置之和！");
+            if (propertyCreateModel.GetedDate == "01/01/0001") return BadRequest("取得时间不能为空");
             if (property == null || property.Deleted) return NotFound();
 
             var checkMessage = PropertyCreateModelValid(propertyCreateModel);
@@ -2108,6 +2128,9 @@ namespace QZCHY.API.Controllers
                     rent.RentPrice = propertyRentModel.RentPrice;
                     rent.RentTime = Convert.ToDateTime(propertyRentModel.RentTime);
                     rent.BackTime = Convert.ToDateTime(propertyRentModel.BackTime);
+
+                    if (rent.BackTime <= rent.RentTime) return BadRequest("出租时间不能晚于或等于归还时间");
+
                     rent.Property = property;
                     rent.State = propertyRentModel.Submit ? PropertyApproveState.DepartmentApprove : PropertyApproveState.Start;
                     rent.ProcessDate = DateTime.Now;
@@ -2326,7 +2349,8 @@ namespace QZCHY.API.Controllers
             if (!PropertyApproveCanEditDeleteAndSubmit(rent.State, rent.SuggestGovernmentId)) return BadRequest("该项目已无法编辑");
 
               rent = propertyRentModel.ToEntity(rent);
-         
+
+            if (rent.BackTime <= rent.RentTime) return BadRequest("出租时间不能晚于或等于归还时间");
 
             #region 附件处理
 
@@ -3011,6 +3035,195 @@ namespace QZCHY.API.Controllers
             }
             return Ok();
         }
+         
+        /// <summary>
+        /// 批量提交申请
+        /// </summary>
+        /// <param name="idsString"></param>
+        /// <param name="approveType"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("SubmitApprove/Multi/{idsString}")]
+        public IHttpActionResult Multi_SumbitApprove(string idsString, string approveType = "")
+        {
+            var result = new StringBuilder();
+            var currentUser = _workContext.CurrentAccountUser;
+
+            var idArr = idsString.Split(';');
+
+            foreach(var idString in idArr)
+            {
+                int id = 0;
+                if (int.TryParse(idString, out id))
+                {
+                    try
+                    {
+                        #region 处理
+                        switch (approveType)
+                        {
+                            case "newCreate":
+                                #region 新增审批
+                                {
+                                    var newCreate = _propertyNewCreateService.GetPropertyNewCreateById(id);
+                                    if (newCreate == null || newCreate.Deleted) throw new Exception(string.Format("找不到id为 {0} 新增资产处置申请"));
+
+                                    if (PropertyApproveCanEditDeleteAndSubmit(newCreate.State, newCreate.SuggestGovernmentId))
+                                    {
+                                        newCreate.State = PropertyApproveState.DepartmentApprove;
+
+                                        if (currentUser.IsParentGovernmentorAuditor())  //当前用户既是主管部门又是报送部门   // if (currentUser.Government.ParentGovernmentId == 0)
+                                        {
+                                            newCreate.State = PropertyApproveState.AdminApprove;
+                                            newCreate.DApproveDate = DateTime.Now;
+                                            newCreate.DSuggestion = "同意";
+                                        }
+
+                                        _propertyNewCreateService.UpdatePropertyNewCreate(newCreate);
+
+                                        //活动日志
+                                        _accountUserActivityService.InsertActivity("submitNewCreateApprove", string.Format("提交id为 {0} 的新增资产的处置申请", id));
+
+                                        SwitchPropertyLockState(true, newCreate.Property);
+                                    }
+
+                                    break;
+                                }
+                            #endregion
+                            case "edit":
+                                #region 编辑审批
+                                {
+                                    var edit = _propertyEditService.GetPropertyEditById(id);
+                                    if (edit == null || edit.Deleted) throw new Exception(string.Format("找不到id为 {0} 资产变更处置申请"));
+
+                                    if (PropertyApproveCanEditDeleteAndSubmit(edit.State, edit.SuggestGovernmentId))
+                                    {
+                                        edit.State = PropertyApproveState.DepartmentApprove;
+
+                                        if (currentUser.IsParentGovernmentorAuditor())
+                                        {
+                                            edit.State = PropertyApproveState.AdminApprove;
+                                            edit.DApproveDate = DateTime.Now;
+                                            edit.DSuggestion = "同意";
+                                        }
+
+                                        _propertyEditService.UpdatePropertyEdit(edit);
+
+                                        //活动日志
+                                        _accountUserActivityService.InsertActivity("submitNewCreateApprove", string.Format("提交id为 {0} 的资产变更的处置申请", id));
+                                    }
+
+                                    break;
+                                }
+                            #endregion
+                            case "lend":
+                                #region 出借审批
+                                {
+                                    var lend = _propertyLendService.GetPropertyLendById(id);
+                                    if (lend == null || lend.Deleted) throw new Exception(string.Format("找不到id为 {0} 资产出借处置申请"));
+
+                                    if (PropertyApproveCanEditDeleteAndSubmit(lend.State, lend.SuggestGovernmentId))
+                                    {
+                                        lend.State = PropertyApproveState.DepartmentApprove;
+                                        if (currentUser.IsParentGovernmentorAuditor())
+                                        {
+                                            lend.State = PropertyApproveState.AdminApprove;
+                                            lend.DApproveDate = DateTime.Now;
+                                            lend.DSuggestion = "同意";
+                                        }
+
+                                        _propertyLendService.UpdatePropertyLend(lend);
+                                        //活动日志
+                                        _accountUserActivityService.InsertActivity("submitLendApprove", string.Format("提交id为 {0} 的资产出借的处置申请", id));
+                                    }
+
+                                    break;
+                                }
+                            #endregion
+                            case "rent":
+                                #region 出租审批
+                                {
+                                    var rent = _propertyRentService.GetPropertyRentById(id);
+                                    if (rent == null || rent.Deleted) throw new Exception(string.Format("找不到id为 {0} 资产出租处置申请"));
+
+                                    if (PropertyApproveCanEditDeleteAndSubmit(rent.State, rent.SuggestGovernmentId))
+                                    {
+                                        rent.State = PropertyApproveState.DepartmentApprove;
+                                        if (currentUser.IsParentGovernmentorAuditor())
+                                        {
+                                            rent.State = PropertyApproveState.AdminApprove;
+                                            rent.DApproveDate = DateTime.Now;
+                                            rent.DSuggestion = "同意";
+                                        }
+
+                                        _propertyRentService.UpdatePropertyRent(rent);
+
+                                        //活动日志
+                                        _accountUserActivityService.InsertActivity("submitRentApprove", string.Format("提交id为 {0} 的资产出租的处置申请", id));
+                                    }
+
+                                    break;
+                                }
+                            #endregion
+                            case "allot":
+                                #region 划拨审批
+                                {
+                                    var allot = _propertyAllotService.GetPropertyAllotById(id);
+                                    if (allot == null || allot.Deleted) throw new Exception(string.Format("找不到id为 {0} 资产划拨处置申请"));
+
+                                    if (PropertyApproveCanEditDeleteAndSubmit(allot.State, allot.SuggestGovernmentId))
+                                    {
+                                        allot.State = PropertyApproveState.DepartmentApprove;
+                                        if (currentUser.IsParentGovernmentorAuditor())
+                                        {
+                                            allot.State = PropertyApproveState.AdminApprove;
+                                            allot.DApproveDate = DateTime.Now;
+                                            allot.DSuggestion = "同意";
+                                        }
+                                        _propertyAllotService.UpdatePropertyAllot(allot);
+
+                                        //活动日志
+                                        _accountUserActivityService.InsertActivity("submitAllotApprove", string.Format("提交id为 {0} 的资产划拨的处置申请", id));
+                                    }
+
+                                    break;
+                                }
+                            #endregion
+                            case "off":
+                                #region 核销审批
+                                {
+                                    var off = _propertyOffService.GetPropertyOffById(id);
+                                    if (off == null || off.Deleted) throw new Exception(string.Format("找不到id为 {0} 资产核销处置申请"));
+
+                                    if (PropertyApproveCanEditDeleteAndSubmit(off.State, off.SuggestGovernmentId))
+                                    {
+                                        off.State = PropertyApproveState.DepartmentApprove;
+                                        if (currentUser.IsParentGovernmentorAuditor())
+                                        {
+                                            off.State = PropertyApproveState.AdminApprove;
+                                            off.DApproveDate = DateTime.Now;
+                                            off.DSuggestion = "同意";
+                                        }
+                                        _propertyOffService.UpdatePropertyOff(off);
+
+                                        //活动日志
+                                        _accountUserActivityService.InsertActivity("submitOffApprove", string.Format("提交id为 {0} 的资产核销的处置申请", id));
+                                    }
+
+                                    break;
+                                }
+                                #endregion
+                        }
+                        #endregion
+                    }
+                    catch (Exception e)
+                    {
+                        result.AppendLine(string.Format("id 为 {0} 的资产处置未提交成功，错误原因为：{1}", id, e.Message));
+                    }
+                }
+            }
+            
+            return Ok(result.ToString());
+        }
 
         /// <summary>
         /// 审批处置申请
@@ -3037,6 +3250,8 @@ namespace QZCHY.API.Controllers
                         var newCreate = _propertyNewCreateService.GetPropertyNewCreateById(id);
                         if (newCreate == null || newCreate.Deleted) return BadRequest("找不到资源");
 
+                        if (!PropertyCanApprove(newCreate.State,newCreate.SuggestGovernmentId)) return BadRequest("没有审批权限");
+
                         if (newCreate.State == PropertyApproveState.DepartmentApprove)
                         {
                             newCreate.DApproveDate = DateTime.Now;
@@ -3046,7 +3261,7 @@ namespace QZCHY.API.Controllers
                         {
                             newCreate.AApproveDate = DateTime.Now;
                             newCreate.ASuggestion = suggestion;
-                        }
+                        }                      
 
                         if (agree)
                         {
@@ -3086,7 +3301,7 @@ namespace QZCHY.API.Controllers
                     {
                         var edit = _propertyEditService.GetPropertyEditById(id);
                         if (edit == null || edit.Deleted) return BadRequest("找不到资源");
-
+                        if (!PropertyCanApprove(edit.State, edit.SuggestGovernmentId)) return BadRequest("没有审批权限");
                         if (edit.State == PropertyApproveState.DepartmentApprove)
                         {
                             edit.DApproveDate = DateTime.Now;
@@ -3285,7 +3500,7 @@ namespace QZCHY.API.Controllers
                     {
                         var lend = _propertyLendService.GetPropertyLendById(id);
                         if (lend == null || lend.Deleted) return BadRequest("找不到资源");
-
+                        if (!PropertyCanApprove(lend.State, lend.SuggestGovernmentId)) return BadRequest("没有审批权限");
                         if (lend.State == PropertyApproveState.DepartmentApprove)
                         {
                             lend.DApproveDate = DateTime.Now;
@@ -3331,7 +3546,7 @@ namespace QZCHY.API.Controllers
                     {
                         var rent = _propertyRentService.GetPropertyRentById(id);
                         if (rent == null || rent.Deleted) return BadRequest("找不到资源");
-
+                        if (!PropertyCanApprove(rent.State, rent.SuggestGovernmentId)) return BadRequest("没有审批权限");
                         if (rent.State == PropertyApproveState.DepartmentApprove)
                         {
                             rent.DApproveDate = DateTime.Now;
@@ -3378,7 +3593,7 @@ namespace QZCHY.API.Controllers
                     {
                         var allot = _propertyAllotService.GetPropertyAllotById(id);
                         if (allot == null || allot.Deleted) return BadRequest("找不到资源");
-
+                        if (!PropertyCanApprove(allot.State, allot.SuggestGovernmentId)) return BadRequest("没有审批权限");
                         if (allot.State == PropertyApproveState.DepartmentApprove)
                         {
                             allot.DApproveDate = DateTime.Now;
@@ -3430,7 +3645,7 @@ namespace QZCHY.API.Controllers
                     {
                         var off = _propertyOffService.GetPropertyOffById(id);
                         if (off == null || off.Deleted) return BadRequest("找不到资源");
-
+                        if (!PropertyCanApprove(off.State, off.SuggestGovernmentId)) return BadRequest("没有审批权限");
                         if (off.State == PropertyApproveState.Start)
                         {
                             off.State = PropertyApproveState.DepartmentApprove;
@@ -3477,6 +3692,497 @@ namespace QZCHY.API.Controllers
             }
             return Ok();
         }
+
+        /// <summary>
+        /// 批量审批
+        /// </summary>
+        /// <param name="idsString"></param>
+        /// <param name="approveApplyModel"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("ApplyApprove/Multi/{idsString}")]
+        public IHttpActionResult Multi_ApplyApprove(string idsString, ApproveApplyModel approveApplyModel)
+        {
+            var result = new StringBuilder();
+            var currentUser = _workContext.CurrentAccountUser;
+
+            var idArr = idsString.Split(';');
+
+            bool agree = approveApplyModel.Agree;
+            string suggestion = approveApplyModel.Suggestion;
+            string approveType = approveApplyModel.ApproveType;
+
+            if (agree && string.IsNullOrEmpty(suggestion))
+                suggestion = "同意";
+
+            foreach (var idString in idArr)
+            {
+                int id = 0;
+                if (int.TryParse(idString, out id))
+                {
+                    try
+                    {
+                        #region 处理
+                        switch (approveType)
+                        {
+                            case "newCreate":
+                                #region 新增审批
+                                {
+                                    var newCreate = _propertyNewCreateService.GetPropertyNewCreateById(id);
+                                    if (newCreate == null || newCreate.Deleted) return BadRequest("找不到资源");
+
+                                    if (!PropertyCanApprove(newCreate.State, newCreate.SuggestGovernmentId)) return BadRequest("没有审批权限");
+
+                                    if (newCreate.State == PropertyApproveState.DepartmentApprove)
+                                    {
+                                        newCreate.DApproveDate = DateTime.Now;
+                                        newCreate.DSuggestion = suggestion;
+                                    }
+                                    else if (newCreate.State == PropertyApproveState.AdminApprove)
+                                    {
+                                        newCreate.AApproveDate = DateTime.Now;
+                                        newCreate.ASuggestion = suggestion;
+                                    }
+
+                                    if (agree)
+                                    {
+
+                                        if (newCreate.State == PropertyApproveState.Start)
+                                        {
+                                            newCreate.State = PropertyApproveState.DepartmentApprove;
+                                        }
+                                        else if (newCreate.State == PropertyApproveState.DepartmentApprove) //主管部门审核阶段
+                                        {
+                                            newCreate.State = PropertyApproveState.AdminApprove;
+                                        }
+                                        else if (newCreate.State == PropertyApproveState.AdminApprove)
+                                        {
+                                            newCreate.State = PropertyApproveState.Finish;
+                                            newCreate.Property.Published = true;
+                                            SwitchPropertyLockState(false, newCreate.Property);
+
+                                            //    SwitchPropertyLockState(false, newCreate.Property);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        newCreate.State = PropertyApproveState.Start;  //直接退回到申请单位                                      
+                                    }
+
+                                    _propertyNewCreateService.UpdatePropertyNewCreate(newCreate);
+
+                                    //活动日志
+                                    _accountUserActivityService.InsertActivity("applyNewCreateApprove", string.Format("执行id为 {0} 的新增资产的处置", id));
+
+                                    break;
+                                }
+                            #endregion
+                            case "edit":
+                                #region 编辑审批
+                                {
+                                    var edit = _propertyEditService.GetPropertyEditById(id);
+                                    if (edit == null || edit.Deleted) return BadRequest("找不到资源");
+                                    if (!PropertyCanApprove(edit.State, edit.SuggestGovernmentId)) return BadRequest("没有审批权限");
+                                    if (edit.State == PropertyApproveState.DepartmentApprove)
+                                    {
+                                        edit.DApproveDate = DateTime.Now;
+                                        edit.DSuggestion = suggestion;
+                                    }
+                                    else if (edit.State == PropertyApproveState.AdminApprove)
+                                    {
+                                        edit.AApproveDate = DateTime.Now;
+                                        edit.ASuggestion = suggestion;
+                                    }
+
+                                    if (agree)
+                                    {
+
+                                        if (edit.State == PropertyApproveState.Start)
+                                        {
+                                            edit.State = PropertyApproveState.DepartmentApprove;
+                                        }
+                                        else if (edit.State == PropertyApproveState.DepartmentApprove) //主管部门审核阶段
+                                        {
+                                            edit.State = PropertyApproveState.AdminApprove;
+                                        }
+                                        else if (edit.State == PropertyApproveState.AdminApprove)
+                                        {
+                                            var property = _propertyService.GetPropertyById(edit.Property.Id);
+                                            var copyproperty = _copyPropertyService.GetCopyPropertyById(edit.CopyProperty_Id);
+
+                                            #region 资产原值存储
+                                            var originCopyProperty = new CopyProperty();
+                                            originCopyProperty.Name = property.Name;
+                                            originCopyProperty.PropertyType = property.PropertyType;
+                                            originCopyProperty.Region = property.Region;
+                                            originCopyProperty.Address = property.Address;
+                                            originCopyProperty.ConstructArea = property.ConstructArea;
+                                            originCopyProperty.LandArea = property.LandArea;
+                                            originCopyProperty.PropertyID = property.PropertyID;
+                                            originCopyProperty.HasConstructID = property.HasConstructID;
+                                            originCopyProperty.HasLandID = property.HasLandID;
+                                            originCopyProperty.PropertyNature = property.PropertyNature;
+                                            originCopyProperty.LandNature = property.LandNature;
+                                            originCopyProperty.Price = property.Price;
+                                            originCopyProperty.GetedDate = property.GetedDate;
+                                            originCopyProperty.LifeTime = property.LifeTime;
+                                            originCopyProperty.UsedPeople = property.UsedPeople;
+                                            originCopyProperty.CurrentUse_Self = property.CurrentUse_Self;
+                                            originCopyProperty.CurrentUse_Rent = property.CurrentUse_Rent;
+                                            originCopyProperty.CurrentUse_Lend = property.CurrentUse_Lend;
+                                            originCopyProperty.CurrentUse_Idle = property.CurrentUse_Idle;
+                                            originCopyProperty.NextStepUsage = property.NextStepUsage;
+                                            originCopyProperty.Location = property.Location == null ? "" : property.Location.AsText();
+                                            originCopyProperty.Extent = property.Extent == null ? "" : property.Extent.AsText();
+                                            originCopyProperty.Description = property.Description;
+                                            originCopyProperty.EstateId = property.EstateId;
+                                            originCopyProperty.ConstructId = property.ConstructId;
+                                            originCopyProperty.LandId = property.LandId;
+                                            originCopyProperty.Government_Id = property.Government.Id;
+
+                                            originCopyProperty.PrictureIds = string.Join("_", property.Pictures.Select(p => p.PictureId).ToArray());
+                                            originCopyProperty.FileIds = string.Join("_", property.Files.Select(p => p.FileId).ToArray());
+                                            var originPropertyLogoPicture = property.Pictures.Where(pp => pp.IsLogo).FirstOrDefault();
+                                            if (originPropertyLogoPicture != null) originCopyProperty.LogoPicture_Id = originPropertyLogoPicture.PictureId;
+
+                                            _copyPropertyService.InsertCopyProperty(originCopyProperty);
+                                            #endregion
+
+                                            #region 资产赋新值                           
+                                            property.Name = copyproperty.Name;
+                                            property.PropertyType = copyproperty.PropertyType;
+                                            property.Region = copyproperty.Region;
+                                            property.Address = copyproperty.Address;
+                                            property.ConstructArea = copyproperty.ConstructArea;
+                                            property.LandArea = copyproperty.LandArea;
+                                            property.PropertyID = copyproperty.PropertyID;
+                                            property.HasConstructID = copyproperty.HasConstructID;
+                                            property.HasLandID = copyproperty.HasLandID;
+                                            property.PropertyNature = copyproperty.PropertyNature;
+                                            property.LandNature = copyproperty.LandNature;
+                                            property.Price = copyproperty.Price;
+                                            property.GetedDate = copyproperty.GetedDate;
+                                            property.LifeTime = copyproperty.LifeTime;
+                                            property.UsedPeople = copyproperty.UsedPeople;
+                                            property.CurrentUse_Self = copyproperty.CurrentUse_Self;
+                                            property.CurrentUse_Rent = copyproperty.CurrentUse_Rent;
+                                            property.CurrentUse_Lend = copyproperty.CurrentUse_Lend;
+                                            property.CurrentUse_Idle = copyproperty.CurrentUse_Idle;
+                                            property.NextStepUsage = copyproperty.NextStepUsage;
+                                            if (!string.IsNullOrEmpty(copyproperty.Location))
+                                                property.Location = DbGeography.FromText(copyproperty.Location);
+                                            else return BadRequest("空间位置未赋值");
+                                            if (!string.IsNullOrEmpty(copyproperty.Extent))
+                                                property.Extent = DbGeography.FromText(copyproperty.Extent);
+                                            property.Description = copyproperty.Description;
+                                            property.EstateId = copyproperty.EstateId;
+                                            property.ConstructId = copyproperty.ConstructId;
+                                            property.LandId = copyproperty.LandId;
+                                            if (property.Government.Id != copyproperty.Government_Id)
+                                                property.Government = _governmentService.GetGovernmentUnitById(copyproperty.Government_Id);
+
+                                            #region 图片更新
+                                            var propertyPictureModels = new List<PropertyPictureModel>();
+
+                                            foreach (var pid in copyproperty.PrictureIds.Split('_'))
+                                            {
+                                                if (string.IsNullOrWhiteSpace(pid)) continue;
+                                                var picture = _pictureService.GetPictureById(Convert.ToInt32(pid));
+
+                                                if (picture == null) continue;
+
+                                                var propertyPictureModel = new PropertyPictureModel
+                                                {
+                                                    PictureId = picture.Id,
+                                                    PropertyId = copyproperty.Id
+                                                };
+
+                                                propertyPictureModels.Add(propertyPictureModel);
+                                            }
+                                            //图片更新
+                                            SavePropertyPictures(property, propertyPictureModels);
+                                            #endregion
+
+                                            #region logo更新
+                                            var logoPicture = _pictureService.GetPictureById(copyproperty.LogoPicture_Id);
+                                            if (logoPicture != null)
+                                            {
+                                                var propertyLogoPicture = property.Pictures.Where(p => p.IsLogo).SingleOrDefault();
+
+                                                if (propertyLogoPicture != null)
+                                                {
+                                                    if (propertyLogoPicture.PictureId != copyproperty.LogoPicture_Id)
+                                                    {
+                                                        propertyLogoPicture.Picture = logoPicture;
+                                                        _propertyService.UpdatePropertyPicture(propertyLogoPicture);
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    propertyLogoPicture = new PropertyPicture
+                                                    {
+                                                        Property = property,
+                                                        IsLogo = true,
+                                                        Picture = logoPicture
+                                                    };
+
+                                                    property.Pictures.Add(propertyLogoPicture);
+                                                }
+                                            }
+                                            #endregion
+
+                                            #region 文件更新
+                                            var propertyFileModels = new List<PropertyFileModel>();
+                                            foreach (var fid in copyproperty.FileIds.Split('_'))
+                                            {
+                                                if (string.IsNullOrWhiteSpace(fid)) continue;
+                                                var file = _pictureService.GetPictureById(Convert.ToInt32(fid));
+                                                if (file == null) continue;
+
+                                                var propertyFileModel = new PropertyFileModel
+                                                {
+                                                    FileId = file.Id,
+                                                    PropertyId = copyproperty.Id
+                                                };
+
+                                                propertyFileModels.Add(propertyFileModel);
+                                            }
+
+                                            SavePropertyFiles(property, propertyFileModels);
+                                            #endregion
+
+                                            #endregion
+
+                                            edit.State = PropertyApproveState.Finish;
+                                            edit.OriginCopyProperty_Id = originCopyProperty.Id;  //历史Property记录
+                                            property.Published = true;
+                                            copyproperty.Published = true;
+
+                                            SwitchPropertyLockState(false, property);
+                                            _propertyService.UpdateProperty(property);
+                                            _copyPropertyService.UpdateCopyProperty(copyproperty);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        edit.State = PropertyApproveState.Start;  //直接退回到申请单位                                      
+                                    }
+
+                                    _propertyEditService.UpdatePropertyEdit(edit);
+
+                                    //活动日志
+                                    _accountUserActivityService.InsertActivity("applyNewCreateApprove", string.Format("执行id为 {0} 的新增资产的处置", id));
+
+                                    break;
+                                }
+                            #endregion
+                            case "lend":
+                                #region 出借审批
+                                {
+                                    var lend = _propertyLendService.GetPropertyLendById(id);
+                                    if (lend == null || lend.Deleted) return BadRequest("找不到资源");
+                                    if (!PropertyCanApprove(lend.State, lend.SuggestGovernmentId)) return BadRequest("没有审批权限");
+                                    if (lend.State == PropertyApproveState.DepartmentApprove)
+                                    {
+                                        lend.DApproveDate = DateTime.Now;
+                                        lend.DSuggestion = suggestion;
+                                    }
+                                    else if (lend.State == PropertyApproveState.AdminApprove)
+                                    {
+                                        lend.AApproveDate = DateTime.Now;
+                                        lend.ASuggestion = suggestion;
+                                    }
+
+                                    if (agree)
+                                    {
+                                        if (lend.State == PropertyApproveState.Start)
+                                        {
+                                            lend.State = PropertyApproveState.DepartmentApprove;
+                                        }
+                                        else if (lend.State == PropertyApproveState.DepartmentApprove)                             //主管部门审核阶段
+                                        {
+                                            lend.State = PropertyApproveState.AdminApprove;
+                                        }
+                                        else if (lend.State == PropertyApproveState.AdminApprove)
+                                        {
+                                            lend.State = PropertyApproveState.Finish;
+                                            SwitchPropertyLockState(false, lend.Property);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        lend.State = PropertyApproveState.Start;  //直接退回到申请单位                                      
+                                    }
+
+                                    _propertyLendService.UpdatePropertyLend(lend);
+
+                                    //活动日志
+                                    _accountUserActivityService.InsertActivity("applyNewCreateApprove", string.Format("执行id为 {0} 的资产出借的处置", id));
+
+                                    break;
+                                }
+                            #endregion
+                            case "rent":
+                                #region 出租审批
+                                {
+                                    var rent = _propertyRentService.GetPropertyRentById(id);
+                                    if (rent == null || rent.Deleted) return BadRequest("找不到资源");
+                                    if (!PropertyCanApprove(rent.State, rent.SuggestGovernmentId)) return BadRequest("没有审批权限");
+                                    if (rent.State == PropertyApproveState.DepartmentApprove)
+                                    {
+                                        rent.DApproveDate = DateTime.Now;
+                                        rent.DSuggestion = suggestion;
+                                    }
+                                    else if (rent.State == PropertyApproveState.AdminApprove)
+                                    {
+                                        rent.AApproveDate = DateTime.Now;
+                                        rent.ASuggestion = suggestion;
+                                    }
+
+                                    if (agree)
+                                    {
+                                        //主管部门审核阶段
+                                        if (rent.State == PropertyApproveState.Start)
+                                        {
+                                            rent.State = PropertyApproveState.DepartmentApprove;
+                                        }
+                                        else if (rent.State == PropertyApproveState.DepartmentApprove)
+                                        {
+                                            rent.State = PropertyApproveState.AdminApprove;
+                                        }
+                                        else if (rent.State == PropertyApproveState.AdminApprove)
+                                        {
+                                            rent.State = PropertyApproveState.Finish;
+                                            SwitchPropertyLockState(false, rent.Property);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        rent.State = PropertyApproveState.Start;  //直接退回到申请单位                                      
+                                    }
+
+                                    _propertyRentService.UpdatePropertyRent(rent);
+
+                                    //活动日志
+                                    _accountUserActivityService.InsertActivity("applyNewCreateApprove", string.Format("执行id为 {0} 的资产出租的处置", id));
+
+                                    break;
+                                }
+                            #endregion
+                            case "allot":
+                                #region 划拨审批
+                                {
+                                    var allot = _propertyAllotService.GetPropertyAllotById(id);
+                                    if (allot == null || allot.Deleted) return BadRequest("找不到资源");
+                                    if (!PropertyCanApprove(allot.State, allot.SuggestGovernmentId)) return BadRequest("没有审批权限");
+                                    if (allot.State == PropertyApproveState.DepartmentApprove)
+                                    {
+                                        allot.DApproveDate = DateTime.Now;
+                                        allot.DSuggestion = suggestion;
+                                    }
+                                    else if (allot.State == PropertyApproveState.AdminApprove)
+                                    {
+                                        allot.AApproveDate = DateTime.Now;
+                                        allot.ASuggestion = suggestion;
+                                    }
+
+                                    if (agree)
+                                    {
+                                        //主管部门审核阶段
+                                        if (allot.State == PropertyApproveState.Start)
+                                        {
+                                            allot.State = PropertyApproveState.DepartmentApprove;
+                                        }
+                                        else if (allot.State == PropertyApproveState.DepartmentApprove)
+                                        {
+                                            allot.State = PropertyApproveState.AdminApprove;
+                                        }
+                                        else if (allot.State == PropertyApproveState.AdminApprove)
+                                        {
+                                            allot.State = PropertyApproveState.Finish;
+                                            var newGovernment = _governmentService.GetGovernmentUnitById(allot.NowGovernmentId);
+                                            if (newGovernment == null) return BadRequest("找不到新的权属单位");
+                                            allot.Property.Government = newGovernment;
+
+                                            SwitchPropertyLockState(false, allot.Property);
+
+                                        }
+                                    }
+                                    else
+                                    {
+                                        allot.State = PropertyApproveState.Start;  //直接退回到申请单位                                      
+                                    }
+
+                                    _propertyAllotService.UpdatePropertyAllot(allot);
+
+                                    //活动日志
+                                    _accountUserActivityService.InsertActivity("applyNewCreateApprove", string.Format("执行id为 {0} 的资产的划拨处置", id));
+
+                                    break;
+                                }
+                            #endregion
+                            case "off":
+                                #region 划拨审批
+                                {
+                                    var off = _propertyOffService.GetPropertyOffById(id);
+                                    if (off == null || off.Deleted) return BadRequest("找不到资源");
+                                    if (!PropertyCanApprove(off.State, off.SuggestGovernmentId)) return BadRequest("没有审批权限");
+                                    if (off.State == PropertyApproveState.Start)
+                                    {
+                                        off.State = PropertyApproveState.DepartmentApprove;
+                                    }
+                                    else if (off.State == PropertyApproveState.DepartmentApprove)
+                                    {
+                                        off.DApproveDate = DateTime.Now;
+                                        off.DSuggestion = suggestion;
+                                    }
+                                    else if (off.State == PropertyApproveState.AdminApprove)
+                                    {
+                                        off.AApproveDate = DateTime.Now;
+                                        off.ASuggestion = suggestion;
+                                    }
+
+                                    if (agree)
+                                    {
+                                        //主管部门审核阶段
+                                        if (off.State == PropertyApproveState.DepartmentApprove)
+                                        {
+                                            off.State = PropertyApproveState.AdminApprove;
+                                        }
+                                        else if (off.State == PropertyApproveState.AdminApprove)
+                                        {
+                                            off.State = PropertyApproveState.Finish;
+                                            off.Property.Off = true;
+                                            off.Property.Published = false;
+                                            SwitchPropertyLockState(false, off.Property);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        off.State = PropertyApproveState.Start;  //直接退回到申请单位                                      
+                                    }
+
+                                    _propertyOffService.UpdatePropertyOff(off);
+
+                                    //活动日志
+                                    _accountUserActivityService.InsertActivity("applyNewCreateApprove", string.Format("执行id为 {0} 的资产核销处置", id));
+
+                                    break;
+                                }
+                                #endregion
+                        } 
+                        #endregion
+                    }
+                    catch (Exception e)
+                    {
+                        result.AppendLine(string.Format("id 为 {0} 的资产处置未审批成功，错误原因为：{1}", id, e.Message));
+                    }
+                }
+            }
+
+            return Ok(result.ToString());
+        }
+
 
         [HttpGet]
         [Route("Approve/Statistics")]
@@ -3575,6 +4281,277 @@ namespace QZCHY.API.Controllers
         }
 
         #endregion
+
+        #region 资产导出
+        //[HttpPost]
+        //[Route("Export/{ids}")]
+        //public IHttpActionResult ExportExcel(string  ids, PropertyAdvanceConditionModel advance)
+        //{
+        //    var exportModel = advance.Fields;
+        //    var browser = String.Empty;
+        //    string path = "D:\\资产导出\\"+ DateTime.Now.ToString("yyyyMMddhhmmss");
+        //    if (!Directory.Exists(path))
+        //    {
+        //        Directory.CreateDirectory(path);
+        //    }
+        //    string filePath = Path.Combine(path, "导出资产.xls");
+        //    HttpResponseMessage httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK);
+
+        //    #region 获取导出的资产集合
+        //    IList<Property> properties = new List<Property>();
+        //    if (ids != "all")
+        //    {
+        //        var pids = ids.Split(';');
+        //        foreach (var id in pids)
+        //        {
+        //            var property = _propertyService.GetPropertyById(Convert.ToInt32(id));
+        //            properties.Add(property);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        var currentUser = _workContext.CurrentAccountUser;
+
+        //        var showHidden = currentUser.IsRegistered() && currentUser.AccountUserRoles.Count == 1;  //只是注册单位可以获取未发布的
+
+        //        //初始化排序条件
+        //        var sortConditions = PropertySortCondition.Instance(advance.Sort);
+
+        //        //特殊字段排序调整
+        //        if (advance.Sort.ToLower().StartsWith("governmentname")) sortConditions[0].PropertyName = "Government";
+
+        //        //高级搜索参数设置
+        //        PropertyAdvanceConditionRequest request = PrepareAdvanceCondition(advance);
+        //        var governmentIds = _governmentService.GetGovernmentIdsByCurrentUser();  //获取当前账户的可查询的资产
+        //        properties = _propertyService.GetAllProperties(governmentIds, advance.Query, 0, int.MaxValue, showHidden, request, sortConditions);
+
+        //    }
+        //    #endregion
+
+        //    FileStream stream = System.IO.File.Create(filePath);
+
+        //    Type t = exportModel.GetType();
+        //    PropertyInfo[] PropertyList = t.GetProperties();
+        //    IList<string> headers = new List<string>();
+
+        //    foreach (var item in PropertyList)
+        //    {
+        //        if (item.PropertyType.Name == "Boolean") {
+        //            var data = item.Name.Substring(2);
+        //            if (Convert.ToBoolean(item.GetValue(exportModel)) == true) headers.Add(data);
+        //        }            
+        //    }
+
+        //    _exportManager.ExportPropertyToXlsx(stream, properties,headers);
+
+        //    httpResponseMessage.Content = new StreamContent(stream);
+        //    httpResponseMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.ms-excel");
+        //    httpResponseMessage.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
+        //    {
+        //        FileName =
+        //            browser.Contains("Chrome")
+        //                ? Path.GetFileName(filePath)
+        //                : HttpUtility.UrlEncode(Path.GetFileName(filePath))
+        //        //FileName = HttpUtility.UrlEncode(Path.GetFileName(filePath))
+        //    };
+
+        //    return ResponseMessage(httpResponseMessage);
+        //}  
+        #endregion
+      
+
+
+        [HttpPost]
+        [Route("Export/{ids}")]
+        public HttpResponseMessage ExportExcel(string ids, PropertyAdvanceConditionModel advance)
+        {
+            var exportModel = advance.Fields;
+            var browser = String.Empty;
+            //    string path = @"~/Content/资产导出" + DateTime.Now.ToString("yyyyMMddhhmmss");
+            string path = System.Web.Hosting.HostingEnvironment.MapPath(@"~/Content/资产导出/" + DateTime.Now.ToString("yyyyMMddhhmmss"));
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            string filePath = Path.Combine(path, "资产导出.xls");
+          
+
+            #region 获取导出的资产集合
+            IList<Property> properties = new List<Property>();
+            if (ids != "all")
+            {
+                var pids = ids.Split(';');
+                foreach (var id in pids)
+                {
+                    var property = _propertyService.GetPropertyById(Convert.ToInt32(id));
+                    properties.Add(property);
+                }
+            }
+            else
+            {
+                var currentUser = _workContext.CurrentAccountUser;
+
+                var showHidden = currentUser.IsRegistered() && currentUser.AccountUserRoles.Count == 1;  //只是注册单位可以获取未发布的
+
+                //初始化排序条件
+                var sortConditions = PropertySortCondition.Instance(advance.Sort);
+
+                //特殊字段排序调整
+                if (advance.Sort.ToLower().StartsWith("governmentname")) sortConditions[0].PropertyName = "Government";
+
+                //高级搜索参数设置
+                PropertyAdvanceConditionRequest request = PrepareAdvanceCondition(advance);
+                var governmentIds = _governmentService.GetGovernmentIdsByCurrentUser();  //获取当前账户的可查询的资产
+                properties = _propertyService.GetAllProperties(governmentIds, advance.Query, 0, int.MaxValue, showHidden, request, sortConditions);
+
+            }
+            #endregion
+
+            using (FileStream stream = System.IO.File.Create(filePath))
+            {
+                Type t = exportModel.GetType();
+                PropertyInfo[] PropertyList = t.GetProperties();
+                IList<string> headers = new List<string>();
+
+                foreach (var item in PropertyList)
+                {
+                    if (item.PropertyType.Name == "Boolean")
+                    {
+                        var data = item.Name.Substring(2);
+                        if (Convert.ToBoolean(item.GetValue(exportModel)) == true) headers.Add(data);
+                    }
+                }
+                _exportManager.ExportPropertyToXlsx(stream, properties, headers);
+            }
+
+            try {
+                    FileStream outstream = new FileStream(filePath, FileMode.Open);               
+                    HttpResponseMessage httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK);
+                    httpResponseMessage.Content = new StreamContent(outstream);
+                    httpResponseMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.ms-excel");
+                    httpResponseMessage.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
+                    {
+                        FileName = "资产导出.xls"                 
+                    };
+                
+
+                return httpResponseMessage;
+            }
+            catch {
+                return new HttpResponseMessage(HttpStatusCode.NoContent);
+            }
+
+        }
+
+
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("Import/excel")]
+        public IHttpActionResult FilesUpload()
+        {
+            string reponse = null;
+            var httpRequest = HttpContext.Current.Request;
+
+
+            var currentUser = _workContext.CurrentAccountUser;
+            var id = currentUser.Government.Id;
+          
+            string path = System.Web.Hosting.HostingEnvironment.MapPath(@"~/Content/资产导入/" + DateTime.Now.ToString("yyyyMMddhhmmss"));
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }  
+
+            foreach (string file in httpRequest.Files)
+            {              
+                var postedFile = httpRequest.Files[file];
+                var filePath = Path.Combine(path, postedFile.FileName);
+                var  stream = postedFile.InputStream;
+
+                byte[] bytes = new byte[stream.Length];
+                stream.Read(bytes, 0, bytes.Length);
+                // 设置当前流的位置为流的开始   
+                stream.Seek(0, SeekOrigin.Begin);
+
+                // 把 byte[] 写入文件   
+                FileStream fs = new FileStream(filePath, FileMode.Create);
+                BinaryWriter bw = new BinaryWriter(fs);
+                bw.Write(bytes);
+                bw.Close();
+                fs.Close();
+
+                if (UnRAR(path, path, postedFile.FileName))
+                {
+                    string excelPath = path + "\\"+postedFile.FileName.Substring(0, postedFile.FileName.Length-4) + "\\资产导入表.xlsx";
+                    string picPath = path + "\\" + postedFile.FileName.Substring(0, postedFile.FileName.Length - 4);
+                    using (FileStream excelStream = new FileStream(excelPath, FileMode.Open)) {
+
+                        if (excelStream == null) return BadRequest("没有找到名称为资产导入表的excel文件");
+                        reponse = _importManager.ImportProductsFromXlsx(excelStream, picPath);                
+
+                    }
+
+                }  
+
+            }
+
+            return Ok(reponse);
+
+        }
+    
+
+        //解压文件代码
+        public bool UnRAR(string path, string rarPath, string rarName)
+        {
+            bool flag = false;
+            string rarexe;
+            RegistryKey regkey;
+            Object regvalue;
+            string cmd;
+            ProcessStartInfo startinfo;
+            Process process;
+            try
+            {
+                regkey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\WinRAR.exe");
+                regvalue = regkey.GetValue("");
+                rarexe = regvalue.ToString();
+                regkey.Close();
+                //rarexe = rarexe.Substring(1, rarexe.Length - 7);
+
+                Directory.CreateDirectory(path);
+                //解压缩命令，相当于在要压缩文件(rarName)上点右键->WinRAR->解压到当前文件夹
+                //cmd = string.Format(path + "\\" + rarName,
+                //                    rarName,
+                //                    path);
+                cmd = string.Format("x {0} {1} -y",
+                        rarName,
+                        path);
+
+                startinfo = new ProcessStartInfo();
+                startinfo.FileName = rarexe;
+                startinfo.Arguments = cmd;
+                startinfo.WindowStyle = ProcessWindowStyle.Hidden;
+
+                startinfo.WorkingDirectory = rarPath;
+                process = new Process();
+                process.StartInfo = startinfo;
+                process.Start();
+                process.WaitForExit();
+
+                if (process.HasExited)
+                {
+                    flag = true;
+                }
+                process.Close();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            return flag;
+        }
+
+
 
     }
 }
