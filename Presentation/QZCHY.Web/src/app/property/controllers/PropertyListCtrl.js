@@ -388,6 +388,10 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
 
             });
 
+            //出错页面刷新
+
+            //$state.reload();
+
 
         }
      

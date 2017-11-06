@@ -1,6 +1,7 @@
 ﻿using QZCHY.Core;
 using QZCHY.Core.Domain.Properties;
 using System.Collections.Generic;
+using System.Data.Entity.Spatial;
 using System.Linq;
 
 namespace QZCHY.Services.Property
@@ -71,6 +72,8 @@ namespace QZCHY.Services.Property
 
 
         IList<QZCHY.Core.Domain.Properties.Property> GetCurrentGovermentProperties(string name);
+
+        Region GetPropertyRegion(DbGeography location);
 
         #region Property pictures
 

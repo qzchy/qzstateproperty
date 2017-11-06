@@ -8,8 +8,8 @@ angular.module('app').controller('AppCtrl', ['$scope', '$localStorage', '$window
     isIE && angular.element($window.document.body).addClass('ie');
     isSmartDevice($window) && angular.element($window.document.body).addClass('smart');
 
-    $rootScope.apiUrl = 'http://localhost/api/'
-    $rootScope.baseUrl = 'http://localhost/';
+    $rootScope.apiUrl = 'http://localhost:8087/api/'
+    $rootScope.baseUrl = 'http://localhost:8087/';
     //config
     $scope.app = {
         name: '衢州市级行政事业单位和市直国有企业房产土地管理系统',

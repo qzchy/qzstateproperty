@@ -205,6 +205,11 @@ namespace QZCHY.Core.Domain.Properties
         /// 是否核销
         /// </summary>
         public bool Off { get; set; }
+
+        /// <summary>
+        /// 是否为Excel导入
+        /// </summary>
+        public bool FromExcelImport { get; set; }
         
         public virtual ICollection<PropertyPicture> Pictures
         {
