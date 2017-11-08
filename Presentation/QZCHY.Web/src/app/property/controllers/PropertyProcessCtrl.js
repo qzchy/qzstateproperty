@@ -249,7 +249,6 @@ app.controller('PropertyProcessCtrl', ['$window', '$rootScope', '$uibModal', '$s
         }
      
 
-
        // $scope.advanceSearch = _advanceSearch;
         $scope.process = _process;
         $scope.dateOption = _dateOption;

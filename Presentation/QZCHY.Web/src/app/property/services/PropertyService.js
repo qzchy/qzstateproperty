@@ -587,7 +587,7 @@ app.service("PropertyService", ['$rootScope', '$http', '$q', function ($rootScop
 
         return deferred.promise;
     };
-
+  
     
 }]);
  

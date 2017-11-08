@@ -102,6 +102,7 @@ angular.module('app').controller('AppCtrl', ['$scope', '$localStorage', '$window
     var windowWidth = $window.innerWidth; //获取窗口宽度
 
     $rootScope.dialogHeight = { "height": windowHeight - headerHeight - footerHeight - 230 };
+    $rootScope.thelist = false;
     //#endregion
 
     //退出登录

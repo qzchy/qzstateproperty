@@ -16,7 +16,10 @@
 </head>
 <body ng-controller="AppCtrl">
     <div class="app" id="app" ng-class="{'app-header-fixed':app.settings.headerFixed, 'app-aside-fixed':true, 'app-aside-folded':app.settings.asideFolded, 'app-aside-dock':app.settings.asideDock, 'container':app.settings.container}" ui-view></div>
-
+    <div ng-if="thelist" style="position:absolute;width:100%;height:100%;z-index:10000;top:0px">
+        <div id="thelist" style="width:100%;height:100%;background-color:slategrey;opacity:0.2;top:0px;"></div>
+        <div style="z-index:10001;font-size:30px;position:absolute;top:200px;text-align:center;width:100%">正在上传</div>
+    </div>
     <!-- jQuery -->
     <script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
 

@@ -340,6 +340,7 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
             return deferred.promise;
         }
 
+      
 
         $scope.Import = function () {
          
@@ -379,19 +380,48 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
                     toaster.pop('error', '所选文件单个大小不可超过5M！', '', 1000);
                 }
             });
+            // 当有文件添加进来的时候
+            fileUploader.on('fileQueued', function (file) {
 
+                $rootScope.thelist = true;
+
+             //   $("#thelist").append('<div id="' + file.id + '" class="item">' +
+             //'<h4 class="info">' + file.name + '</h4>' +
+             //'<p class="state">等待上传...</p>' +
+             //'</div>');
+            });
+            //文件上传进度
+            fileUploader.on('uploadProgress', function (file, percentage) {
+                $rootScope.thelist = true;
+         //       var $li = $('#' + file.id),
+         //       $percent = $li.find('.progress .progress-bar');
+
+         //       // 避免重复创建
+         //       if (!$percent.length) {
+         //           $percent = $('<div class="progress progress-striped active">' +
+         //             '<div class="progress-bar" role="progressbar" style="width: 0%">' +
+         //             '</div>' +
+         //           '</div>').appendTo($li).find('.progress-bar');
+         //       }
+
+         ////       $li.find('p.state').text('上传中');
+
+         //       $percent.css('width', percentage * 100 + '%');
+             //   if (percentage == 1) $li.find('p.state').text('上传完成');
+            });
 
             //文件上传结果处理
             fileUploader.on('uploadSuccess', function (file, response) {
-                $state.go("app.property.process_approve", { approveType: "newCreate" });
-                alert(response);
-
-            });
-
-            //出错页面刷新
-
-            //$state.reload();
-
+                $rootScope.thelist = false;
+                if (response.count > 0) {                   
+                    alert(response.appendLine);
+                    $state.go("app.property.process_approve", { approveType: "newCreate" });
+                }
+                else {
+                    alert(response.appendLine);
+                    $state.reload();
+                }                             
+            });    
 
         }
      

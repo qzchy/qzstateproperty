@@ -998,6 +998,32 @@ namespace QZCHY.API.Controllers
             return flag;
         }
 
+        public string GetXml(string shppath)
+        {
+            string shpName = "";
+            DirectoryInfo dir = new DirectoryInfo(shppath);
+            FileInfo[] files = dir.GetFiles("资产导入表.xlsx");
+
+            if (files.Length < 1)
+            {
+                string[] folders = Directory.GetDirectories(shppath);
+                foreach (var folder in folders)
+                {
+                    return GetXml(folder);
+                }
+            }
+            else
+            {
+                foreach (var file in files)
+                {
+                    shpName = file.Directory.ToString() + "\\" + file.Name;
+                }
+            }
+            return shpName;
+        }
+
+
+
         #endregion
 
         #region 资产API
@@ -4280,7 +4306,7 @@ namespace QZCHY.API.Controllers
 
         #endregion
 
-        #region 资产导出   
+        #region 资产导入导出   
 
         [HttpPost]
         [Route("Export/{ids}")]
@@ -4372,11 +4398,12 @@ namespace QZCHY.API.Controllers
         [Route("Import/excel")]
         public IHttpActionResult ImportProperties()
         {
+            bool sucess = false;
             var currentUser = _workContext.CurrentAccountUser;
             if (currentUser.IsAdmin() || currentUser.IsGovAuditor() || currentUser.IsStateOwnerAuditor() ||
                 currentUser.IsDataReviewer()) return BadRequest("当前用户没有权限导入数据");
 
-            string reponse = null;
+            ImportResponse reponse = new ImportResponse();
             var httpRequest = HttpContext.Current.Request;
             
             var id = currentUser.Government.Id;
@@ -4410,30 +4437,27 @@ namespace QZCHY.API.Controllers
                     string excelPath = path + "\\"+postedFile.FileName.Substring(0, postedFile.FileName.Length-4) + "\\资产导入表.xlsx";
                     string picPath = path + "\\" + postedFile.FileName.Substring(0, postedFile.FileName.Length - 4);
                     if (!Directory.Exists(excelPath)) {
-
-
-
-                        using (FileStream excelStream = new FileStream(excelPath, FileMode.Open))
-                        {
-
-                            if (excelStream == null) return BadRequest("没有找到名称为资产导入表的excel文件");
-                            reponse = _importManager.ImportProductsFromXlsx(excelStream, picPath);
-                        }
+                        excelPath = GetXml(path);
+                        picPath = excelPath.Substring(0,excelPath.Length-11);
                     }
+                    using (FileStream excelStream = new FileStream(excelPath, FileMode.Open))
+                    {
 
-                    
-
+                        if (excelStream == null) return BadRequest("没有找到名称为资产导入表的excel文件");
+                     
+                        reponse = _importManager.ImportProductsFromXlsx(excelStream, picPath);
+                    }
                 }
-
             }
 
             //activity log
             _accountUserActivityService.InsertActivity("ImportProperties", "批量导入资产");
-
             return Ok(reponse);
+          
 
         }
 
+      
         #endregion
     }
 }

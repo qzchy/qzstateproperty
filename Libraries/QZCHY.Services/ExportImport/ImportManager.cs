@@ -38,8 +38,9 @@ namespace QZCHY.Services.ExportImport
         }
 
 
-        public string ImportProductsFromXlsx(Stream stream, string path)
+        public ImportResponse ImportProductsFromXlsx(Stream stream, string path)
         {
+            ImportResponse IR = new ImportResponse();
             var currentUser = _workContext.CurrentAccountUser;
 
             IList<Core.Domain.Properties.Property> properties = new List<Core.Domain.Properties.Property>();
@@ -164,10 +165,30 @@ namespace QZCHY.Services.ExportImport
                             }
                         }
 
-                        if (worksheet.Cells[row, GetColumnIndex(excelProperty, "土地面积(平方米)")].Value != null) property.LandArea = Convert.ToDouble(worksheet.Cells[row, GetColumnIndex(excelProperty, "土地面积(平方米)")].Value);
+                        if (worksheet.Cells[row, GetColumnIndex(excelProperty, "土地面积(平方米)")].Value != null)
+                        {
+                            try
+                            {
+                                property.LandArea = Convert.ToDouble(worksheet.Cells[row, GetColumnIndex(excelProperty, "土地面积(平方米)")].Value);
+                            }
+                            catch
+                            {
+                                throw new Exception("土地面积必须是一个数字");
+                            }
+                        }                         
                         if (worksheet.Cells[row, GetColumnIndex(excelProperty, "房产性质")].Value != null) property.PropertyNature = worksheet.Cells[row, GetColumnIndex(excelProperty, "房产性质")].Value.ToString();
                         if (worksheet.Cells[row, GetColumnIndex(excelProperty, "土地性质")].Value != null) property.LandNature = worksheet.Cells[row, GetColumnIndex(excelProperty, "土地性质")].Value.ToString();
-                        if (worksheet.Cells[row, GetColumnIndex(excelProperty, "账面价格(万元)")].Value != null) property.Price = Convert.ToDouble(worksheet.Cells[row, GetColumnIndex(excelProperty, "账面价格(万元)")].Value);
+                        if (worksheet.Cells[row, GetColumnIndex(excelProperty, "账面价格(万元)")].Value != null)
+                        {
+                            try
+                            {
+                                property.Price = Convert.ToDouble(worksheet.Cells[row, GetColumnIndex(excelProperty, "账面价格(万元)")].Value);
+                            }
+                            catch
+                            {
+                                throw new Exception("账面价值必须是一个数字");
+                            }
+                        }
                         else throw new Exception("资产账面价格不能为空");
                         if (worksheet.Cells[row, GetColumnIndex(excelProperty, "取得时间")].Value != null)
                         {
@@ -182,20 +203,72 @@ namespace QZCHY.Services.ExportImport
                         }
                         else throw new Exception("资产取得时间不能为空");
 
-                        if (worksheet.Cells[row, GetColumnIndex(excelProperty, "使用年限(年)")].Value != null) property.LifeTime = Convert.ToInt32(worksheet.Cells[row, GetColumnIndex(excelProperty, "使用年限(年)")].Value);
-                        else throw new Exception("资产地址不能为空");
+                        if (worksheet.Cells[row, GetColumnIndex(excelProperty, "使用年限(年)")].Value != null)
+                        {
+                            try
+                            {
+                                property.LifeTime = Convert.ToInt32(worksheet.Cells[row, GetColumnIndex(excelProperty, "使用年限(年)")].Value);
+                            }
+                            catch
+                            {
+                                throw new Exception("使用年限必须是一个数字");
+                            }
+                        } 
+                        else throw new Exception("使用年限不能为空");
 
                         if (worksheet.Cells[row, GetColumnIndex(excelProperty, "使用方")].Value != null) property.UsedPeople = worksheet.Cells[row, GetColumnIndex(excelProperty, "使用方")].Value.ToString();
-                        else throw new Exception("资产地址不能为空");
+                        else throw new Exception("使用方不能为空");
 
-                        if (worksheet.Cells[row, GetColumnIndex(excelProperty, "自用面积(平方米)")].Value != null) property.CurrentUse_Self = Convert.ToDouble(worksheet.Cells[row, GetColumnIndex(excelProperty, "自用面积(平方米)")].Value);
-                        else throw new Exception("资产地址不能为空");
-                        if (worksheet.Cells[row, GetColumnIndex(excelProperty, "出租面积(平方米)")].Value != null) property.CurrentUse_Rent = Convert.ToDouble(worksheet.Cells[row, GetColumnIndex(excelProperty, "出租面积(平方米)")].Value);
-                        else throw new Exception("资产地址不能为空");
-                        if (worksheet.Cells[row, GetColumnIndex(excelProperty, "出借面积(平方米)")].Value != null) property.CurrentUse_Lend = Convert.ToDouble(worksheet.Cells[row, GetColumnIndex(excelProperty, "出借面积(平方米)")].Value);
-                        else throw new Exception("资产地址不能为空");
-                        if (worksheet.Cells[row, GetColumnIndex(excelProperty, "闲置面积(平方米)")].Value != null) property.CurrentUse_Idle = Convert.ToDouble(worksheet.Cells[row, GetColumnIndex(excelProperty, "闲置面积(平方米)")].Value);
-                        else throw new Exception("资产地址不能为空");
+                        if (worksheet.Cells[row, GetColumnIndex(excelProperty, "自用面积(平方米)")].Value != null)
+                        {
+                            try
+                            {
+                                property.CurrentUse_Self = Convert.ToDouble(worksheet.Cells[row, GetColumnIndex(excelProperty, "自用面积(平方米)")].Value);
+                            }
+                            catch
+                            {
+                                throw new Exception("自用面积必须是一个数字");
+                            }
+                        }                           
+                        else throw new Exception("自用面积不能为空");
+
+                        if (worksheet.Cells[row, GetColumnIndex(excelProperty, "出租面积(平方米)")].Value != null)
+                        {
+                            try
+                            {
+                                property.CurrentUse_Rent = Convert.ToDouble(worksheet.Cells[row, GetColumnIndex(excelProperty, "出租面积(平方米)")].Value);
+                            }
+                            catch
+                            {
+                                throw new Exception("出租面积必须是一个数字");
+                            }
+                        }                           
+                        else throw new Exception("出租面积不能为空");
+
+                        if (worksheet.Cells[row, GetColumnIndex(excelProperty, "出借面积(平方米)")].Value != null)
+                        {
+                            try
+                            {
+                                property.CurrentUse_Lend = Convert.ToDouble(worksheet.Cells[row, GetColumnIndex(excelProperty, "出借面积(平方米)")].Value);
+                            }
+                            catch
+                            {
+                                throw new Exception("出借面积必须是一个数字");
+                            }
+                        } 
+                        else throw new Exception("出借面积不能为空");
+                        if (worksheet.Cells[row, GetColumnIndex(excelProperty, "闲置面积(平方米)")].Value != null)
+                        {
+                            try
+                            {
+                                property.CurrentUse_Idle = Convert.ToDouble(worksheet.Cells[row, GetColumnIndex(excelProperty, "闲置面积(平方米)")].Value);
+                            }
+                            catch
+                            {
+                                throw new Exception("闲置面积必须是一个数字");
+                            }
+                        }                         
+                        else throw new Exception("闲置面积不能为空");
 
                         if (worksheet.Cells[row, GetColumnIndex(excelProperty, "不动产证")].Value != null) property.EstateId = worksheet.Cells[row, GetColumnIndex(excelProperty, "不动产证")].Value.ToString();
                         if (worksheet.Cells[row, GetColumnIndex(excelProperty, "房产证")].Value != null) property.ConstructId = worksheet.Cells[row, GetColumnIndex(excelProperty, "房产证")].Value.ToString();
@@ -210,7 +283,7 @@ namespace QZCHY.Services.ExportImport
                         {
                             try
                             {
-                                location = worksheet.Cells[row, GetColumnIndex(excelProperty, "Location")].Value.ToString();
+                                location = worksheet.Cells[row, GetColumnIndex(excelProperty, "空间位置")].Value.ToString();
                                 var point = Newtonsoft.Json.JsonConvert.DeserializeObject<Point>(location);
                                 var wkt = "POINT(" + point.lng + " " + point.lat + ")";
                                 property.Location = DbGeography.FromText(wkt);
@@ -227,7 +300,7 @@ namespace QZCHY.Services.ExportImport
                         {
                             try
                             {
-                                extent = worksheet.Cells[row, GetColumnIndex(excelProperty, "Extent")].Value.ToString();
+                                extent = worksheet.Cells[row, GetColumnIndex(excelProperty, "空间范围")].Value.ToString();
                                 var ewkt = "POLYGON ((";
                                 points = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Point>>(extent);
                                 foreach (var point in points)
@@ -410,12 +483,14 @@ namespace QZCHY.Services.ExportImport
                         sb.AppendLine(string.Format("名称为 {0} 的导入失败，错误原因为：{1}。", property.Name, e.Message));
                     }
                     finally
-                    {
-                        sb.AppendLine("成功导入资产" + properties.Count() + "条。");
+                    {                    
+                        sb.AppendLine("成功导入资产" + properties.Count() + "条。");                                       
+
                     }
                 }
-
-                return sb.ToString();
+                IR.AppendLine = sb.ToString();
+                IR.Count = properties.Count();
+                return IR;
             }
         }
 
