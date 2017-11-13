@@ -51,10 +51,20 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
             adjust: false,
             greenland: false,
             house: false,
-            constructAreaRange: "",
-            landAreaRange: "",
-            priceRange: "",
-            getDateRange: "",       
+            constructArea_L: false,
+            constructArea_M: false,
+            constructArea_H: false,
+            constructArea_T: false,
+            landArea_L: false,
+            landArea_M: false,
+            landArea_H: false,
+            landArea_T: false,
+            price_L: false,
+            price_M: false,
+            price_H: false,
+            price_T: false,
+            lifeTime_min: 0,
+            lifeTime_max:70
         };
 
        
@@ -143,58 +153,12 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
         $scope.tableEidtAndDelete = [
              {
                  title: "资产变更",
-                 handler: function (row) {                 
-                         $state.go("app.property.edit", { id: row.id });               
+                 handler: function (row) {
+                     $state.go("app.property.edit", { id: row.id });
                  },
                  isEnable: function (row) { return row.canChange; }
              }
-  ]
-
-        //$scope.tableEidtAndDelete = {
-        //    edit: function (propertId) {
-        //        $state.go("app.property.edit", { id: propertId });
-        //    },
-        //    del: function (rows) {
-        //        var idStr = "";
-        //        var content = "";
-
-        //        //遍历生成idStr
-        //        if (rows.length == 1) {
-        //            idStr = rows[0].id;
-        //            content = "是否删除资产《" + rows[0].name + "》？";
-        //        }
-        //        else if (rows.length > 1) {
-        //            content = "是否删除当前选中的资产？";
-
-        //            angular.forEach(rows, function (value, index) {
-        //                if (value.selected) idStr += value.id + '_';
-        //            });
-
-        //        }
-
-        //        var modalInstance = $uibModal.open({
-        //            templateUrl: 'deleteRow.html',
-        //            controller: 'ModalDialogCtrl',
-        //            windowClass: "map-modal",
-        //            resolve: {
-        //                title: function () { return "提示"; },
-        //                content: function () { return content; },
-        //                dialogHeight: function () { return $rootScope.dialogHeight; },
-        //                statistics: function () { return null; }
-        //            }
-        //        });
-
-        //        modalInstance.result.then(function () {
-
-        //            //删除用户
-        //            propertyService.deleteProperty(idStr).then(function (data, status) { }, function (message) { alert(message); }).finally(function () {
-        //                $state.reload();
-        //            });
-
-        //        }, function () { });
-        //    },
-      
-        //};
+        ];
 
         //高级搜索
         $scope.advanceSearch = function () {
@@ -259,7 +223,6 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
               //  $state.reload();
             });
         }
-
 
         $scope.selectedRows = [];
         //创建id字符串
@@ -444,61 +407,6 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
 
             if ($scope.government.selected != null && $scope.government.selected != undefined) $scope.params.selectedId = $scope.government.selected.id;
             else $scope.params.selectedId = 0;
-
-            //#region 建筑面积、土地面积、账面价值区间参数
-
-            ////#region 建筑面积
-            //$scope.params.constructArea.ranges = [];
-
-            //if ($scope.params.constructArea.l)
-            //    $scope.params.constructArea.ranges.push({ min: 0, max: 5000 });
-
-            //if ($scope.params.constructArea.m)
-            //    $scope.params.constructArea.ranges.push({ min: 5001, max: 10000 });
-
-            //if ($scope.params.constructArea.h)
-            //    $scope.params.constructArea.ranges.push({ min: 10001, max: 20000 });
-
-            //if ($scope.params.constructArea.t)
-            //    $scope.params.constructArea.ranges.push({ min: 20001, max: 0 });
-
-            ////#endregion
-
-            ////#region 土地面积
-            //$scope.params.landArea.ranges = [];
-
-            //if ($scope.params.landArea.l)
-            //    $scope.params.landArea.ranges.push({ min: 0, max: 10000 });
-
-            //if ($scope.params.landArea.m)
-            //    $scope.params.landArea.ranges.push({ min: 10001, max: 50000 });
-
-            //if ($scope.params.landArea.h)
-            //    $scope.params.landArea.ranges.push({ min: 50001, max: 100000 });
-
-            //if ($scope.params.landArea.t)
-            //    $scope.params.landArea.ranges.push({ min: 100001, max: 0 });
-
-            ////#endregion
-
-            ////#region 账面价值
-            //$scope.params.price.ranges = [];
-
-            //if ($scope.params.price.l)
-            //    $scope.params.price.ranges.push({ min: 0, max: 500 });
-
-            //if ($scope.params.price.m)
-            //    $scope.params.price.ranges.push({ min: 501, max: 5000 });
-
-            //if ($scope.params.price.h)
-            //    $scope.params.price.ranges.push({ min: 5001, max: 10000 });
-
-            //if ($scope.params.price.t)
-            //    $scope.params.price.ranges.push({ min: 10001, max: 0 });
-
-            ////#endregion
-
-            //#endregion
 
             $scope.processing = true;
             $scope.params.time = new Date().getTime();
