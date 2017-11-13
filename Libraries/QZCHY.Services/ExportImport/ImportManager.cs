@@ -372,17 +372,7 @@ namespace QZCHY.Services.ExportImport
 
                                 pictures.Add(picture);
 
-                                foreach (var p in pictures)
-                                {
-                                    var propertyPicture = new PropertyPicture
-                                    {
-                                        Picture = p,
-                                        Property = property,
-                                        IsLogo = false
-                                    };
-                                    property.Pictures.Add(propertyPicture);
-                                    _propertyService.UpdateProperty(property);
-                                }
+                            
                                 fileStream.Flush();
                                 fileStream.Close();
                                 #endregion
@@ -400,20 +390,34 @@ namespace QZCHY.Services.ExportImport
                                 var url = _fileService.GetFileUrl(otherFile);
                                 otherFiles.Add(otherFile);
 
-                                foreach (var f in otherFiles)
-                                {
-                                    var propertyFile = new PropertyFile
-                                    {
-                                        File = f,
-                                        Property = property
-                                    };
-                                    property.Files.Add(propertyFile);
-                                    _propertyService.UpdateProperty(property);
-                                }
+                               
                                 fileStream.Flush();
                                 fileStream.Close();
                                 #endregion
-                            }
+                            }                         
+                        }
+
+                        foreach (var p in pictures)
+                        {
+                            var propertyPicture = new PropertyPicture
+                            {
+                                Picture = p,
+                                Property = property,
+                                IsLogo = false
+                            };
+                            property.Pictures.Add(propertyPicture);
+                            _propertyService.UpdateProperty(property);
+                        }
+
+                        foreach (var f in otherFiles)
+                        {
+                            var propertyFile = new PropertyFile
+                            {
+                                File = f,
+                                Property = property
+                            };
+                            property.Files.Add(propertyFile);
+                            _propertyService.UpdateProperty(property);
                         }
 
                         #endregion
