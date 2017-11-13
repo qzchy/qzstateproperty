@@ -235,22 +235,22 @@
                 <div class="col-sm-4">
                 </div>
             </div>
-            <div class="row" ng-if="p.propertyType.construct">
+            <div class="row" ng-if="params.construct">
                 <label class="col-sm-12 control-label m-t-xs">建筑面积（平方米）</label>
                 <div class="col-sm-4">
                     <label class="checkbox i-checks">
-                        <input type="checkbox" ng-model="params.constructArea.l" value="0"><i></i> 5000以下
+                        <input type="checkbox" ng-model="params.constructArea_L" value="0"><i></i> 5000以下
                     </label>
                     <label class="checkbox i-checks">
-                        <input type="checkbox" ng-model="params.constructArea.m"><i></i> 10001-20000
+                        <input type="checkbox" ng-model="params.constructArea_M"><i></i> 10001-20000
                     </label>
                 </div>
                 <div class="col-sm-4">
                     <label class="checkbox i-checks">
-                        <input type="checkbox" ng-model="params.constructArea.h"><i></i> 5000-10000
+                        <input type="checkbox" ng-model="params.constructArea_H"><i></i> 5000-10000
                     </label>
                     <label class="checkbox i-checks">
-                        <input type="checkbox" ng-model="params.constructArea.t"><i></i> 20000以上
+                        <input type="checkbox" ng-model="params.constructArea_T"><i></i> 20000以上
                     </label>
                 </div>
                 <div class="col-sm-4">
@@ -260,18 +260,18 @@
                 <label class="col-sm-12 control-label m-t-xs">土地面积（亩）</label>
                 <div class="col-sm-4">
                     <label class="checkbox i-checks">
-                        <input type="checkbox" ng-model="params.landArea.l" value="0"><i></i> 100以下
+                        <input type="checkbox" ng-model="params.landArea_L" value="0"><i></i> 50以下
                     </label>
                     <label class="checkbox i-checks">
-                        <input type="checkbox" ng-model="params.landArea.m"><i></i> 501-1000
+                        <input type="checkbox" ng-model="params.landArea_M"><i></i> 51-300
                     </label>
                 </div>
                 <div class="col-sm-4">
                     <label class="checkbox i-checks">
-                        <input type="checkbox" ng-model="params.landArea.h"><i></i> 101-500
+                        <input type="checkbox" ng-model="params.landArea_H"><i></i> 301-500
                     </label>
                     <label class="checkbox i-checks">
-                        <input type="checkbox" ng-model="params.landArea.t"><i></i> 1000以上
+                        <input type="checkbox" ng-model="params.landArea_T"><i></i> 501以上
                     </label>
                 </div>
                 <div class="col-sm-4">
@@ -281,18 +281,18 @@
                 <label class="col-sm-12 control-label m-t-xs">账面价值（元）</label>
                 <div class="col-sm-4">
                     <label class="checkbox i-checks">
-                        <input type="checkbox" ng-model="params.price.l"><i></i> 500以下
+                        <input type="checkbox" ng-model="params.price_L"><i></i> 500以下
                     </label>
                     <label class="checkbox i-checks">
-                        <input type="checkbox" ng-model="params.price.m"><i></i> 5001-10000
+                        <input type="checkbox" ng-model="params.price_M"><i></i> 5001-10000
                     </label>
                 </div>
                 <div class="col-sm-4">
                     <label class="checkbox i-checks">
-                        <input type="checkbox" ng-model="params.price.h"><i></i> 501-5000
+                        <input type="checkbox" ng-model="params.price_H"><i></i> 501-5000
                     </label>
                     <label class="checkbox i-checks">
-                        <input type="checkbox" ng-model="params.price.t"><i></i> 10000 以上
+                        <input type="checkbox" ng-model="params.price_T"><i></i> 10000 以上
                     </label>
                 </div>
                 <div class="col-sm-4">
@@ -300,9 +300,9 @@
             </div>
             <div class="row m-t-xs">
                 <label class="col-sm-6 control-label">使用年限</label>
-                <label class="col-sm-6 control-label">取得时间</label>
+               <!-- <label class="col-sm-6 control-label">取得时间</label>-->
                 <div class="col-sm-12">
-                    <slider ng-model="params.lifeTime.min" ng-model-range="params.lifeTime.max" floor="0" ceiling="100">
+                    <slider ng-model="params.lifeTime_min" ng-model-range="params.lifeTime_max" floor="0" ceiling="100">
                 </div>
                 <!--<div class="col-sm-6">
                     <slider ng-model="params.getedDate.min" ng-model-range="params.getedDate.max" floor="1949" ceiling="2017">

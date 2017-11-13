@@ -640,13 +640,13 @@ app.controller('MapCtrl', ['$window', '$scope', '$timeout','$filter', '$uibModal
         $scope.search.params.landArea.ranges = [];
 
         if ($scope.search.params.landArea.l)
-            $scope.search.params.landArea.ranges.push({ min: 0, max: 50 * 666.67 });
+            $scope.search.params.landArea.ranges.push({ min: 0, max: 51 * 666.67-1 });
 
         if ($scope.search.params.landArea.m)
-            $scope.search.params.landArea.ranges.push({ min: 51 * 666.67, max: 300 * 666.67 });
+            $scope.search.params.landArea.ranges.push({ min: 51 * 666.67, max: 301 * 666.67-1 });
 
         if ($scope.search.params.landArea.h)
-            $scope.search.params.landArea.ranges.push({ min: 301 * 666.67, max: 500 * 666.67 });
+            $scope.search.params.landArea.ranges.push({ min: 301 * 666.67, max: 501 * 666.67-1 });
 
         if ($scope.search.params.landArea.t)
             $scope.search.params.landArea.ranges.push({ min: 501*666.67, max: 0 });
