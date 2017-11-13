@@ -433,7 +433,7 @@ namespace QZCHY.API.Controllers
             };
 
             //activity log
-            _accountUserActivityService.InsertActivity("GovernmentSuggestion", "单位信息关键字联想");
+            _accountUserActivityService.InsertActivity("GovernmentSuggestion", "单位信息关键字联想。");
 
             return Ok(response);
         }
