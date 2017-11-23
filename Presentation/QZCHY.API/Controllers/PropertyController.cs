@@ -401,7 +401,15 @@ namespace QZCHY.API.Controllers
         [NonAction]
         protected virtual bool PropertyCanView(Property property)
         {
-            return PropertyBelongCurrentUser(property, false);
+            var currentUser = _workContext.CurrentAccountUser;
+
+            if (currentUser.IsGovAuditor())
+                return property.Government.GovernmentType == GovernmentType.Government
+                    || property.Government.GovernmentType == GovernmentType.Institution;
+            else if (currentUser.IsStateOwnerAuditor())
+                return property.Government.GovernmentType == GovernmentType.Company;
+            else
+                return PropertyBelongCurrentUser(property, false);
         }
 
 
