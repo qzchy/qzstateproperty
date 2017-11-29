@@ -5,7 +5,9 @@ app.controller('ModalDialogCtrl', function ($scope, $uibModalInstance, title, co
     $scope.title = title;
     $scope.content = content;
     $scope.dialogHeight = dialogHeight;
-    $scope.statistics = statistics;
+    if (statistics != undefined && statistics != null) {
+        $scope.statistics = statistics;
+    } 
     $scope.okText = "确定";
     $scope.cancelText = "取消";
 
