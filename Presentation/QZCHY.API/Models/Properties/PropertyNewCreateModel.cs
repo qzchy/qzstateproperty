@@ -11,6 +11,7 @@ namespace QZCHY.API.Models.Properties
         public string ProcessDate { get; set; }
 
         public string Title { get; set; }
+        public bool Deleted { get; set; }
 
         public string DSuggestion { get; set; }
 
