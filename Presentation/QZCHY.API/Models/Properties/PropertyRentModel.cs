@@ -10,6 +10,7 @@ namespace QZCHY.API.Models.Properties
     {
         public string Name { get; set; }
         public string RentTime { get; set; }
+        public bool Deleted { get; set; }
         public float RentArea { get; set; }
         public int RentMonth { get; set; }
         public float RentPrice { get; set; }

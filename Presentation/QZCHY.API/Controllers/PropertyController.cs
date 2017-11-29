@@ -401,7 +401,15 @@ namespace QZCHY.API.Controllers
         [NonAction]
         protected virtual bool PropertyCanView(Property property)
         {
-            return PropertyBelongCurrentUser(property, false);
+            var currentUser = _workContext.CurrentAccountUser;
+
+            if (currentUser.IsGovAuditor())
+                return property.Government.GovernmentType == GovernmentType.Government
+                    || property.Government.GovernmentType == GovernmentType.Institution;
+            else if (currentUser.IsStateOwnerAuditor())
+                return property.Government.GovernmentType == GovernmentType.Company;
+            else
+                return PropertyBelongCurrentUser(property, false);
         }
 
 
@@ -1067,7 +1075,10 @@ namespace QZCHY.API.Controllers
             var model = property.ToModel();
             model.LogoUrl = GetLogoUrl(property);
             model.NewCreate = _propertyNewCreateService.GetPropertyNewCreateByPropertyId(model.Id).ToModel();
-
+            model.Edits.Where(m => m.Deleted != true).ToList();
+            model.Rents.Where(m => m.Deleted != true).ToList();
+            model.Lends.Where(m => m.Deleted).ToList();
+            if (model.NewCreate==null||model.NewCreate.Deleted) model.NewCreate = new PropertyNewCreateModel();
             model.CanEditDelete = PropertyCanEditDelete(property);
             model.CanChange = PropertyCanChange(property);
             var propertyOff= _propertyOffService.GetPropertyOffById(model.Id).ToModel();

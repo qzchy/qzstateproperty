@@ -9,6 +9,7 @@ namespace QZCHY.API.Models.Properties
     public class PropertyLendModel: BaseQMEntityModel
     {
         public string ProcessDate { get; set; }
+        public bool Deleted { get; set; }
         public string Name { get; set; }
         public string LendTime { get; set; }
         public float LendArea { get; set; }
