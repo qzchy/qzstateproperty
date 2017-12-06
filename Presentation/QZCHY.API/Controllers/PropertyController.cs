@@ -1075,10 +1075,10 @@ namespace QZCHY.API.Controllers
             var model = property.ToModel();
             model.LogoUrl = GetLogoUrl(property);
             model.NewCreate = _propertyNewCreateService.GetPropertyNewCreateByPropertyId(model.Id).ToModel();
-            model.Edits.Where(m => m.Deleted != true).ToList();
-            model.Rents.Where(m => m.Deleted != true).ToList();
-            model.Lends.Where(m => m.Deleted).ToList();
-            if (model.NewCreate==null||model.NewCreate.Deleted) model.NewCreate = new PropertyNewCreateModel();
+            model.Edits = model.Edits.Where(m => m.Deleted != true).ToList();
+            model.Rents = model.Rents.Where(m => m.Deleted != true).ToList();
+            model.Lends = model.Lends.Where(m => m.Deleted).ToList();
+
             model.CanEditDelete = PropertyCanEditDelete(property);
             model.CanChange = PropertyCanChange(property);
             var propertyOff= _propertyOffService.GetPropertyOffById(model.Id).ToModel();
