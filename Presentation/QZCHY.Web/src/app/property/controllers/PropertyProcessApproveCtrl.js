@@ -368,7 +368,8 @@ app.controller('PropertyProcessApproveCtrl', ['$window', '$rootScope', '$uibModa
                         resolve: {
                             dialogHeight: function () { return $rootScope.dialogHeight; },
                             title: function () { return "提示"; },
-                            content: function () { return "是否删除该处置申请？"; }
+                            content: function () { return "是否删除该处置申请？"; },
+                            statistics: function () { return null}
                         }
                     });
 
