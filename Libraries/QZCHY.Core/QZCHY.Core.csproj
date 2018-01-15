@@ -157,6 +157,7 @@
     <Compile Include="Domain\Messages\QueuedEmailPriority.cs" />
     <Compile Include="Domain\Properties\GovernmentType.cs" />
     <Compile Include="Domain\Properties\GovernmentUnit.cs" />
+    <Compile Include="Domain\Properties\MonthTotal.cs" />
     <Compile Include="Domain\Properties\NextStepType.cs" />
     <Compile Include="Domain\Properties\PropertyLendFile.cs" />
     <Compile Include="Domain\Properties\PropertyLendPicture.cs" />

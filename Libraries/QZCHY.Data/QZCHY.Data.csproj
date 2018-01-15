@@ -84,6 +84,7 @@
     <Compile Include="Mapping\Messages\MessageTemplateMap.cs" />
     <Compile Include="Mapping\Messages\QueuedEmailMap.cs" />
     <Compile Include="Mapping\Properties\GovernmentUnitMap.cs" />
+    <Compile Include="Mapping\Properties\MonthTotalMap.cs" />
     <Compile Include="Mapping\Properties\PropertyRentFileMap.cs" />
     <Compile Include="Mapping\Properties\PropertyOffFileMap.cs" />
     <Compile Include="Mapping\Properties\PropertyLendFileMap.cs" />
