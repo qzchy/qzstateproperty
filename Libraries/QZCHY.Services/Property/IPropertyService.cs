@@ -75,6 +75,9 @@ namespace QZCHY.Services.Property
 
         Region GetPropertyRegion(DbGeography location);
 
+        List<QZCHY.Core.Domain.Properties.Property> GetExportMonthTotalProperties(int id);
+
+
         #region Property pictures
 
         /// <summary>

@@ -196,6 +196,7 @@ namespace QZCHY.Core.Domain.Properties
         }
 
         public virtual PropertyOff PropertyOff { get; set; }
+
         /// <summary>
         /// 
         /// </summary>

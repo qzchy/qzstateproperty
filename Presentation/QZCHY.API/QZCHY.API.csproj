@@ -248,6 +248,7 @@
     <Compile Include="Models\Properties\ApproveStatisticsModel.cs" />
     <Compile Include="Models\Properties\CopyPropertyModel.cs" />
     <Compile Include="Models\Properties\ExportModel.cs" />
+    <Compile Include="Models\Properties\MonthTotalModel.cs" />
     <Compile Include="Models\Properties\PropertyAllotApproveModel.cs" />
     <Compile Include="Models\Properties\PropertyBasicInfo.cs" />
     <Compile Include="Models\Properties\PropertyEditApproveListModel.cs" />

@@ -37,6 +37,13 @@ namespace QZCHY.Web.Api.Infrastructure
 
             Mapper.CreateMap<AccountUserRole, AccountUserRoleModel>();
 
+            //每月导出
+            Mapper.CreateMap<MonthTotalModel, MonthTotal>()
+                 .ForMember(dest => dest.Month, mo => mo.Ignore());
+
+            Mapper.CreateMap<MonthTotal, MonthTotalModel>()
+                  .ForMember(dest => dest.Month, mo => mo.MapFrom(src => src.Month.ToString("yyyy-MM-dd")));
+
             //单位映射
             Mapper.CreateMap<GovernmentUnitModel, GovernmentUnit>()
                 .ForMember(dest => dest.GovernmentType, mo => mo.MapFrom(src => (GovernmentType)src.GovernmentTypeId));

@@ -42,7 +42,7 @@ namespace QZCHY.Core.Domain.Properties
         /// </summary>
         public double Price { get; set; }
         /// <summary>
-        /// 月份
+        /// 提交时间
         /// </summary>
         public DateTime Month { get; set; }
         /// <summary>

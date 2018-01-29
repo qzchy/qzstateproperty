@@ -269,6 +269,28 @@ angular.module('app').run(['$rootScope', '$state', '$stateParams',  'authService
                 ]
             }
         })
+         .state('app.property.monthtotal', {
+             url: 'properties/monthtotal',
+             templateUrl: 'app/property/views/monthtotal.html',
+             resolve: {
+                 deps: ['$ocLazyLoad',
+                   function ($ocLazyLoad) {
+
+                       return $ocLazyLoad.load([
+                       'vendor/libs/webuploader/webuploader.js',
+                       'vendor/libs/webuploader/webuploader.css']).then(function () {
+                           return $ocLazyLoad.load(['toaster', 'infinite-scroll', 'w5c.validator', 'fancyboxplus', 'angular-nicescroll', 'ui.select']).then(function () {
+                               return $ocLazyLoad.load([
+                              'app/systemmanage/governments/Services/GovernmentService.js',
+                             'app/property/Services/PropertyService.js',
+                             'app/property/Controllers/MonthTotalCtrl.js'])
+                           });
+                       });
+                   }
+                 ]
+             }
+         })
+
         .state('app.property.process_approve', {
             url: 'properties/approve?:approveType/:checkState',
             templateUrl: 'app/property/views/process_approve.html',

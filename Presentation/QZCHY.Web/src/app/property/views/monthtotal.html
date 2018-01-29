@@ -1,0 +1,167 @@
+﻿<div ng-controller="MonthTotalCtrl">
+
+    <div class="bg-light lter b-b wrapper-md">
+        <div class="row">
+            <div class="col-sm-6 col-xs-12">
+                <h1 class="m-n font-thin h3 text-black">每月统计</h1>
+            </div>
+             
+        </div>
+    </div>
+    
+        <div class="wrapper-md">
+
+            <div class="clearfix m-b">
+                <a ui-sref="app.property.list" class="btn btn-default btn-addon"> <i class="fa fa-arrow-circle-o-left"></i> 资产列表</a>
+            </div>
+
+            <div class="row">
+                <div class="col-md-9 col-lg-9">
+                    <div class="panel panel-default" id="inProcessProperties">
+                        <div class="panel-heading">
+                           本月未修改的资产
+                            <div class="col-sm-4 m-b-md"style="position:absolute; right:10px;top:6px">
+                                <input type="text" class="input-sm form-control" placeholder="输入关键字搜索...." ng-model="search">
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="row" ng-nicescroll nice-option="{cursorcolor: '#e2edff'}" style="min-height:300px;max-height:300px">
+                                <div class="col-xs-12 col-md-3" ng-repeat="p in monthtotal | search1">
+                                    <div class="thumbnail" ng-click="showMonthTotal(p)">
+                                        <a><img src="img/timg.jpg" alt="..."></a>
+                                        <h4>{{p.name}}</h4>
+                                        <div>地址：{{p.address}}</div>
+                                        <div>区域：{{p.region}}</div>
+                                        <div>产权单位：{{p.governmentName}}</div>
+                                        <div>
+                                            <button class="btn btn-xs m-r-sm" ng-click="showDetail(p)">处置状况</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="panel-footer">共计<strong>{{monthtotalcount}}</strong>个</div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="panel panel-default" id="inProcessProperties">
+                        <div class="panel-heading">
+                           每月统计数据
+                        </div>
+                        <div class="panel-body">
+                            <div class="row text-center listContainer" ng-nicescroll nice-option="{cursorcolor: '#e2edff'}" style="">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center" style="width:100px;">字段</th>                                       
+                                            <th>数值</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="font-bold">自用面积</td>
+                                            <td><input type="text" value="{{property.currentUse_Self}}" class="self"/> 平方米</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-bold">出租面积</td>
+                                            <td><input type="text" value="{{property.currentUse_Rent}}"class="rent"/> 平方米</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-bold">出借面积</td>
+                                            <td><input type="text" value="{{property.currentUse_Lend}}" class="lend" /> 平方米</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-bold">闲置面积</td>
+                                            <td><input type="text" value="{{property.currentUse_Idle}}" class="idle"/> 平方米</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-bold">账面价格</td>
+                                            <td style="position: absolute;margin-left: 13px;"><input type="text" value="{{property.price}}" class="price"/> 万元</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-bold">当前时间</td>
+                                            <td style="position: absolute;margin-left: 13px;">{{NowTime}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-bold">当月收入</td>
+                                            <td style="position: absolute;margin-left: 13px;"><input type="text" value="{{property.monthTotalModel.income}}" class="income"/> 元</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="panel-footer" style="height:50px;margin-top:-30px">
+                            <div class="row">          
+                                <div class="col-sm-9 m-b-md"></div>          
+                                <div class="col-sm-3 m-b-md">
+                                   <button class="btn btn-primary" ng-click="submitparam(property)">提交</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        </div>
+                        
+                          <!--（所有资产<strong>6000</strong>个）-->
+                    </div>
+                </div>
+
+
+            <div class="row">
+                <div class="col-md-9 col-lg-9">
+                    <div class="panel panel-default" id="inProcessProperties">
+                        <div class="panel-heading">
+                            本月已修改的资产
+                            <div class="col-sm-4 m-b-md" style="position:absolute; right:10px;top:6px">
+                                <input type="text" class="input-sm form-control" placeholder="输入关键字搜索...." ng-model="search1">
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="row" ng-nicescroll nice-option="{cursorcolor: '#e2edff'}" style="min-height:300px;max-height:300px">
+                                <div class="col-xs-12 col-md-3" ng-repeat="p in submonthtotal | search2">
+                                    <div class="thumbnail" ng-click="showMonthTotal(p)">
+                                        <a><img src="img/timg.jpg" alt="..."></a>
+                                        <h4>{{p.name}}</h4>
+                                        <div>地址：{{p.address}}</div>
+                                        <div>区域：{{p.region}}</div>
+                                        <div>产权单位：{{p.governmentName}}</div>
+                                        <div>
+                                            <button class="btn btn-xs m-r-sm" ng-click="showDetail(p)">处置状况</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="panel-footer">共计<strong>{{submonthtotalcount}}</strong>个</div>
+                    </div>
+                </div>
+           
+            </div>
+
+            <div class="row">
+                <nav class="navbar navbar-default" style="background-color:#c34444">
+                    <div class="container-fluid">
+                        <div class="navbar-header">
+                            <button class="btn btn-primary" ng-click="submitall()" style="position:absolute;right:1px">全部提交</button>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+
+         
+            </div>
+
+            <!--后台错误-->
+            <div class="form-group" ng-if="errorMsg">
+                <div class="col-lg-12 col-md-12">
+                    <div class="alert alert-danger" ng-bind-html="errorMsg">
+                    </div>
+                </div>
+            </div>
+
+    
+
+</div>

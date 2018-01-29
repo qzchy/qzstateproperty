@@ -232,14 +232,19 @@ namespace QZCHY.Services.ExportImport
                         foreach (var p in PropertyList) {
                             if (p.Name == headers[col - 1])
                             {
-                                if (p.Name == "Government") worksheet.Cells[row, col].Value = property.Government.Name;
-                                else if (p.Name == "PGovernment") worksheet.Cells[row, col].Value = property.Government.ParentName;
-                                else if (p.Name == "GovernmentType") worksheet.Cells[row, col].Value = property.Government.GovernmentType.ToDescription();
+                                if (p.Name == "Government")
+                                {
+                                    var name = property.Government.Name;
+                                    var type = property.Government.GovernmentType.ToDescription();
+                                    worksheet.Cells[row, col].Value = name;
+                                    worksheet.Cells[row, 5].Value = type ;
+                                }
+                                else if (p.Name == "PGovernment") worksheet.Cells[row, col].Value = property.Government.ParentName;            
                                 else if (p.Name == "Region") worksheet.Cells[row, col].Value = property.Region.ToDescription();
                                 else if (p.Name == "PropertyType") worksheet.Cells[row, col].Value = property.PropertyType.ToDescription();
                                 else if (p.Name == "NextStepUsage") worksheet.Cells[row, col].Value = property.NextStepUsage.ToDescription();
-                                else if (p.Name == "GetedDate") worksheet.Cells[row, col].Value = (property.GetedDate==null ? "": Convert.ToDateTime(property.GetedDate).ToString("yyyy-MM-dd"));
-                                else if (p.Name == "HasConstructID") worksheet.Cells[row, col].Value = (property.HasConstructID==true?"是":"否");
+                                else if (p.Name == "GetedDate") worksheet.Cells[row, col].Value = (property.GetedDate == null ? "" : Convert.ToDateTime(property.GetedDate).ToString("yyyy-MM-dd"));
+                                else if (p.Name == "HasConstructID") worksheet.Cells[row, col].Value = (property.HasConstructID == true ? "是" : "否");
                                 else if (p.Name == "HasLandID") worksheet.Cells[row, col].Value = (property.HasLandID == true ? "是" : "否");
                                 else worksheet.Cells[row, col].Value = p.GetValue(property);
 

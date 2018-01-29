@@ -49,6 +49,23 @@ namespace QZCHY.Web.Api.Extensions
         }
         #endregion
 
+        #region  每月表格
+        public static MonthTotalModel ToModel(this MonthTotal entity)
+        {
+            return entity.MapTo<MonthTotal, MonthTotalModel>();
+        }
+
+        public static MonthTotal ToEntity(this MonthTotalModel model)
+        {
+            return model.MapTo<MonthTotalModel, MonthTotal>();
+        }
+
+        public static MonthTotal ToEntity(this MonthTotalModel model, MonthTotal destination)
+        {
+            return model.MapTo(destination);
+        }
+        #endregion
+
         #region 资产复制
         public static PropertyModel ToModel(this CopyProperty entity)
         {

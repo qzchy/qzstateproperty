@@ -832,5 +832,25 @@ namespace QZCHY.Services.Properties
             else if (lcq.Intersects(location)) return Region.OldCity;
             else return Region.Others;
         }
+
+        public List<Core.Domain.Properties.Property> GetExportMonthTotalProperties(int id)
+        {
+            var properties = new List<Core.Domain.Properties.Property>();
+            if (id == 37)
+            {
+                var query = from c in _propertyRepository.Table
+                            where (c.Government.GovernmentType == GovernmentType.Government || c.Government.GovernmentType == GovernmentType.Institution)&&c.Deleted==false
+                            select c;
+                properties = query.ToList();
+            }
+            else if (id == 26) {
+                var query = from c in _propertyRepository.Table
+                            where (c.Government.GovernmentType == GovernmentType.Company || c.Government.GovernmentType == GovernmentType.Group) && c.Deleted == false
+                            select c;
+                properties = query.ToList();
+            }
+
+            return properties;
+        }
     }
 }

@@ -108,7 +108,9 @@
     <Compile Include="Events\ISubscriptionService.cs" />
     <Compile Include="Events\SubscriptionService.cs" />
     <Compile Include="ExportImport\ExportManager.cs" />
+    <Compile Include="ExportImport\ExportMonthTotalManager.cs" />
     <Compile Include="ExportImport\IExportManager.cs" />
+    <Compile Include="ExportImport\IExportMonthTotalManager.cs" />
     <Compile Include="ExportImport\IImportManager.cs" />
     <Compile Include="ExportImport\ImportManager.cs" />
     <Compile Include="ExportImport\ImportResponse.cs" />
@@ -144,6 +146,7 @@
     <Compile Include="Property\GovernmentService.cs" />
     <Compile Include="Property\ICopyPropertyService.cs" />
     <Compile Include="Property\IGovernmentService.cs" />
+    <Compile Include="Property\IMonthTotalService.cs" />
     <Compile Include="Property\IPropertyAllotService.cs" />
     <Compile Include="Property\IPropertyEditService.cs" />
     <Compile Include="Property\IPropertyLendService.cs" />
@@ -151,6 +154,7 @@
     <Compile Include="Property\IPropertyOffService.cs" />
     <Compile Include="Property\IPropertyRentService.cs" />
     <Compile Include="Property\IPropertyService.cs" />
+    <Compile Include="Property\MonthTotalService.cs" />
     <Compile Include="Property\PropertyAllotService.cs" />
     <Compile Include="Property\PropertyEditService.cs" />
     <Compile Include="Property\PropertyOffService.cs" />

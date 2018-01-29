@@ -224,6 +224,14 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
             });
         }
 
+        $scope.ExportMonthTotal = function () {
+
+            propertyService.exportMonthTotal().then(function () {
+                alert("导出成功");
+            })
+        }
+
+
         $scope.selectedRows = [];
         //创建id字符串
         var buildIdsString = function () {

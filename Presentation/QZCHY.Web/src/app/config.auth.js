@@ -7,6 +7,6 @@ angular.module('app').config(function ($httpProvider) {
 }]);
 
 angular.module('app').constant('ngAuthSettings', {
-    apiServiceBaseUri: 'http://localhost:8087/',
+    apiServiceBaseUri: 'http://172.27.45.53/',
     clientId: 'administration',
 });

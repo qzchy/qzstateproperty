@@ -175,6 +175,7 @@ namespace QZCHY.API.Models.Properties
 
         public PropertyOffModel PropertyOff { get; set; }
 
+        public IList <MonthTotalModel> MonthTotalModel { get; set; }
 
         public virtual ICollection<PropertyPictureModel> Pictures { get; set; }
 

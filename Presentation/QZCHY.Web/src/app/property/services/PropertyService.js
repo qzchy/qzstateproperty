@@ -159,6 +159,47 @@ app.service("PropertyService", ['$rootScope', '$http', '$q', function ($rootScop
         return deferred.promise;
     };
 
+    //获取每月核实的所有资产
+    this.getMonthTotal = function () {
+        var deferred = $q.defer();
+
+        $http.get($rootScope.apiUrl + 'Properties/MonthTotal').success(function (data, status) {
+            deferred.resolve(data, status);
+        }).error(function (data, status) {
+            deferred.reject("error");
+        });
+
+        return deferred.promise;
+    }
+    //提交单挑核实记录
+    this.submitparam = function (param) {
+
+        var deferred = $q.defer();
+
+        $http.post($rootScope.apiUrl + 'Properties/createmonthtotal', param).success(function (data, status) {
+            deferred.resolve(data);
+        }).error(function (data, status) {
+            deferred.reject(data.message);
+        });
+
+        return deferred.promise;
+
+    }
+    //提交全部核实记录
+    this.submitall = function (all) {
+
+        var deferred = $q.defer();
+
+        $http.post($rootScope.apiUrl + 'Properties/createall', all).success(function (data, status) {
+            deferred.resolve(data);
+        }).error(function (data, status) {
+            deferred.reject(data.message);
+        });
+
+        return deferred.promise;
+
+    }
+
     //获取资产的更新类型
     this.getUpdatedPropertyById = function (property_id) {
         var deferred = $q.defer();
@@ -574,6 +615,22 @@ app.service("PropertyService", ['$rootScope', '$http', '$q', function ($rootScop
         
         return deferred.promise;
     };
+
+    //导出每月统计
+    this.exportMonthTotal = function () {
+
+        var deferred = $q.defer();
+
+        $http.post($rootScope.apiUrl + 'Properties/exportMonthTotal/monthExcel').success(function (data, status) {
+            deferred.resolve(data);
+        }).error(function (data, status) {
+            deferred.reject(data.message);
+        });
+
+        return deferred.promise;
+
+    }
+
 
     //资产批量导入
     this.Import = function () {
