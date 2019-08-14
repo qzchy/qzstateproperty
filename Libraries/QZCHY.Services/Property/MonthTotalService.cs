@@ -56,14 +56,15 @@ namespace QZCHY.Services.Property
             _eventPublisher.EntityUpdated(m);
         }
 
-        public IList<MonthTotal> GetPropertyMonthTotal(int id,int month)
+        public IList<MonthTotal> GetPropertyMonthTotal(int id,string month)
         {
+            var date = month.Split(';');
+            var year = date[0];
+            var m = date[1];
             var query = from c in _monthTotalRepository.Table
-                        where c.Property_ID == id && (c.Month.Month == month|| c.Month.Month+1==month ||c.Month.Month==12)
+                        where c.Property_ID == id && c.Month.Month.ToString() == m && c.Month.Year.ToString()==year
                         select c;
             return query.ToList();
-
-            throw new NotImplementedException();
         }
     }
 }

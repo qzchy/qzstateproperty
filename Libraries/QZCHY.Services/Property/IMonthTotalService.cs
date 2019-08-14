@@ -17,7 +17,7 @@ namespace QZCHY.Services.Property
 
         MonthTotal GetMonthTotalByPId(int id);
 
-       IList <MonthTotal> GetPropertyMonthTotal(int id,int month);
+       IList <MonthTotal> GetPropertyMonthTotal(int id,string month);
 
     }
 }

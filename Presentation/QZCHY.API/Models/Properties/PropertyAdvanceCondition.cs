@@ -11,6 +11,7 @@ namespace QZCHY.API.Models.Properties
     /// </summary>
     public class PropertyAdvanceConditionModel : BaseQMModel
     {
+        public string ids { get; set; }
         public long Time { get; set; }
 
         public GovernmentFilterModel Government { get; set; }

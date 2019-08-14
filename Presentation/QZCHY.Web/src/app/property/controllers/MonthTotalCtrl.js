@@ -16,7 +16,17 @@ app.controller('MonthTotalCtrl', ['$window', '$rootScope', '$uibModal', '$state'
             income:0
         }
 
+        w5cValidator.setRules({
+            income: {
+                required: "本月收入不能为空"
+            }
+        });
 
+        var validation = $scope.validation = {
+            options: {
+                blurTrig: true
+            }
+        };
 
         var total = [];
         var subtotal = [];
@@ -24,15 +34,27 @@ app.controller('MonthTotalCtrl', ['$window', '$rootScope', '$uibModal', '$state'
         $scope.submonthtotal = [];
         $scope.search = "";
         $scope.search1 = "";
+
+        $scope.submitRecord= true;
+
+        propertyService.getSubmitRecord().then(function (response) {
+            if (response == true) {
+                $scope.submitRecord = false;
+            }
+
+        });
+
         propertyService.getMonthTotal().then(function (response)
         {
             $scope.allmodel = response;
             var now = new Date();
-            console.log(now.getYear());
+            var monthtotal = [];
+            var submonthtotal = [];
             $scope.NowTime = now.getFullYear() + "年" + now.getMonth()+1 + "月" + now.getDate() + "日";
             angular.forEach(response, function (data, i) {
+                if (data.logoUrl == "") data.logoUrl = "img/timg.jpg";
                 if (data.monthTotalModel.length==0) {
-                    $scope.monthtotal.push(data);
+                 monthtotal.push(data);
 
                 }
                 else {
@@ -40,13 +62,16 @@ app.controller('MonthTotalCtrl', ['$window', '$rootScope', '$uibModal', '$state'
                     var t = now.getMonth() + 1;
                     var m =parseInt(data.monthTotalModel[data.monthTotalModel.length - 1].month.substring(5, 7));
                     if (t == m) {
-                        $scope.submonthtotal.push(data);
+                      submonthtotal.push(data);
                     }
                     else {
-                        $scope.monthtotal.push(data);
+                     monthtotal.push(data);
                     }                                 
                 }
             });
+
+            $scope.monthtotal = monthtotal;
+            $scope.submonthtotal = submonthtotal;
             total = $scope.monthtotal;
             subtotal = $scope.submonthtotal;
           
@@ -71,27 +96,33 @@ app.controller('MonthTotalCtrl', ['$window', '$rootScope', '$uibModal', '$state'
             }
         }
      
-
         //提交单条资产每月收入情况
-        $scope.submitparam = function (property) {
-                     
+        validation.saveEntity = function (property) {
+
             param.property_ID = property.id;
             param.property_Name = property.name;
-            param.currentUse_Idle = $(".idle").val();
-            param.currentUse_Lend = $(".lend").val();
-            param.currentUse_Rent = $(".rent").val();
-            param.currentUse_Self = $(".self").val();
-            param.price = $(".price").val();
+            param.currentUse_Idle = property.currentUse_Self;
+            param.currentUse_Lend = property.currentUse_Rent;
+            param.currentUse_Rent = property.currentUse_Lend;
+            param.currentUse_Self = property.currentUse_Idle;
+            param.price = property.price;
             param.month = 1;
-            param.income = $(".income").val();
+            param.income = property.monthTotalModel.income;
 
             propertyService.submitparam(param).then(function () {
 
-                for (var i = 0; i <= $scope.monthtotal.length; i++) {
-                    if ($scope.monthtotal[i] == property) {
-                        $scope.monthtotal.splice(i,1);
+                for (var i = 0; i <= $scope.submonthtotal.length; i++) {
+                    if ($scope.submonthtotal[i] == property) {
+                        $scope.submonthtotal.splice(i, 1);
                     }
                 }
+
+                for (var i = 0; i <= $scope.monthtotal.length; i++) {
+                    if ($scope.monthtotal[i] == property) {
+                        $scope.monthtotal.splice(i, 1);
+                        $scope.submonthtotal.push(property);
+                    }
+                }              
 
                 alert("提交成功！");
             })
@@ -179,8 +210,7 @@ app.controller('MonthTotalCtrl', ['$window', '$rootScope', '$uibModal', '$state'
             });
 
         }
-
-
+      
 
         app.filter('search1', function () {
 
@@ -222,7 +252,5 @@ app.controller('MonthTotalCtrl', ['$window', '$rootScope', '$uibModal', '$state'
 
         });
 
-
-       
     }]);
 

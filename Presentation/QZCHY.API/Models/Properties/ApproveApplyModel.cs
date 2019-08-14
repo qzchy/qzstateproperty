@@ -12,5 +12,7 @@ namespace QZCHY.API.Models.Properties
         public bool Agree { get; set; }
 
         public string Suggestion { get; set; }
+
+        public string idsString { get; set; }
     }
 }

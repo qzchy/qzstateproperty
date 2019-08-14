@@ -10,7 +10,7 @@ namespace QZCHY.API.Models.Properties
     {
         public string OffTime { get; set; }
         public string Reason { get; set; }
-        public float Price { get; set; }
+        public double Price { get; set; }
         public string Remark { get; set; }
         public string ProcessDate { get; set; }
 

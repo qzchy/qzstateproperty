@@ -64,6 +64,9 @@ namespace QZCHY.Services.Property
 
         IList<QZCHY.Core.Domain.Properties.Property> GetPropertyProcess(int governmentId);
 
+
+        IList<QZCHY.Core.Domain.Properties.Property> GetMonthTotalPropertyProcess(int governmentId);
+
         /// <summary>
         /// 获取所有可审批的资产
         /// </summary>

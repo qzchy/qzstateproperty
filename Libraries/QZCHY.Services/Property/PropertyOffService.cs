@@ -62,6 +62,7 @@ namespace QZCHY.Services.Property
                     }
                     else if (currentUser.Government.ParentGovernmentId == 0)
                     {
+                        //  expression = expression.And(p => p.State == PropertyApproveState.DepartmentApprove || (p.State == PropertyApproveState.Start & p.SuggestGovernmentId == currentUser.Government.Id));
                         expression = expression.And(p => p.State == PropertyApproveState.DepartmentApprove || (p.State == PropertyApproveState.Start & p.SuggestGovernmentId == currentUser.Government.Id));
                     }
                     else

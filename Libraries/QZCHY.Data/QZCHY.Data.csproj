@@ -103,9 +103,10 @@
     <Compile Include="Mapping\Properties\PropertyAllotPictureMap.cs" />
     <Compile Include="Mapping\Properties\PropertyPictureMap.cs" />
     <Compile Include="Mapping\Properties\PropertyRentMap.cs" />
-    <Compile Include="Migrations\201703140759048_initialCreate.cs" />
-    <Compile Include="Migrations\201703140759048_initialCreate.Designer.cs">
-      <DependentUpon>201703140759048_initialCreate.cs</DependentUpon>
+    <Compile Include="Mapping\Properties\SubmitRecordMap.cs" />
+    <Compile Include="Migrations\201804040131226_initialCreate.cs" />
+    <Compile Include="Migrations\201804040131226_initialCreate.Designer.cs">
+      <DependentUpon>201804040131226_initialCreate.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -124,8 +125,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201703140759048_initialCreate.resx">
-      <DependentUpon>201703140759048_initialCreate.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201804040131226_initialCreate.resx">
+      <DependentUpon>201804040131226_initialCreate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

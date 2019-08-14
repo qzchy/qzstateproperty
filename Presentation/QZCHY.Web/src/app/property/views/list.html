@@ -36,20 +36,21 @@
             <a ui-sref="app.property.process" tooltip="" class="btn btn-sm btn-primary btn-addon ">
                 <i class="fa fa-support"></i> 资产处置
             </a>
-            <a ui-sref="app.property.monthtotal" tooltip="" class="btn btn-sm btn-primary btn-addon ">
-                <i class="fa fa-support"></i> 每月统计
-            </a>
+           
             <a ui-sref="app.property.process_approve({approveType:'newCreate'})" tooltip="" class="btn btn-sm btn-primary btn-addon">
                 <i class="fa fa-support"></i> 处置查询
+            </a>
+            <a ui-sref="app.property.monthtotal" tooltip="" class="btn btn-sm btn-primary btn-addon ">
+                <i class="fa fa-support"></i> 每月统计
             </a>
         
             <a tooltip="导出数据" class="btn btn-sm btn-primary btn-addon pull-right" ng-click="Export()" >
                 <i class="fa fa-reply"></i> 数据导出
             </a>
-            <a tooltip="导出数据" class="btn btn-sm btn-primary btn-addon pull-right"style="margin-right:5px"  ng-click="Import()">
+            <a tooltip="导入数据" class="btn btn-sm btn-primary btn-addon pull-right"style="margin-right:5px"  ng-click="Import()">
                 <i class="fa fa-share"></i> 数据导入
             </a>
-            <a tooltip="导出数据" class="btn btn-sm btn-primary btn-addon pull-right" ng-click="ExportMonthTotal()">
+            <a tooltip="统计数据" class="btn btn-sm btn-primary btn-addon pull-right"style="margin-right:5px" ng-click="MonthTotal()"  ng-if="isCurrentUser">
                 <i class="fa fa-reply"></i> 每月统计导出
             </a>
             <a tooltip="模板下载" class="btn btn-sm btn-primary btn-addon pull-right" style="margin-right:5px" href="app/property/services/资产导入表.xlsx">
@@ -488,5 +489,60 @@
         <button class="btn btn-danger pull-left" ng-click="resetFields()">重置</button>
         <button class="btn btn-default" ng-click="cancel()">取消</button>
         <button class="btn btn-primary" ng-click="ok()" ng-disabled="exportBtn">确定</button>
+    </div>
+</script>
+
+
+
+<script type="text/ng-template" id="monthTotal.html">
+    <div class="modal-header">
+        <h3 class="modal-title">日期选择</h3>
+    </div>
+    <div class="modal-body" ng-style="dialogHeight">
+        <div ng-nicescroll nice-option="{cursorcolor: '#e2edff'}" style="overflow:hidden;height:100%">
+
+            <div class="row" style="margin-top:20px">
+                <div class="form-group">
+                    <label class="col-lg-2 control-label" style="font-size: 20px;top: 3px;color:red">年份选择</label>
+                    <div class="col-lg-10" style="right: 40px; width: 150px;">
+                        <select id="year" class="form-control" ng-required="true" name="year">
+                            <option value="">---请选择---</option>
+                            <option value="2018">2018年</option>
+                            <option value="2019">2019年</option>
+                            <option value="2020">2020年</option>
+                            <option value="2021">2021年</option>
+                            <option value="2022">2022年</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="margin-top:50px">
+                <div class="form-group">
+                    <label class="col-lg-2 control-label" style="font-size: 20px;top: 3px;color:blue">月份选择</label>
+                    <div class="col-lg-10" style="right: 40px; width: 150px;">
+                        <select id="month" class="form-control" ng-required="true" name="month">
+                            <option value="">---请选择---</option>
+                            <option value="1">1月</option>
+                            <option value="2">2月</option>
+                            <option value="3">3月</option>
+                            <option value="4">4月</option>
+                            <option value="5">5月</option>
+                            <option value="6">6月</option>
+                            <option value="7">7月</option>
+                            <option value="8">8月</option>
+                            <option value="9">9月</option>
+                            <option value="10">10月</option>
+                            <option value="11">11月</option>
+                            <option value="12">12月</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-default" ng-click="cancel()">取消</button>
+        <button class="btn btn-primary" ng-click="ok()" ng-disabled="monthTotalBtn">确定</button>
     </div>
 </script>

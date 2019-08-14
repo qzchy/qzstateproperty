@@ -835,22 +835,37 @@ namespace QZCHY.Services.Properties
 
         public List<Core.Domain.Properties.Property> GetExportMonthTotalProperties(int id)
         {
-            var properties = new List<Core.Domain.Properties.Property>();
+
             if (id == 37)
             {
                 var query = from c in _propertyRepository.Table
-                            where (c.Government.GovernmentType == GovernmentType.Government || c.Government.GovernmentType == GovernmentType.Institution)&&c.Deleted==false
+                            where (c.Government.GovernmentType == GovernmentType.Government || c.Government.GovernmentType == GovernmentType.Institution) && c.Deleted == false
                             select c;
-                properties = query.ToList();
+                var properties = query.ToList();
+                return properties;
             }
-            else if (id == 26) {
+            else if (id == 26)
+            {
                 var query = from c in _propertyRepository.Table
                             where (c.Government.GovernmentType == GovernmentType.Company || c.Government.GovernmentType == GovernmentType.Group) && c.Deleted == false
                             select c;
-                properties = query.ToList();
+                var properties = query.ToList();
+                return properties;
             }
+            else {
+                return null;
+            }
+            
+           
+        }
 
-            return properties;
+        public IList<Core.Domain.Properties.Property> GetMonthTotalPropertyProcess(int governmentId)
+        {
+            var query = from c in _propertyRepository.Table
+                        where c.Government.Id == governmentId && c.Published == true && c.Deleted == false
+                        select c;
+            return query.ToList();
+
         }
     }
 }

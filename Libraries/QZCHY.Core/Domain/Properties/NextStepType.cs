@@ -42,7 +42,9 @@ namespace QZCHY.Core.Domain.Properties
         [Description("保障性住房")]
         House = 7,
         [Description("注入国资公司-金控")]
-        InjectionJK = 8
+        InjectionJK = 8,
+        [Description("暂无")]
+        Others = 9
 
     }
 }

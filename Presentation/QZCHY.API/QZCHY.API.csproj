@@ -243,6 +243,7 @@
     <Compile Include="Models\AccountUsers\AccountUserModel.cs" />
     <Compile Include="Models\AccountUsers\LoginModel.cs" />
     <Compile Include="Models\AccountUsers\AccountUserRoleModel.cs" />
+    <Compile Include="Models\Media\approveRent.cs" />
     <Compile Include="Models\Media\MediaModel.cs" />
     <Compile Include="Models\Properties\ApproveApplyModel.cs" />
     <Compile Include="Models\Properties\ApproveStatisticsModel.cs" />

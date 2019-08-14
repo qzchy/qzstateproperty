@@ -15,5 +15,8 @@ namespace QZCHY.Services.ExportImport
         /// <param name="stream">Stream</param>
         /// <param name="properties">Properties</param>
         void ExportPropertyToXlsx(Stream stream, IList<QZCHY.Core.Domain.Properties.Property> properties, IList<string> headers);
+
+        void ExportMonthTotal(Stream stream, List<QZCHY.Core.Domain.Properties.Property> properties,int id,string month);
+
     }
 }

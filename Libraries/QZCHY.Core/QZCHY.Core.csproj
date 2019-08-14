@@ -181,6 +181,7 @@
     <Compile Include="Domain\Properties\PropertyRentPicture.cs" />
     <Compile Include="Domain\Properties\PropertyType.cs" />
     <Compile Include="Domain\Properties\Region.cs" />
+    <Compile Include="Domain\Properties\SubmitRecord.cs" />
     <Compile Include="Domain\Security\DefaultPermissionRecord.cs" />
     <Compile Include="Domain\Security\IAclSupported.cs" />
     <Compile Include="Domain\Security\PermissionRecord.cs" />

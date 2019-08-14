@@ -480,7 +480,11 @@ app.service("PropertyService", ['$rootScope', '$http', '$q', function ($rootScop
 
     this.multiSubmitApprove = function (idString, approveType) {
         var deferred = $q.defer();
-        $http.post($rootScope.apiUrl + 'Properties/SubmitApprove/Multi/' + idString + "?approveType=" + approveType)
+        var approve = {
+            idString: idString,
+            approveType: approveType
+        };
+        $http.post($rootScope.apiUrl + 'Properties/SubmitApprove/Multi/' , approve)
             .success(function (data, status) {
                 deferred.resolve(data);
             }).error(function (data, status) {
@@ -511,17 +515,18 @@ app.service("PropertyService", ['$rootScope', '$http', '$q', function ($rootScop
         return deferred.promise;
     };
 
-    this.multiApplyApprove = function (idString, agree, suggestion, approveType) {
+    this.multiApplyApprove = function (idsString, agree, suggestion, approveType) {
 
         var deferred = $q.defer();
 
         var approve = {
             agree: agree,
             suggestion: suggestion,
-            approveType: approveType
+            approveType: approveType,
+            idsString: idsString
         };
 
-        $http.put($rootScope.apiUrl + 'Properties/ApplyApprove/Multi/' + idString, approve)
+        $http.put($rootScope.apiUrl + 'Properties/ApplyApprove/Multi/' , approve)
             .success(function (data, status) {
                 deferred.resolve(data);
             }).error(function (data, status) {
@@ -597,14 +602,14 @@ app.service("PropertyService", ['$rootScope', '$http', '$q', function ($rootScop
     };
 
     //导出EXCEL
-    this.export = function (ids,params1) {
+    this.export = function (params1) {
         var deferred = $q.defer();
         $http({  
             method: "POST",
             //headers: {
             //    'Content-type': 'application/vnd.ms-excel'
             //},
-            url:$rootScope.apiUrl + 'Properties/Export/' + ids,  
+            url:$rootScope.apiUrl + 'Properties/Export/',  
             data:  params1,
             responseType: "arraybuffer"
         }).success(function (data, status) {
@@ -617,11 +622,18 @@ app.service("PropertyService", ['$rootScope', '$http', '$q', function ($rootScop
     };
 
     //导出每月统计
-    this.exportMonthTotal = function () {
+    this.exportMonthTotal = function (month) {
 
         var deferred = $q.defer();
 
-        $http.post($rootScope.apiUrl + 'Properties/exportMonthTotal/monthExcel').success(function (data, status) {
+        $http({
+            method: "POST",
+            //headers: {
+            //    'Content-type': 'application/vnd.ms-excel'
+            //},
+            url: $rootScope.apiUrl + 'Properties/exportMonthTotal/'+month,
+            responseType: "arraybuffer"
+        }).success(function (data, status) {
             deferred.resolve(data);
         }).error(function (data, status) {
             deferred.reject(data.message);
@@ -629,6 +641,20 @@ app.service("PropertyService", ['$rootScope', '$http', '$q', function ($rootScop
 
         return deferred.promise;
 
+
+    }
+
+    //判断当前用户ID
+    this.getCurrentUserId = function () {
+        var deferred = $q.defer();
+
+        $http.get($rootScope.apiUrl + 'Properties/currentUserId').success(function (data, status) {
+            deferred.resolve(data);
+        }).error(function (data, status) {
+            deferred.reject(data.message);
+        });
+
+        return deferred.promise;
     }
 
 
@@ -637,6 +663,18 @@ app.service("PropertyService", ['$rootScope', '$http', '$q', function ($rootScop
         var deferred = $q.defer();
 
         $http.post($rootScope.apiUrl + 'Properties/Import').success(function (data, status) {
+            deferred.resolve(data);
+        }).error(function (data, status) {
+            deferred.reject(data.message);
+        });
+
+        return deferred.promise;
+    };
+
+    this.getSubmitRecord = function () {
+        var deferred = $q.defer();
+
+        $http.get($rootScope.apiUrl + 'Properties/GetRecord').success(function (data, status) {
             deferred.resolve(data);
         }).error(function (data, status) {
             deferred.reject(data.message);

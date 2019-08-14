@@ -33,6 +33,16 @@ function ($scope, $rootScope, $window, $timeout, $state, $uibModal, propertyServ
 
     };
 
+    propertyService.getSubmitRecord().then(function (response) {     
+        if (response == false) {
+            alert("您本月还没有提交每月统计工作，请提交后再进行其他操作！");
+            $state.go("app.property.monthtotal");
+        }
+
+    });
+
+
+
     $scope.approve = {
         newCreate: 0,
         edit:0,

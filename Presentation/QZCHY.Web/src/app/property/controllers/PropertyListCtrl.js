@@ -11,6 +11,14 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
         $scope.government = {};
         $scope.properties = [];
 
+        propertyService.getCurrentUserId().then(function (response) {
+
+            if (response == 1 || response == 1002) {
+                $scope.isCurrentUser = true;
+            }
+        });
+
+
         //自定义参数集合
         var params = {
             showHidden: true,
@@ -197,6 +205,7 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
         //#endregion    
 
         $scope.exportBtn = false;
+        $scope.monthTotalBtn = false;     
 
         //region 资产导出
         $scope.Export = function () {
@@ -224,12 +233,42 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
             });
         }
 
-        $scope.ExportMonthTotal = function () {
+        //根据月份导出
+        $scope.MonthTotal = function () {
 
-            propertyService.exportMonthTotal().then(function () {
-                alert("导出成功");
-            })
-        }
+            var modalInstance = $uibModal.open({
+                templateUrl: 'monthTotal.html',
+                controller: 'monthTotalCtrl',
+                size: 'lg',
+                windowClass: "map-modal",
+                //appendTo: '#app',
+                resolve: {
+                    dialogHeight: function () { return $scope.dialogHeight; },
+                    exportMonthTotal: function () { return $scope.exportMonthTotal; },
+                    monthTotalBtn: function () { return $scope.monthTotalBtn; },
+                    DropDown: function () { return $scope.DropDown;}
+                }
+            });
+
+            modalInstance.result.then(function () {
+            }, function () {
+                //  $state.reload();
+            });        
+        };
+        $scope.exportMonthTotal = function () {
+            var deferred = $q.defer();
+
+            var val = $('#year option:selected').val() + ";" + $('#month option:selected').val();
+
+            propertyService.exportMonthTotal(val).then(function (response) {
+                deferred.resolve(response);
+            }, function (msg) {
+                deferred.reject(msg);
+            });
+            return deferred.promise;
+
+        };
+
 
 
         $scope.selectedRows = [];
@@ -300,8 +339,8 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
                 fields:$scope.fields
             };
             $scope.params1 = angular.copy(params1);
-
-            propertyService.export(ids, $scope.params1).then(function (response) {
+            $scope.params1.ids=ids
+            propertyService.export($scope.params1).then(function (response) {
 
                 deferred.resolve(response);
 
@@ -320,6 +359,15 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
 
         var fileUploader = null;
         var authData = $localStorage.authorizationData;
+
+        if (authData.userName == "czj" || authData.userName == "gzw") {
+            $scope.isCurrentUser = true;
+        }
+
+       
+     //   $scope.isAdmin = authData.isAdmin;
+
+
         if (fileUploader == null) {
             fileUploader = WebUploader.create({
                 // swf文件路径
@@ -397,7 +445,9 @@ app.controller('PropertyListCtrl', ['$window', '$rootScope', '$uibModal', '$stat
         }
      
 
-
+        $scope.DropDown = function () {
+            $('.dropdown-toggle').dropdown();
+        }
 
      
         //#region 设置对话框高度
@@ -456,7 +506,7 @@ app.controller('exportCtrl', function ($scope, $uibModalInstance, dialogHeight, 
         }, function (msg) { }).finally(function () {
             $scope.exportBtn = false;
         });;
-       // $uibModalInstance.dismiss();
+        // $uibModalInstance.dismiss();
     }
 
     //全选
@@ -480,7 +530,46 @@ app.controller('exportCtrl', function ($scope, $uibModalInstance, dialogHeight, 
         $uibModalInstance.dismiss();
     };
 
-})
+});
+
+
+app.controller('monthTotalCtrl', function ($scope, $uibModalInstance, dialogHeight, exportMonthTotal, monthTotalBtn, DropDown) {
+
+    $scope.dialogHeight = dialogHeight;
+    $scope.okText = "确定";
+    $scope.cancelText = "取消";
+    $scope.exportMonthTotal = exportMonthTotal;
+    $scope.monthTotalBtn = monthTotalBtn;
+    $scope.DropDown = DropDown;
+
+ 
+ 
+    $scope.ok = function () {
+        $scope.monthTotalBtn = true;
+        $scope.exportMonthTotal().then(function (response) {
+            alert("导出成功！");
+            var fileName = "每月数据导出.xls";
+            var blob = new Blob([response], { type: "application/vnd.ms-excel" });
+            var objectUrl = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            document.body.appendChild(a);
+            a.setAttribute('style', 'display:none');
+            a.setAttribute('href', objectUrl);
+            a.setAttribute('download', fileName);
+            a.click();
+            URL.revokeObjectURL(objectUrl);
+        }, function (msg) { }).finally(function () {
+            $scope.monthTotalBtn = false;
+        });
+        // $uibModalInstance.dismiss();
+    }
+
+    //取消
+    $scope.cancel = function () {
+        $uibModalInstance.dismiss();
+    };
+
+});
 
 app.controller('AdvanceModalDialogCtrl', function ($scope, $uibModalInstance, dialogHeight, params, governmentService, governments, government, ajax, resetParams) {
 

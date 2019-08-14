@@ -28,7 +28,7 @@ namespace QZCHY.Core.Domain.Properties
         /// <summary>
         /// 价格
         /// </summary>
-        public float Price { get; set; }
+        public double Price { get; set; }
         /// <summary>
         /// 备注
         /// </summary>
